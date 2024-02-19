@@ -11,12 +11,14 @@ Portal Raudoc es una solución avanzada de gestión documental diseñada especí
 
 ## Tecnologías Utilizadas
 
-- Vue 3
-- Vite
-- Vue Router
-- Pinia (para manejo de estado)
-- Tailwind CSS (para estilos)
-- Axios (para solicitudes HTTP)
+- Vue 3: Framework progresivo para construir interfaces de usuario.
+- @fullcalendar/bootstrap: Para integrar calendarios interactivos con Bootstrap.
+- AOS: Animate On Scroll Library para animaciones de desplazamiento.
+- Axios: Cliente HTTP basado en promesas para el navegador y node.js.
+- Bootstrap: Framework de diseño para HTML, CSS y JS para desarrollo de componentes de interfaz y layouts responsivos.
+- Firebase: Plataforma de desarrollo de aplicaciones web y móviles.
+- Vue Router: Sistema de enrutamiento oficial para Vue.js.
+- Vuex: Patrón de gestión de estado y biblioteca para aplicaciones Vue.js.
 
 ## Prerrequisitos
 
