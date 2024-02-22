@@ -23,7 +23,7 @@ export default {
 
 <template>
   <Layout>
-    <PageHeader title="Projects" pageTitle="Dashboards" />
+    <PageHeader title="FLUJO DE PETICIONES" pageTitle="Dashboards" />
 
     <BRow class="project-wrapper">
       <BCol xxl="8">
