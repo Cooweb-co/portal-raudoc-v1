@@ -63,8 +63,35 @@ export default [
       title: "Dashboard",
       authRequired: true,
     },
-    component: () => import("../views/dashboard/ecommerce/index.vue"),
+    component: () => import("../views/dashboard/projects/index"),
   },
+
+  // RouDoc - Gestion Documental
+
+  {
+    path: "/gestion-documental/organigrama",
+    name: "organigrama",
+    meta: { title: "Organigrama", authRequired: true },
+    component: () => import("../views/admin-doc/sitemap"),
+  },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   {
     path: "/dashboard/crypto",
     name: "dashboard-crypto",
@@ -246,6 +273,12 @@ export default [
     name: "projects-create",
     meta: { title: "Projects Create", authRequired: true },
     component: () => import("../views/apps/projects/create"),
+  },
+  {
+    path: "/apps/projects-new",
+    name: "projects-new",
+    meta: { title: "Projects Create", authRequired: true },
+    component: () => import("../views/apps/projects/new"),
   },
   {
     path: "/apps/tasks-details",

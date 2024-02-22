@@ -353,13 +353,46 @@ export default {
         </li>
 
         <li class="nav-item">
-          <router-link class="nav-link menu-link" to="/pages/sitemap">
+          <router-link class="nav-link menu-link" to="/gestion-documental/organigrama">
             <Share2Icon width="24" height="24" />
             <span data-key="t-dashboard">Organigrama</span>
           </router-link>
         </li>
 
-        
+
+
+        <li class="menu-title">
+          <i class="ri-more-fill"></i>
+          <span data-key="t-components">Gestión de Jurídica</span>
+        </li>
+
+
+        <li class="nav-item">
+          <router-link class="nav-link menu-link" to="/apps/tickets-list">
+            <ListIcon width="24" height="24" />
+            <span data-key="t-dashboard">Cobro coativo</span>
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link class="nav-link menu-link" to="/apps/tickets-list">
+            <ListIcon width="24" height="24" />
+            <span data-key="t-dashboard">Desembargos</span>
+          </router-link>
+        </li>
+
+        <li class="nav-item">
+          <router-link class="nav-link menu-link" to="/apps/tickets-list">
+            <ListIcon width="24" height="24" />
+            <span data-key="t-dashboard">Paz y Salvo</span>
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link class="nav-link menu-link" to="/apps/tickets-list">
+            <ListIcon width="24" height="24" />
+            <span data-key="t-dashboard">Autos</span>
+          </router-link>
+        </li>
+
 
 
         <li class="menu-title">
@@ -387,6 +420,13 @@ export default {
           <router-link class="nav-link menu-link" to="/jobs/candidate-lists">
             <GitMergeIcon width="24" height="24" />
             <span data-key="t-dashboard">Flujo Documental</span>
+          </router-link>
+        </li>
+
+        <li class="nav-item">
+          <router-link class="nav-link menu-link" to="/jobs/candidate-lists">
+            <GitMergeIcon width="24" height="24" />
+            <span data-key="t-dashboard">Plantillas</span>
           </router-link>
         </li>
         

@@ -66,69 +66,23 @@ export default {
 
 <template>
   <Layout>
-    <PageHeader title="Create Project" pageTitle="Projects" />
+    <PageHeader title="RADICACION DEL CIUDADANO" pageTitle="proyectos" />
     <BRow>
       <BCol lg="8">
         <BCard no-body>
           <BCardBody>
             <div class="mb-3">
-              <label class="form-label" for="project-title-input">Project Title</label>
-              <input type="text" class="form-control" id="project-title-input" placeholder="Enter project title" />
+              <label class="form-label" for="project-title-input">titulo del proyecto</label>
+              <input type="text" class="form-control" id="project-title-input" placeholder="ingrese el titulo del proyecto" />
             </div>
 
-            <div class="mb-3">
-              <label class="form-label" for="project-thumbnail-img">Thumbnail Image</label>
-              <input class="form-control" id="project-thumbnail-img" type="file"
-                accept="image/png, image/gif, image/jpeg" />
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Project Description</label>
-              <ckeditor v-model="editorData" :editor="editor"></ckeditor>
-            </div>
-
-            <BRow>
-              <BCol lg="4">
-                <div class="mb-3 mb-lg-0">
-                  <label for="choices-priority-input" class="form-label">Priority</label>
-
-                  <Multiselect v-model="value2" :close-on-select="true" :searchable="true" :create-option="true"
-                    :options="[
-                      { value: 'High', label: 'High' },
-                      { value: 'Medium', label: 'Medium' },
-                      { value: 'Low', label: 'Low' },
-                    ]" />
-                </div>
-              </BCol>
-              <BCol lg="4">
-                <div class="mb-3 mb-lg-0">
-                  <label for="choices-status-input" class="form-label">Status</label>
-
-                  <Multiselect v-model="value1" :close-on-select="true" :searchable="true" :create-option="true"
-                    :options="[
-                      { value: 'Inprogress', label: 'Inprogress' },
-                      { value: 'Completed', label: 'Completed' },
-                    ]" />
-                </div>
-              </BCol>
-              <BCol lg="4">
-                <div>
-                  <label for="datepicker-deadline-input" class="form-label">Deadline</label>
-
-                  <flat-pickr v-model="date" :config="config" class="form-control flatpickr-input"></flat-pickr>
-                </div>
-              </BCol>
-            </BRow>
-          </BCardBody>
-        </BCard>
-
-        <BCard no-body>
+            <BCard no-body>
           <BCardHeader>
-            <h5 class="card-title mb-0">Attached files</h5>
+            <h5 class="card-title mb-0">Agrega archivo para eradicar</h5>
           </BCardHeader>
           <BCardBody>
             <div>
-              <p class="text-muted">Add Attached files here.</p>
+              <p class="text-muted">Agregue archivos aquí.</p>
 
               <DropZone @drop.prevent="drop" @change="selectedFile" class="mb-2" />
               <div class="vstack gap-2">
@@ -147,7 +101,7 @@ export default {
                     </div>
                     <div class="flex-shrink-0 ms-3">
                       <BButton variant="danger" size="sm" data-dz-remove="" @click="deleteRecord">
-                        Delete
+                        borrar
                       </BButton>
                     </div>
                   </div>
@@ -156,65 +110,183 @@ export default {
             </div>
           </BCardBody>
         </BCard>
+
+            <div class="mb-3">
+              <label class="form-label" for="project-thumbnail-img">Imagen en Miniatura</label>
+              <input class="form-control" id="project-thumbnail-img" type="file"
+                accept="image/png, image/gif, image/jpeg" />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Descripción del Proyecto</label>
+              <ckeditor v-model="editorData" :editor="editor"></ckeditor>
+            </div>
+
+            <BRow>
+              <BCol lg="4">
+                <div class="mb-3 mb-lg-0">
+                  <label for="choices-priority-input" class="form-label">Prioridad</label>
+
+                  <Multiselect v-model="value2" :close-on-select="true" :searchable="true" :create-option="true"
+                    :options="[
+                      { value: 'Alta', label: 'Alta' },
+                      { value: 'Media', label: 'Media' },
+                      { value: 'Baja', label: 'Baja' },
+                    ]" />
+                </div>
+              </BCol>
+              <BCol lg="4">
+                <div class="mb-3 mb-lg-0">
+                  <label for="choices-status-input" class="form-label">Estado</label>
+
+                  <Multiselect v-model="value1" :close-on-select="true" :searchable="true" :create-option="true"
+                    :options="[
+                      { value: 'Inprogress', label: 'En curso' },
+                      { value: 'Completed', label: 'Completado' },
+                    ]" />
+                </div>
+              </BCol>
+              <BCol lg="4">
+                <div>
+                  <label for="datepicker-deadline-input" class="form-label">Fecha límite</label>
+
+                  <flat-pickr v-model="date" :config="config" class="form-control flatpickr-input"></flat-pickr>
+                </div>
+              </BCol>
+            </BRow>
+          </BCardBody>
+        </BCard>
+
+      
         <div class="text-end mb-4">
-          <BButton type="button" variant="soft-secondary" class="w-sm me-1">Delete</BButton>
-          <BButton type="submit" variant="primary" class="w-sm me-1"> Draft </BButton>
-          <BButton type="submit" variant="success" class="w-sm">Create</BButton>
+          <BButton type="button" variant="soft-secondary" class="w-sm me-1">borrar</BButton>
+          <BButton type="submit" variant="primary" class="w-sm me-1"> borrador </BButton>
+          <BButton type="submit" variant="success" class="w-sm">Crear</BButton>
         </div>
       </BCol>
       <BCol lg="4">
         <BCard no-body>
           <BCardHeader>
-            <h5 class="card-title mb-0">Privacy</h5>
+            <h5 class="card-title mb-0">Datos del Solicitante</h5>
           </BCardHeader>
           <BCardBody>
-            <div>
-              <label for="choices-privacy-status-input" class="form-label">Status</label>
+            <div class="mb-3">
+              <label for="choices-privacy-status-input" class="form-label">Tipo de Solicitud</label>
               <Multiselect v-model="value3" :close-on-select="true" :searchable="true" :create-option="true" :options="[
-                { value: 'Private', label: 'Private' },
-                { value: 'Team', label: 'Team' },
-                { value: 'Public', label: 'Public' },
+                { value: 'Aporedado', label: 'Aporedado' },
+                { value: 'Nino, nina, adolescente', label: 'Nino, Nina, Adolescente' },
+                { value: 'persona judirica', label: 'Persona Judirica' },
+                { value: 'persona natural', label: 'Persona Natural' },
               ]" />
+              
+              
             </div>
-          </BCardBody>
-        </BCard>
 
-        <BCard no-body>
-          <BCardHeader>
-            <h5 class="card-title mb-0">Tags</h5>
-          </BCardHeader>
-          <BCardBody>
             <div class="mb-3">
-              <label for="choices-categories-input" class="form-label">Categories</label>
+              <label for="choices-privacy-status-input" class="form-label">Tipo de Documento</label>
               <Multiselect v-model="value4" :close-on-select="true" :searchable="true" :create-option="true" :options="[
-                { value: 'Designing', label: 'Designing' },
-                { value: 'Development', label: 'Development' },
+                { value: 'CC', label: 'C.C' },
+                { value: 'CE', label: 'C.E' },
+                { value: 'carnet Dplomatico CD', label: 'Carnet Diplomatico CD' },
+                { value: 'NIT', label: 'NIT' },
+                { value: 'Psaporte PA', label: 'Pasaporte PA' },
+                { value: 'Permiso Especial de PMCA', label: 'Permiso Especial de PMCA' },
+                { value: 'Permiso de Proteccion', label: 'Permiso de Proteccion' },
+                { value: 'Temporal - PPT', label: 'Temporal - PPT' },
+                { value: 'Salvoconducto-SC', label: 'Salvoconducto-SC' },
+                { value: 'T.I', label: 'T.I' },
+                
+              ]" />
+
+            </div>
+
+            <div class="mb-3">
+              <label for="choices-privacy-status-input" class="form-label">sexo</label>
+              <Multiselect v-model="value5" :close-on-select="true" :searchable="true" :create-option="true" :options="[
+                { value: 'masculino', label: 'Masculino' },
+                { value: 'femenino', label: 'Femenino' },
+                { value: 'otro', label: 'Otro' },
+  
+              ]" />
+              
+              
+            </div>
+
+
+            <div class="mb-3">
+            
+              <label for="choices-privacy-status-input" class="form-label">Pais de Recidencia</label>
+              <Multiselect v-model="value5" :close-on-select="true" :searchable="true" :create-option="true" :options="[
+              
+            {value: 'CO', label: 'Colombia'},
+            {value: 'US', label: 'Estados Unidos'},
+            {value: 'MX', label: 'México'},
+            {value: 'ES', label: 'España'},
+            {alue: 'AR', label: 'Argentina'},
+            {value: 'BR', label: 'Brasil'},
+            {value: 'CL', label: 'Chile'},
+            {value: 'PE', label: 'Per'},
+            {value: 'EC', label: 'Ecuador'},
+            {value: 'GT', label: 'Guatemala'},
+            {value: 'CU', label: 'Cuba'},
+            {value: 'BO', label: 'Bolivia'},
+            {value: 'DO', label: 'República Dominicana'},
+            {value: 'HD', label: 'Honduras'}
+      
+              ]" />
+            </div>
+          <div >
+
+              <label for="choices-privacy-status-input" class="form-label">Cuidad de Recidencia</label>
+              <Multiselect v-model="value6" :close-on-select="true" :searchable="true" :create-option="true" :options="[
+              
+          
+            {value: 'smr', label: 'Santa Marta'},
+            {value: 'PER', label: 'Pereira'},
+            {value: 'BGA', label: 'Bucaramanga'},
+            {value: 'CUC', label: 'Cucuta'},
+            {value: 'IBG', label: 'Ibague'},
+            {value: 'arm', label: 'Amenai'},
+            {value: 'PT', label: 'Pasto'},
+            {value: 'POP', label: 'Popayan'}
+      
+              ]" />
+
+              
+
+
+              
+              
+            </div>
+          </BCardBody>
+        </BCard>
+
+      
+
+        <BCard no-body>
+          <BCardHeader>
+            <h5 class="card-title mb-0">Etiquetas</h5>
+          </BCardHeader>
+          <BCardBody>
+            <div class="mb-3">
+              <label for="choices-categories-input" class="form-label">Categorías</label>
+              <Multiselect v-model="value4" :close-on-select="true" :searchable="true" :create-option="true" :options="[
+                { value: 'Diseño', label: 'Diseño' },
+                { value: 'Desarrollo', label: 'Desarrollo' },
               ]" />
             </div>
 
-            <div>
-              <label for="choices-text-input" class="form-label">Skills</label>
-              <Multiselect class="form-control" v-model="value" mode="tags" :close-on-select="true" :searchable="true"
-                :create-option="true" :options="[
-                  { value: 'UI/UX', label: 'UI/UX' },
-                  { value: 'Figma', label: 'Figma' },
-                  { value: 'HTML', label: 'HTML' },
-                  { value: 'CSS', label: 'CSS' },
-                  { value: 'Javascript', label: 'Javascript' },
-                  { value: 'C#', label: 'C#' },
-                  { value: 'Nodejs', label: 'Nodejs' },
-                ]" />
-            </div>
+      
           </BCardBody>
         </BCard>
 
         <BCard no-body>
           <BCardHeader>
-            <h5 class="card-title mb-0">Members</h5>
+            <h5 class="card-title mb-0">Miembros</h5>
           </BCardHeader>
           <BCardBody>
             <div class="mb-3">
-              <label for="choices-lead-input" class="form-label">Team Lead</label>
+              <label for="choices-lead-input" class="form-label">Jefe de equipo</label>
               <Multiselect v-model="value5" :close-on-select="true" :searchable="true" :create-option="true" :options="[
                 { value: 'Brent Gonzalez', label: 'Brent Gonzalez' },
                 { value: 'Darline Williams', label: 'Darline Williams' },
@@ -226,7 +298,7 @@ export default {
             </div>
 
             <div>
-              <label class="form-label">Team Members</label>
+              <label class="form-label">Miembros del equipo</label>
               <div class="avatar-group">
                 <BLink href="javascript: void(0);" class="avatar-group-item" v-b-tooltip.hover title="Brent Gonzalez">
                   <div class="avatar-xs">
