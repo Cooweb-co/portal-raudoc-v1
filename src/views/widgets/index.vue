@@ -1992,7 +1992,7 @@ export default {
           <BCol xl="6">
             <BCard no-body class="card-height-100">
               <BCardHeader class="align-items-center d-flex">
-                <BCardTitle class="mb-0 flex-grow-1">My Tasks</BCardTitle>
+                <BCardTitle class="mb-0 flex-grow-1">Mi Equipo</BCardTitle>
                 <div class="flex-shrink-0">
                   <BDropdown variant="link" right toggle-class="text-decoration-none arrow-none p-0"
                     class="card-header-dropdown" no-caret>

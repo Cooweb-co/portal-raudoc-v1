@@ -10,7 +10,7 @@ export default {
   setup() {
     return {
       series: [{
-        name: "Number of Projects",
+        name: "Number of Projects ",
         type: "bar",
         data: [34, 65, 46, 68, 49, 61, 42, 44, 78, 52, 63, 67],
       },
@@ -151,7 +151,7 @@ export default {
 <template>
   <BCard no-body>
     <BCardHeader class="border-0 align-items-center d-flex">
-      <BCardTitle class="mb-0 flex-grow-1">Projects Overview</BCardTitle>
+      <BCardTitle class="mb-0 flex-grow-1"></BCardTitle>
       <div class="hstack gap-1">
         <BButton type="button" variant="soft-secondary" size="sm">ALL</BButton>
         <BButton type="button" variant="soft-secondary" size="sm">1M</BButton>
@@ -165,9 +165,9 @@ export default {
         <BCol cols="6" sm="3">
           <div class="p-3 border border-dashed border-start-0">
             <h5 class="mb-1">
-              <count-to :duration="1000" :startVal='0' :endVal="9851"></count-to>
+              <count-to :duration="1000" :startVal='0' :endVal="9851">PETICIONES</count-to>
             </h5>
-            <p class="text-muted mb-0">Number of Projects</p>
+            <p class="text-muted mb-0">PETICIONES RECIBIDAS</p>
           </div>
         </BCol>
         <BCol cols="6" sm="3">
@@ -175,23 +175,23 @@ export default {
             <h5 class="mb-1">
               <count-to :duration="1000" :startVal='0' :endVal="1026"></count-to>
             </h5>
-            <p class="text-muted mb-0">Active Projects</p>
+            <p class="text-muted mb-0">PETICIONES RESPONDIDAS</p>
           </div>
         </BCol>
         <BCol cols="6" sm="3">
           <div class="p-3 border border-dashed border-start-0">
             <h5 class="mb-1">
-              $<count-to :duration="1000" :startVal='0' :endVal="228"></count-to>k
+              <count-to :duration="1000" :startVal='0' :endVal="228"></count-to>
             </h5>
-            <p class="text-muted mb-0">Revenue</p>
+            <p class="text-muted mb-0">PETICIONES POR RESPONDER</p>
           </div>
         </BCol>
         <BCol cols="6" sm="3">
           <div class="p-3 border border-dashed border-start-0 border-end-0">
             <h5 class="mb-1 text-success">
-              <count-to :duration="1000" :startVal='0' :endVal="10589"></count-to>h
+              <count-to :duration="1000" :startVal='0' :endVal="10589"></count-to>
             </h5>
-            <p class="text-muted mb-0">Working Hours</p>
+            <p class="text-muted mb-0">DOCUMENTOS PROCESADOS</p>
           </div>
         </BCol>
       </BRow>

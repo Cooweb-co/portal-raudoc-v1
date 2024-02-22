@@ -19,14 +19,14 @@ export default {
 <template>
   <BCard no-body>
     <BCardHeader class="border-0">
-      <BCardTitle class="mb-0">Upcoming Schedules</BCardTitle>
+      <BCardTitle class="mb-0">Calendario de Pendientes</BCardTitle>
     </BCardHeader>
     <BCardBody class="pt-0">
       <div class="upcoming-scheduled">
         <flat-pickr v-model="date" :config="config"></flat-pickr>
       </div>
 
-      <h6 class="text-uppercase fw-semibold mt-4 mb-3 text-muted">Events:</h6>
+      <h6 class="text-uppercase fw-semibold mt-4 mb-3 text-muted">PROXIMAS A VENCER</h6>
       <div class="mini-stats-wid d-flex align-items-center mt-3">
         <div class="flex-shrink-0 avatar-sm">
           <span class="mini-stat-icon avatar-title rounded-circle text-primary bg-primary-subtle fs-4">
