@@ -338,14 +338,14 @@ export default {
 
 <template>
   <Layout>
-    <PageHeader title="Tickets List" pageTitle="Tickets" />
+    <PageHeader title="LISTA DE ENTRADAS" pageTitle="Tickets" />
     <BRow>
       <BCol xxl="3" sm="6">
         <BCard no-body class="card-animate">
           <BCardBody>
             <div class="d-flex justify-content-between">
               <div>
-                <p class="fw-medium text-muted mb-0">Total Tickets</p>
+                <p class="fw-medium text-muted mb-0">Entradas Totales</p>
                 <h2 class="mt-4 ff-secondary fw-semibold">
                   <count-to :duration="1000" :startVal="0" :endVal="547"></count-to>k
                 </h2>
@@ -353,7 +353,7 @@ export default {
                   <BBadge class="bg-light text-success mb-0">
                     <i class="ri-arrow-up-line align-middle"></i> 17.32 %
                   </BBadge>
-                  vs. previous month
+                  vs. mes anterior
                 </p>
               </div>
               <div>
@@ -372,7 +372,7 @@ export default {
           <BCardBody>
             <div class="d-flex justify-content-between">
               <div>
-                <p class="fw-medium text-muted mb-0">Pending Tickets</p>
+                <p class="fw-medium text-muted mb-0">Salidas Totales</p>
                 <h2 class="mt-4 ff-secondary fw-semibold">
                   <count-to :duration="1000" :startVal="0" :endVal="124"></count-to>k
                 </h2>
@@ -380,7 +380,7 @@ export default {
                   <BBadge class="bg-light text-danger mb-0">
                     <i class="ri-arrow-down-line align-middle"></i> 0.96 %
                   </BBadge>
-                  vs. previous month
+                  vs. 
                 </p>
               </div>
               <div>
@@ -399,7 +399,7 @@ export default {
           <BCardBody>
             <div class="d-flex justify-content-between">
               <div>
-                <p class="fw-medium text-muted mb-0">Closed Tickets</p>
+                <p class="fw-medium text-muted mb-0">Pendientes</p>
                 <h2 class="mt-4 ff-secondary fw-semibold">
                   <count-to :duration="1000" :startVal="0" :endVal="107"></count-to>K
                 </h2>
@@ -407,7 +407,7 @@ export default {
                   <BBadge class="bg-light text-danger mb-0">
                     <i class="ri-arrow-down-line align-middle"></i> 3.87 %
                   </BBadge>
-                  vs. previous month
+                  vs. mes anterior
                 </p>
               </div>
               <div>
@@ -426,7 +426,7 @@ export default {
           <BCardBody>
             <div class="d-flex justify-content-between">
               <div>
-                <p class="fw-medium text-muted mb-0">Deleted Tickets</p>
+                <p class="fw-medium text-muted mb-0">No requiere respuestas</p>
                 <h2 class="mt-4 ff-secondary fw-semibold">
                   <count-to :duration="1000" :startVal="0" :endVal="15"></count-to>%
                 </h2>
@@ -434,7 +434,7 @@ export default {
                   <BBadge class="bg-light text-success mb-0">
                     <i class="ri-arrow-up-line align-middle"></i> 1.09 %
                   </BBadge>
-                  vs. previous month
+                  vs. mes anterior
                 </p>
               </div>
               <div>
@@ -455,14 +455,14 @@ export default {
         <BCard no-body id="ticketsList">
           <BCardHeader class="border-0">
             <div class="d-flex align-items-center">
-              <h5 class="card-title mb-0 flex-grow-1">Tickets</h5>
+              <h5 class="card-title mb-0 flex-grow-1">Entradas</h5>
               <div class="flex-shrink-0">
                 <div class="d-flex flex-wrap gap-2">
                   <BButton variant="soft-secondary" class="me-1" id="remove-actions" @click="deleteMultiple">
                     <i class="ri-delete-bin-2-line"></i>
                   </BButton>
                   <BButton variant="primary" class="add-btn" @click="toggleModal">
-                    <i class="ri-add-line align-bottom me-1"></i> Create Tickets
+                    <i class="ri-add-line align-bottom me-1"></i> Crear Entradas
                   </BButton>
                 </div>
               </div>
@@ -474,14 +474,14 @@ export default {
                 <BCol xxl="5" sm="12">
                   <div class="search-box">
                     <input type="text" class="form-control search bg-light border-light"
-                      placeholder="Search for ticket details or something..." v-model="searchQuery" />
+                      placeholder="Busque detalles del boleto o algo asi..." v-model="searchQuery" />
                     <i class="ri-search-line search-icon"></i>
                   </div>
                 </BCol>
 
                 <BCol xxl="3" sm="4">
                   <flat-pickr v-model="filterdate1" :config="rangeDateconfig" class="form-control bg-light border-light"
-                    placeholder="Select date"></flat-pickr>
+                    placeholder="Seleccione fecha"></flat-pickr>
                 </BCol>
 
                 <BCol xxl="3" sm="4">
@@ -489,7 +489,7 @@ export default {
                     <Multiselect v-model="filtervalue1" :close-on-select="true" :searchable="true" :create-option="true"
                       :options="[
                         { value: '', label: 'Status' },
-                        { value: 'All', label: 'All' },
+                        { value: 'All', label: 'Todo' },
                         { value: 'Open', label: 'Open' },
                         { value: 'Inprogress', label: 'Inprogress' },
                         { value: 'Closed', label: 'Closed' },
@@ -500,7 +500,7 @@ export default {
                 <BCol xxl="1" sm="4">
                   <BButton type="button" variant="primary" class="w-100" @click="SearchData">
                     <i class="ri-equalizer-fill me-1 align-bottom"></i>
-                    Filters
+                    Filtros
                   </BButton>
                 </BCol>
               </BRow>
@@ -516,15 +516,15 @@ export default {
                         <input class="form-check-input" type="checkbox" id="checkAll" value="option" />
                       </div>
                     </th>
-                    <th class="sort" data-sort="id" @click="onSort('id')">ID</th>
-                    <th class="sort" data-sort="tasks_name" @click="onSort('title')">Title</th>
-                    <th class="sort" data-sort="client_name" @click="onSort('client')">Client</th>
-                    <th class="sort" data-sort="assignedto" @click="onSort('assigned')">Assigned To</th>
-                    <th class="sort" data-sort="create_date" @click="onSort('create')">Create Date</th>
-                    <th class="sort" data-sort="due_date" @click="onSort('due')">Due Date</th>
-                    <th class="sort" data-sort="status" @click="onSort('status')">Status</th>
-                    <th class="sort" data-sort="priority" @click="onSort('priority')">Priority</th>
-                    <th class="sort" data-sort="action">Action</th>
+                    <th class="sort" data-sort="id" @click="onSort('id')">IDENTIFICACION</th>
+                    <th class="sort" data-sort="tasks_name" @click="onSort('title')">Titulo</th>
+                    <th class="sort" data-sort="client_name" @click="onSort('client')">Cliente</th>
+                    <th class="sort" data-sort="assignedto" @click="onSort('assigned')">Asignado A</th>
+                    <th class="sort" data-sort="create_date" @click="onSort('create')">Fecha de creacion</th>
+                    <th class="sort" data-sort="due_date" @click="onSort('due')">Fecha de vencimiento</th>
+                    <th class="sort" data-sort="status" @click="onSort('status')">Estado</th>
+                    <th class="sort" data-sort="priority" @click="onSort('priority')">Prioridad</th>
+                    <th class="sort" data-sort="action">Accion</th>
                   </tr>
                 </thead>
                 <tbody class="list form-check-all">
@@ -578,10 +578,9 @@ export default {
                 <div class="text-center">
                   <lottie class="avatar-xl" colors="primary:#25a0e2,secondary:#00bd9d" :options="defaultOptions"
                     :height="90" :width="90" />
-                  <h5 class="mt-2">Sorry! No Result Found</h5>
+                  <h5 class="mt-2">¡Lo siento! No se han encontrado resultados</h5>
                   <p class="text-muted mb-0">
-                    We've searched more than 150+ Tickets We did not find any
-                    Tickets for you search.
+                    Hemos basado mas de 150 entradas. No encontramos ninguna entrada para su busqueda.
                   </p>
                 </div>
               </div>
