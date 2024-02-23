@@ -5,12 +5,18 @@ import { candidatelist } from "@/common/data";
 
 export default {
   data() {
+    const new_cadidateList = candidatelist.map(candidate => {
+                                                                  return {
+                                                                      ...candidate,
+                                                                      user: `user${Math.floor(Math.random() * 1000000)}`
+                                                                  }
+                                                    })
     return {
       searchQuery: null,
       page: 1,
       perPage: 8,
       pages: [],
-      candidatelist: candidatelist
+      candidatelist: new_cadidateList
     };
   },
   computed: {
@@ -80,29 +86,29 @@ export default {
 
 <template>
   <Layout>
-    <PageHeader title="List View" pageTitle="Candidate Lists" />
+    <PageHeader title="Gestión de usuarios" pageTitle="Lista de usuarios" />
     <BRow class="g-4 mb-4">
       <BCol sm="auto">
         <div>
-          <BLink href="#!" class="btn btn-primary"><i class="ri-add-line align-bottom me-1"></i> Add Candidate</BLink>
+          <BLink href="#!" class="btn btn-primary"><i class="ri-add-line align-bottom me-1"></i> Agregar usuario</BLink>
         </div>
       </BCol>
       <BCol sm>
         <div class="d-md-flex justify-content-sm-end gap-2">
           <div class="search-box ms-md-2 flex-shrink-0 mb-3 mb-md-0">
             <input type="text" class="form-control" id="searchJob" autocomplete="off"
-              placeholder="Search for candidate name or designation..." v-model="searchQuery">
+              placeholder="Nombre o designación" v-model="searchQuery">
             <i class="ri-search-line search-icon"></i>
           </div>
           <div class="w-md">
             <select class="form-select" data-choices data-choices-search-false>
-              <option value="All">All</option>
-              <option value="Today">Today</option>
-              <option value="Yesterday" selected>Yesterday</option>
-              <option value="Last 7 Days">Last 7 Days</option>
-              <option value="Last 30 Days">Last 30 Days</option>
-              <option value="This Month">This Month</option>
-              <option value="Last Year">Last Year</option>
+              <option value="TODOS" selected>Todos</option>
+              <option value="ADMIN">ADMIN</option>
+              <option value="SUPER ADMIN" >SUPER ADMIN</option>
+              <option value="ADMIN EMPRESA">ADMIN EMPRESA</option>
+              <option value="ASESOR">ASESOR</option>
+              <option value="REDICADOR">REDICADOR</option>
+              <option value="SUPERVISOR SISTEMA">SUPERVISOR SISTEMA</option>
             </select>
           </div>
         </div>
@@ -110,8 +116,35 @@ export default {
     </BRow>
 
     <BRow class="gy-2 mb-2" id="candidate-list">
-      <BCol lg="12" v-for="(data, index) of resultQuery" :key="index">
-        <BCard no-body class="mb-0">
+      <BCol lg="12">
+        <table class="table ">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">USUARIO</th>
+              <th scope="col">NOMBRE COMPLETO</th>
+              <th scope="col">PERFIL</th>
+              <th scope="col">CORREO</th>
+            </tr>
+          </thead>
+          <tbody v-for="(data, index) of resultQuery" :key="index">
+              <tr>
+                <td>{{ data.user }}</td>
+                <td>{{ data.name }}</td>
+                <td><div v-for="design in data.designation" :key="design">
+                  
+                  <span class="badge" :class="{
+                    'bg-success-subtle text-success': design == 'ASESOR',
+                    'bg-danger-subtle text-danger': design == 'RADICADOR',
+                    'bg-primary-subtle text-primary': design == 'ADMIN EMPRESA' || design == 'SUPER ADMIN',
+                    'bg-warning-subtle text-warning': design == 'ADMINISTRADOR DE SISTEMA',
+                    'bg-info-subtle text-info': design == 'SUPERVISOR DE SISTEMA',
+                  }">{{ design }}</span>
+                </div></td>
+                <td>{{ data.user + '@email.com' }}</td>
+              </tr>
+            </tbody>
+        </table>
+        <!-- <BCard no-body class="mb-0">
           <BCardBody>
             <div class="d-lg-flex align-items-center">
               <div class="flex-shrink-0">
@@ -123,21 +156,19 @@ export default {
                 <router-link to="/pages/profile">
                   <h5 class="fs-16 mb-2">{{ data.name }}</h5>
                 </router-link>
-                <p class="text-muted mb-0">{{ data.designation }}</p>
+                <p class="text-muted mb-0">{{ data.id_number }}</p>
               </div>
-              <div class="d-flex gap-4 mt-0 text-muted mx-auto">
-                <div><i class="ri-map-pin-2-line text-primary me-1 align-bottom"></i> {{ data.location }}</div>
-                <div><i class="ri-time-line text-primary me-1 align-bottom"></i> <span class="badge" :class="{
-                  'bg-success-subtle text-success': data.type == 'Full Time',
-                  'bg-danger-subtle text-danger': data.type == 'Part Time',
-                  'bg-primary-subtle text-primary': data.type == 'Freelancer',
-                }">{{ data.type }}</span></div>
-              </div>
-              <div class="d-flex flex-wrap gap-2 align-items-center mx-auto">
-                <BBadge tag="div" variant="bg-success" class="text-bg-success"> <i class="mdi mdi-star me-1"></i>{{
-                  data.rating
-                }}</BBadge>
-                <div class="text-muted">{{ data.ratingCount }} Ratings</div>
+              <div class="d-flex gap-4 mt-0 text-muted">
+                <div v-for="design in data.designation" :key="design">
+                  
+                  <span class="badge" :class="{
+                    'bg-success-subtle text-success': design == 'ASESOR',
+                    'bg-danger-subtle text-danger': design == 'REDICADOR',
+                    'bg-primary-subtle text-primary': design == 'ADMIN EMPRESA' || design == 'SUPER ADMIN',
+                    'bg-warning-subtle text-warning': design == 'ADMINISTRADOR DE SISTEMA',
+                    'bg-info-subtle text-info': design == 'SUPERVISOR DE SISTEMA',
+                  }">{{ design }}</span>
+                </div>
               </div>
               <div>
                 <BLink href="#!" class="btn btn-soft-success me-1">View Details</BLink>
@@ -150,7 +181,7 @@ export default {
               </div>
             </div>
           </BCardBody>
-        </BCard>
+        </BCard> -->
       </BCol>
 
 
@@ -162,7 +193,7 @@ export default {
           class="pagination-block pagination pagination-separated justify-content-center justify-content-sm-end mb-sm-0"
           v-if="pages.length > 1">
           <div class="page-item">
-            <BLink href="#" class="page-link" id="page-prev" :disabled="page <= 1" @click="page--">Previous</BLink>
+            <BLink href="#" class="page-link" id="page-prev" :disabled="page <= 1" @click="page--">Anterior</BLink>
           </div>
           <span id="page-num" class="pagination">
             <div class="page-item" :class="{ active: pageNumber == page, disabled: pageNumber == '...', }"
@@ -171,7 +202,7 @@ export default {
             </div>
           </span>
           <div class="page-item">
-            <BLink href="#" class="page-link" id="page-next" :disabled="page >= pages.length" @click="page++">Next</BLink>
+            <BLink href="#" class="page-link" id="page-next" :disabled="page >= pages.length" @click="page++">Siguiente</BLink>
           </div>
         </div>
       </BCol>
