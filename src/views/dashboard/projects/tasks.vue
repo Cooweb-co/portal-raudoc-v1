@@ -11,11 +11,11 @@ export default {
 <template>
   <BCard no-body class="card-height-100">
     <BCardHeader class="align-items-center d-flex py-0">
-      <BCardTitle class="mb-0 flex-grow-1 py-1">My Tasks</BCardTitle>
+      <BCardTitle class="mb-0 flex-grow-1 py-1">Mi Equipo</BCardTitle>
       <div class="flex-shrink-0">
         <BDropdown variant="link" class="card-header-dropdown" toggle-class="text-reset dropdown-btn arrow-none"
           menu-class="dropdown-menu-end" aria-haspopup="true" :offset="{ alignmentAxis: 2, crossAxis: 0, mainAxis: 0 }">
-          <template #button-content><span class="text-muted">All Tasks <i class="mdi mdi-chevron-down ms-1"></i></span>
+          <template #button-content><span class="text-muted">Todos <i class="mdi mdi-chevron-down ms-1"></i></span>
           </template>
           <BDropdownItem>All Tasks</BDropdownItem> 
           <BDropdownItem>Completed</BDropdownItem>
@@ -160,7 +160,7 @@ export default {
         </table>
       </div>
       <div class="mt-3 text-center">
-        <BLink href="javascript:void(0);" class="text-muted text-decoration-underline">Load More</BLink>
+        <BLink href="javascript:void(0);" class="text-muted text-decoration-underline">Ver Todos</BLink>
       </div>
     </BCardBody>
   </BCard>

@@ -52,7 +52,7 @@ export default {
 <template>
   <BCard no-body class="card-height-100">
     <BCardHeader class="align-items-center d-flex py-0">
-      <BCardTitle class="mb-0 flex-grow-1">My Tasks</BCardTitle>
+      <BCardTitle class="mb-0 flex-grow-1">Mi Equipo</BCardTitle>
       <div class="flex-shrink-0">
         <BDropdown variant="link" class="card-header-dropdown" toggle-class="text-reset dropdown-btn arrow-none"
           menu-class="dropdown-menu-end" aria-haspopup="true" :offset="{ alignmentAxis: 1, crossAxis: 0, mainAxis: 0 }">
