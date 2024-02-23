@@ -444,10 +444,10 @@ export default {
                       :options="[
                         { value: '', label: 'Status' },
                         { value: 'All', label: 'Todo' },
-                        { value: 'Open', label: 'Abierto' },
-                        { value: 'Inprogress', label: 'En progreso' },
-                        { value: 'Closed', label: 'Respondido' },
-                        { value: 'New', label: 'Nuevo' },
+                        { value: 'Abierto', label: 'Abierto' },
+                        { value: 'Pendiente', label: 'Pendiente' },
+                        { value: 'Respondido', label: 'Respondido' },
+                        { value: 'Nuevo', label: 'Nuevo' },
                       ]" />
                   </div>
                 </BCol>
@@ -503,17 +503,17 @@ export default {
                     <td class="due_date">{{ data.due }}</td>
                     <td class="status">
                       <span class="badge text-uppercase" :class="{
-                        'bg-warning-subtle text-warning': data.status == 'Inprogress',
-                        'bg-info-subtle text-info': data.status == 'New',
-                        'bg-success-subtle text-success': data.status == 'Open',
-                        'bg-danger-subtle text-danger': data.status == 'Closed',
+                        'bg-warning-subtle text-warning': data.status == 'Pendiente',
+                        'bg-info-subtle text-info': data.status == 'Nuevo',
+                        'bg-success-subtle text-success': data.status == 'Abierto',
+                        'bg-danger-subtle text-danger': data.status == 'Respondido',
                       }">{{ data.status }}</span>
                     </td>
                     <td class="priority">
                       <span class="badge text-uppercase" :class="{
-                        'bg-danger': data.priority == 'High',
-                        'bg-success': data.priority == 'Low',
-                        'bg-warning': data.priority == 'Medium',
+                        'bg-danger': data.priority == 'Alta',
+                        'bg-success': data.priority == 'Baja',
+                        'bg-warning': data.priority == 'Media',
                       }">{{ data.priority }}</span>
                     </td>
                     <td>
