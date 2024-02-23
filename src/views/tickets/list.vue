@@ -40,7 +40,41 @@ export default {
       page: 1,
       perPage: 8,
       pages: [],
-      ticketsList: [],
+      ticketsList: [
+        {
+          id: "#202410001021-1",
+          title: "Radicacion por tala de arboles",
+          client: "Hernando Andres Castro",
+          assigned: "Agusting Florez",
+          create: "23 Mar, 2021",
+          due: "24 Mar, 2021",
+          status: "ABIERTO",
+          priority: "ALTA",
+          action: "Action",
+        },
+        {
+          id: "#202410001028-1",
+          title: "Desembargo judicial",
+          client: "Carlos Gutierrez",
+          assigned: "Luis Charris",
+          create: "23 Mar, 2021",
+          due: "24 Mar, 2021",
+          status: "ABIERTO",
+          priority: "ALTA",
+          action: "Action",
+        },
+        {
+          id: "#202410001022-2",
+          title: "Respuesta al cliente",
+          client: "Hernando Andres Castro",
+          assigned: "Andres Guzman",
+          create: "23 Mar, 2021",
+          due: "24 Mar, 2021",
+          status: "RESUELTO",
+          priority: "ALTA",
+          action: "Action",
+        }
+      ],
       defaultOptions: {
         animationData: animationData
       },
@@ -415,7 +449,7 @@ export default {
                     <i class="ri-delete-bin-2-line"></i>
                   </BButton>
                   <BButton variant="primary" class="add-btn" @click="toggleModal">
-                    <i class="ri-add-line align-bottom me-1"></i> Crear Entradas
+                    <i class="ri-add-line align-bottom me-1"></i> Nuevo Radicado
                   </BButton>
                 </div>
               </div>
@@ -442,12 +476,12 @@ export default {
                   <div class="input-light">
                     <Multiselect v-model="filtervalue1" :close-on-select="true" :searchable="true" :create-option="true"
                       :options="[
-                        { value: '', label: 'Status' },
+                        { value: '', label: 'Estado' },
                         { value: 'All', label: 'Todo' },
-                        { value: 'Abierto', label: 'Abierto' },
-                        { value: 'Pendiente', label: 'Pendiente' },
-                        { value: 'Respondido', label: 'Respondido' },
-                        { value: 'Nuevo', label: 'Nuevo' },
+                        { value: 'ABIERTO', label: 'Abierto' },
+                        { value: 'PENDIENTE', label: 'Pendiente' },
+                        { value: 'RESPONDIDO', label: 'Respondido' },
+                        { value: 'NUEVO', label: 'Nuevo' },
                       ]" />
                   </div>
                 </BCol>
@@ -503,30 +537,36 @@ export default {
                     <td class="due_date">{{ data.due }}</td>
                     <td class="status">
                       <span class="badge text-uppercase" :class="{
-                        'bg-warning-subtle text-warning': data.status == 'Pendiente',
-                        'bg-info-subtle text-info': data.status == 'Nuevo',
-                        'bg-success-subtle text-success': data.status == 'Abierto',
-                        'bg-danger-subtle text-danger': data.status == 'Respondido',
+                        'bg-warning-subtle text-warning': data.status == 'PENDIENTE',
+                        'bg-info-subtle text-info': data.status == 'NUEVO',
+                        'bg-success-subtle text-success': data.status == 'ABIERTO',
+                        'bg-danger-subtle text-danger': data.status == 'RESPONDIDO',
                       }">{{ data.status }}</span>
                     </td>
                     <td class="priority">
                       <span class="badge text-uppercase" :class="{
-                        'bg-danger': data.priority == 'Alta',
-                        'bg-success': data.priority == 'Baja',
-                        'bg-warning': data.priority == 'Media',
+                        'bg-danger': data.priority == 'ALTA',
+                        'bg-success': data.priority == 'BAJA',
+                        'bg-warning': data.priority == 'MEDIA',
                       }">{{ data.priority }}</span>
                     </td>
                     <td>
-                      <BDropdown toggle-class="btn btn-soft-secondary btn-sm arrow-none" size="sm"
+
+                      <BButton variant="btn btn-soft-secondary" size="sm" class=""   to="/apps/tickets-details" >
+                        <i class="ri-eye-fill"></i>
+                      </BButton>
+
+
+                      <!-- <BDropdown toggle-class="btn btn-soft-secondary btn-sm arrow-none" size="sm"
                         no-caret>
                         <template #button-content> <i class="ri-more-fill align-middle"></i> </template>
                         <BDropdownItem to="/apps/tickets-details"><i
-                            class="ri-eye-fill align-bottom me-2 text-muted"></i>View</BDropdownItem>
+                            class="ri-eye-fill align-bottom me-2 text-muted"></i>Ver</BDropdownItem>
                         <BDropdownItem href="#" class="edit-item-btn" @click="editDetails(data)"><i
-                            class="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit</BDropdownItem>
+                            class="ri-pencil-fill align-bottom me-2 text-muted"></i> Editar</BDropdownItem>
                         <BDropdownItem href="javascript:void(0);" class="remove-item-btn" @click="deleteModalToggle(data)"><i
-                            class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Delete</BDropdownItem>
-                      </BDropdown>
+                            class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Borrar</BDropdownItem>
+                      </BDropdown> -->
                     </td>
                   </tr>
                 </tbody>
@@ -546,7 +586,7 @@ export default {
             <div class="d-flex justify-content-end mt-3" v-if="resultQuery.length >= 1">
               <div class="pagination-wrap hstack gap-2">
                 <BLink class="page-item pagination-prev" href="#" :disabled="page <= 1" @click="page--">
-                  Previous
+                  Anterior
                 </BLink>
                 <ul class="pagination listjs-pagination mb-0">
                   <li :class="{ active: pageNumber == page, disabled: pageNumber == '...', }"
@@ -555,7 +595,7 @@ export default {
                   </li>
                 </ul>
                 <BLink class="page-item pagination-next" href="#" :disabled="page >= pages.length" @click="page++">
-                  Next
+                  Siguiente
                 </BLink>
               </div>
             </div>
@@ -565,7 +605,7 @@ export default {
     </BRow>
 
     <!-- ticket list modal -->
-    <BModal v-model="modalShow" id="showModal" modal-class="zoomIn" :title="dataEdit ? 'Edit Ticket' : 'Add Ticket'"
+    <BModal v-model="modalShow" id="showModal" modal-class="zoomIn" :title="dataEdit ? 'Ver Radicado' : 'Nuevo Radicadoc'"
       title-class="exampleModalLabel" hide-footer header-class="p-3 bg-primary-subtle" class="v-modal-custom" size="lg"
       centered>
       <b-form id="addform" class="tablelist-form" autocomplete="off">
