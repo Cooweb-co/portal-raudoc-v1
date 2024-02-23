@@ -66,8 +66,32 @@ export default {
       },
       //
 
+      cardsData: [
+        {
+          title: 'Entradas Totales',
+          quantity: 547,
+          percent: '10.00%',
+        },
+        {
+          title: 'Salidas Totales',
+          quantity: 124,
+          percent: '10.00%',
+        },
+        {
+          title: 'Pendientes',
+          quantity: 107,
+          percent: '10.00%',
+        },
+        {
+          title: 'No requiere respuesta',
+          quantity: 15,
+          percent: '10.00%',
+        },
+      ]
+
     };
   },
+
   components: {
     Layout,
     PageHeader,
@@ -76,6 +100,7 @@ export default {
     Multiselect,
     flatPickr,
   },
+
   computed: {
     displayedPosts() {
       return this.paginate(this.ticketsList);
@@ -122,37 +147,43 @@ export default {
       }
     },
   },
+
   watch: {
     ticketsList() {
       this.setPages();
     },
   },
+
   created() {
     this.setPages();
   },
+
   filters: {
     trimWords(value) {
       return value.split(" ").splice(0, 20).join(" ") + "...";
     },
   },
-  beforeMount() {
-    axios.get('https://api-node.themesbrand.website/apps/ticket').then((data) => {
-      this.ticketsList = [];
-      data.data.data.forEach((row) => {
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
-          "Oct", "Nov", "Dec"
-        ];
-        var dd = new Date(row.create);
-        var due = new Date(row.due);
-        row.create = dd.getDate() + " " + monthNames[dd.getMonth()] + ", " + dd.getFullYear();
-        row.due = due.getDate() + " " + monthNames[due.getMonth()] + ", " + due.getFullYear();
-        this.ticketsList.push(row);
-      });
-    }).catch((er) => {
-      console.log(er);
-    });
-  },
+
+  // beforeMount() {
+  //   axios.get('https://api-node.themesbrand.website/apps/ticket').then((data) => {
+  //     this.ticketsList = [];
+  //     data.data.data.forEach((row) => {
+  //       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
+  //         "Oct", "Nov", "Dec"
+  //       ];
+  //       var dd = new Date(row.create);
+  //       var due = new Date(row.due);
+  //       row.create = dd.getDate() + " " + monthNames[dd.getMonth()] + ", " + dd.getFullYear();
+  //       row.due = due.getDate() + " " + monthNames[due.getMonth()] + ", " + due.getFullYear();
+  //       this.ticketsList.push(row);
+  //     });
+  //   }).catch((er) => {
+  //     console.log(er);
+  //   });
+  // },
+
   methods: {
+
     SearchData() {
       this.filterdate = this.filterdate1;
       this.filtervalue = this.filtervalue1;
@@ -240,7 +271,6 @@ export default {
       this.ticketsList = sortedArray;
     },
 
-
     deleteMultiple() {
       let ids_array = [];
       var items = document.getElementsByName("chk_child");
@@ -288,6 +318,7 @@ export default {
         this.pages.push(index);
       }
     },
+
     paginate(ticketsList) {
       let page = this.page;
       let perPage = this.perPage;
@@ -296,6 +327,7 @@ export default {
       return ticketsList.slice(from, to);
     },
   },
+
   mounted() {
     var checkAll = document.getElementById("checkAll");
     if (checkAll) {
@@ -339,19 +371,20 @@ export default {
 <template>
   <Layout>
     <PageHeader title="LISTA DE ENTRADAS" pageTitle="Tickets" />
+
     <BRow>
-      <BCol xxl="3" sm="6">
+      <BCol v-for="item in cardsData" :key="item" xxl="3" sm="6">
         <BCard no-body class="card-animate">
           <BCardBody>
             <div class="d-flex justify-content-between">
               <div>
-                <p class="fw-medium text-muted mb-0">Entradas Totales</p>
+                <p class="fw-medium text-muted mb-0">{{item.title}}</p>
                 <h2 class="mt-4 ff-secondary fw-semibold">
-                  <count-to :duration="1000" :startVal="0" :endVal="547"></count-to>k
+                  <count-to :duration="1000" :startVal="0" :endVal="item.quantity"></count-to>k
                 </h2>
                 <p class="mb-0 text-muted">
                   <BBadge class="bg-light text-success mb-0">
-                    <i class="ri-arrow-up-line align-middle"></i> 17.32 %
+                    <i class="ri-arrow-up-line align-middle"></i> {{ item.percent }}
                   </BBadge>
                   vs. mes anterior
                 </p>
@@ -367,92 +400,12 @@ export default {
           </BCardBody>
         </BCard>
       </BCol>
-      <BCol xxl="3" sm="6">
-        <BCard no-body class="card-animate">
-          <BCardBody>
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="fw-medium text-muted mb-0">Salidas Totales</p>
-                <h2 class="mt-4 ff-secondary fw-semibold">
-                  <count-to :duration="1000" :startVal="0" :endVal="124"></count-to>k
-                </h2>
-                <p class="mb-0 text-muted">
-                  <BBadge class="bg-light text-danger mb-0">
-                    <i class="ri-arrow-down-line align-middle"></i> 0.96 %
-                  </BBadge>
-                  vs. 
-                </p>
-              </div>
-              <div>
-                <div class="avatar-sm flex-shrink-0">
-                  <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-4">
-                    <i class="mdi mdi-timer-sand"></i>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </BCardBody>
-        </BCard>
-      </BCol>
-      <BCol xxl="3" sm="6">
-        <BCard no-body class="card-animate">
-          <BCardBody>
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="fw-medium text-muted mb-0">Pendientes</p>
-                <h2 class="mt-4 ff-secondary fw-semibold">
-                  <count-to :duration="1000" :startVal="0" :endVal="107"></count-to>K
-                </h2>
-                <p class="mb-0 text-muted">
-                  <BBadge class="bg-light text-danger mb-0">
-                    <i class="ri-arrow-down-line align-middle"></i> 3.87 %
-                  </BBadge>
-                  vs. mes anterior
-                </p>
-              </div>
-              <div>
-                <div class="avatar-sm flex-shrink-0">
-                  <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-4">
-                    <i class="ri-shopping-bag-line"></i>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </BCardBody>
-        </BCard>
-      </BCol>
-      <BCol xxl="3" sm="6">
-        <BCard no-body class="card-animate">
-          <BCardBody>
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="fw-medium text-muted mb-0">No requiere respuestas</p>
-                <h2 class="mt-4 ff-secondary fw-semibold">
-                  <count-to :duration="1000" :startVal="0" :endVal="15"></count-to>%
-                </h2>
-                <p class="mb-0 text-muted">
-                  <BBadge class="bg-light text-success mb-0">
-                    <i class="ri-arrow-up-line align-middle"></i> 1.09 %
-                  </BBadge>
-                  vs. mes anterior
-                </p>
-              </div>
-              <div>
-                <div class="avatar-sm flex-shrink-0">
-                  <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-4">
-                    <i class="ri-delete-bin-line"></i>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </BCardBody>
-        </BCard>
-      </BCol>
     </BRow>
 
     <BRow>
       <BCol lg="12">
         <BCard no-body id="ticketsList">
+
           <BCardHeader class="border-0">
             <div class="d-flex align-items-center">
               <h5 class="card-title mb-0 flex-grow-1">Entradas</h5>
@@ -468,6 +421,7 @@ export default {
               </div>
             </div>
           </BCardHeader>
+
           <BCardBody class="border border-dashed border-end-0 border-start-0">
             <form>
               <BRow class="g-3">
@@ -490,22 +444,25 @@ export default {
                       :options="[
                         { value: '', label: 'Status' },
                         { value: 'All', label: 'Todo' },
-                        { value: 'Open', label: 'Open' },
-                        { value: 'Inprogress', label: 'Inprogress' },
-                        { value: 'Closed', label: 'Closed' },
-                        { value: 'New', label: 'New' },
+                        { value: 'Open', label: 'Abierto' },
+                        { value: 'Inprogress', label: 'En progreso' },
+                        { value: 'Closed', label: 'Respondido' },
+                        { value: 'New', label: 'Nuevo' },
                       ]" />
                   </div>
                 </BCol>
+
                 <BCol xxl="1" sm="4">
                   <BButton type="button" variant="primary" class="w-100" @click="SearchData">
                     <i class="ri-equalizer-fill me-1 align-bottom"></i>
                     Filtros
                   </BButton>
                 </BCol>
+
               </BRow>
             </form>
           </BCardBody>
+
           <BCardBody>
             <div class="table-responsive table-card mb-4">
               <table class="table align-middle table-nowrap mb-0" id="ticketTable">
@@ -574,6 +531,7 @@ export default {
                   </tr>
                 </tbody>
               </table>
+
               <div class="noresult" v-if="resultQuery.length < 1">
                 <div class="text-center">
                   <lottie class="avatar-xl" colors="primary:#25a0e2,secondary:#00bd9d" :options="defaultOptions"
