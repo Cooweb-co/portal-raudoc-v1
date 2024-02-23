@@ -2,12 +2,16 @@ import firebase from 'firebase/compat/app';
 // Add the Firebase products that you want to use
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
+import { getStorage } from "firebase/storage";
 
 class FirebaseAuthBackend {
+    
     constructor(firebaseConfig) {
         if (firebaseConfig) {
             // Initialize Firebase
-            firebase.initializeApp(firebaseConfig);
+            
+            const app = firebase.initializeApp(firebaseConfig);
+            // firebase.initializeApp(firebaseConfig);
             firebase.auth().onAuthStateChanged((user) => {
                 console.log("user", user);
                 if (user) {
@@ -16,7 +20,13 @@ class FirebaseAuthBackend {
                     sessionStorage.removeItem('authUser');
                 }
             });
+
+            this.storage = getStorage(app);
         }
+    }
+
+    getStorage() {
+        return this.storage;
     }
 
     /**
