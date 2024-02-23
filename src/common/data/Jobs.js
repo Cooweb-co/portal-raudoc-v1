@@ -194,9 +194,9 @@ const jobgrid = [{
 // Jobs > Candidate Lists > List
 const candidatelist = [{
     id: 1,
-    img: require("@/assets/images/users/avatar-10.jpg"),
-    name: "Tonya Noble",
-    designation: "Web Designer",
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
+    name: "Carlos Rodríguez",
+    designation: ["SUPER ADMIN", "ADMINISTRADOR DE SISTEMA"],
     location: "Cullera, Spain",
     type: "Part Time",
     rating: "4.2",
@@ -204,9 +204,9 @@ const candidatelist = [{
     bookmark: "true"
 }, {
     id: 2,
-    img: require("@/assets/images/users/avatar-1.jpg"),
-    name: "Nicholas Ball",
-    designation: "Assistant / Store Keeper",
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
+    name: "María Fernández",
+    designation:[ "ADMIN EMPRESA"],
     location: "San Lorenzo",
     type: "Full Time",
     rating: "4.1",
@@ -214,9 +214,9 @@ const candidatelist = [{
     bookmark: "true"
 }, {
     id: 3,
-    img: require("@/assets/images/users/avatar-4.jpg"),
-    name: "Zynthia Marrow",
-    designation: "Assistant / Store Keeper",
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
+    name: "Juan Martínez",
+    designation: ["ADMIN EMPRESA","RADICADOR"],
     location: "Cullera, Spain",
     type: "Freelancer",
     rating: "4.0",
@@ -224,9 +224,9 @@ const candidatelist = [{
     bookmark: "false"
 }, {
     id: 4,
-    img: require("@/assets/images/users/avatar-2.jpg"),
-    name: "Philippa Santiago",
-    designation: "Project Manager ",
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
+    name: "Ana García",
+    designation: ["ADMINISTRADOR DE SISTEMA", "SUPERVISOR DE SISTEMA"],
     location: "Ugashik, US",
     type: "Part Time",
     rating: "4.3",
@@ -234,9 +234,9 @@ const candidatelist = [{
     bookmark: "true"
 }, {
     id: 5,
-    img: require("@/assets/images/users/avatar-4.jpg"),
-    name: "Elizabeth Allen",
-    designation: "Education Training ",
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
+    name: "Luis Pérez",
+    designation: ["ADMIN EMPRESA"],
     location: "Zuweihir, UAE",
     type: "Freelancer",
     rating: "3.5",
@@ -244,9 +244,9 @@ const candidatelist = [{
     bookmark: "false"
 }, {
     id: 6,
-    img: require("@/assets/images/users/avatar-5.jpg"),
-    name: "Cassian Jenning",
-    designation: "Graphic Designer ",
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
+    name: "Sofía González",
+    designation: ["ADMIN EMPRESA"],
     location: "Limestone, US",
     type: "Part Time",
     rating: "4.3",
@@ -254,9 +254,9 @@ const candidatelist = [{
     bookmark: "false"
 }, {
     id: 7,
-    img: require("@/assets/images/users/avatar-6.jpg"),
-    name: "Scott Holt",
-    designation: "UI/UX Designer ",
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
+    name: "Miguel López",
+    designation: ["RADICADOR"],
     location: "Germany",
     type: "Part Time",
     rating: "3.5",
@@ -264,180 +264,20 @@ const candidatelist = [{
     bookmark: "false"
 }, {
     id: 8,
-    img: require("@/assets/images/users/avatar-9.jpg"),
-    name: "Philbert Schwartz",
-    designation: "React Developer ",
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
+    name: "Isabella Torres",
+    designation:["ASESOR"],
     location: "Zuweihir, UAE",
     type: "Full Time",
     rating: "4.1",
     ratingCount: "1.74k",
     bookmark: "true"
-}, {
-    id: 9,
-    img: require("@/assets/images/users/avatar-2.jpg"),
-    name: "Larry Villa",
-    designation: "Assistant / Store Keeper",
-    location: "San Lorenzo",
-    type: "Full Time",
-    rating: "4.0",
-    ratingCount: "1.72k",
-    bookmark: "false"
-}, {
-    id: 10,
-    img: require("@/assets/images/users/avatar-10.jpg"),
-    name: "Harley Watkins",
-    designation: "Project Manager ",
-    location: "Texanna, US",
-    type: "Full Time",
-    rating: "4.2",
-    ratingCount: "3.21k",
-    bookmark: "false"
-}, {
-    id: 11,
-    img: require("@/assets/images/users/avatar-2.jpg"),
-    name: "Marie Stewart",
-    designation: "Web Designer",
-    location: "Cullera, Spain",
-    type: "Part Time",
-    rating: "4.2",
-    ratingCount: "2.2k",
-    bookmark: "true"
-}, {
-    id: 12,
-    img: require("@/assets/images/users/avatar-9.jpg"),
-    name: "Hadley Leonard",
-    designation: "Executive, HR Operations ",
-    location: "Zuweihir, UAE",
-    type: "Full Time",
-    rating: "4.0",
-    ratingCount: "3.2k",
-    bookmark: "false"
-}, {
-    id: 13,
-    img: require("@/assets/images/users/avatar-6.jpg"),
-    name: "Zoderick Rodriquez",
-    designation: "Full Stack Developer",
-    location: "Muhtarqah, UAE",
-    type: "Freelancer",
-    rating: "3.9",
-    ratingCount: "98.65k",
-    bookmark: "false"
-}, {
-    id: 14,
-    img: require("@/assets/images/users/avatar-7.jpg"),
-    name: "Nadia Harding",
-    designation: "Web Designer",
-    location: "Pahoa, US",
-    type: "Freelancer",
-    rating: "4.3",
-    ratingCount: "2.93k",
-    bookmark: "true"
-}, {
-    id: 15,
-    img: require("@/assets/images/users/avatar-1.jpg"),
-    name: "Addison Black",
-    designation: "UI/UX Designer",
-    location: "Phoenix, Arizona",
-    type: "Part Time",
-    rating: "3.8",
-    ratingCount: "10.32k",
-    bookmark: "false"
-}, {
-    id: 16,
-    img: require("@/assets/images/users/avatar-4.jpg"),
-    name: "Priscilla Wise",
-    designation: "Executive, HR Operations",
-    location: "Ghurayfah, UAE",
-    type: "Full Time",
-    rating: "4.0",
-    ratingCount: "7.36k",
-    bookmark: "false"
-}, {
-    id: 17,
-    img: require("@/assets/images/users/avatar-8.jpg"),
-    name: "Lizzie Chandler",
-    designation: "React Developer",
-    location: "Maidaq, UAE",
-    type: "Part Time",
-    rating: "3.9",
-    ratingCount: "1.35k",
-    bookmark: "false"
-}, {
-    id: 18,
-    img: require("@/assets/images/users/avatar-1.jpg"),
-    name: "Jenson Carlson",
-    designation: "Graphic Designer",
-    location: "Quesada, US",
-    type: "Freelancer",
-    rating: "4.2",
-    ratingCount: "3.16k",
-    bookmark: "false"
-}, {
-    id: 19,
-    img: require("@/assets/images/users/avatar-1.jpg"),
-    name: "Jaylee Ward",
-    designation: "Education Training",
-    location: "Cullera, Spain",
-    type: "Full Time",
-    rating: "4.0",
-    ratingCount: "3.21k",
-    bookmark: "true"
-}, {
-    id: 20,
-    img: require("@/assets/images/users/avatar-2.jpg"),
-    name: "Trista Guerrero",
-    designation: "Product Director",
-    location: "Jereirah, UAE",
-    type: "Full Time",
-    rating: "4.1",
-    ratingCount: "4.31k",
-    bookmark: "false"
-}, {
-    id: 21,
-    img: require("@/assets/images/users/avatar-1.jpg"),
-    name: "James Stone",
-    designation: "Graphic Designer",
-    location: "Quesada, US",
-    type: "Freelancer",
-    rating: "4.2",
-    ratingCount: "3.16k",
-    bookmark: "false"
-}, {
-    id: 22,
-    img: require("@/assets/images/users/avatar-4.jpg"),
-    name: "Mike Watson",
-    designation: "Product Director",
-    location: "Jereirah, UAE",
-    type: "Full Time",
-    rating: "4.1",
-    ratingCount: "4.13k",
-    bookmark: "false"
-}, {
-    id: 23,
-    img: require("@/assets/images/users/avatar-9.jpg"),
-    name: "Mary Sak",
-    designation: "Education Training",
-    location: "Cullera, Spain",
-    type: "Full Time",
-    rating: "4.0",
-    ratingCount: "3.21k",
-    bookmark: "true"
-}, {
-    id: 24,
-    img: require("@/assets/images/users/avatar-8.jpg"),
-    name: "Roderick Jones",
-    designation: "React Developer",
-    location: "Maidaq, UAE",
-    type: "Part Time",
-    rating: "3.9",
-    ratingCount: "1.35k",
-    bookmark: "false"
 }];
 
 // Jobs > Candidate Lists > Grid
 const candidategrid = [{
     id: 1,
-    img: require("@/assets/images/users/avatar-10.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Tonya Noble",
     designation: "Web Designer",
     location: "Cullera, Spain",
@@ -447,7 +287,7 @@ const candidategrid = [{
     bookmark: true
 }, {
     id: 2,
-    img: require("@/assets/images/users/avatar-1.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Nicholas Ball",
     designation: "Assistant / Store Keeper",
     location: "San Lorenzo",
@@ -457,7 +297,7 @@ const candidategrid = [{
     bookmark: true
 }, {
     id: 3,
-    img: require("@/assets/images/users/avatar-4.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Zynthia Marrow",
     designation: "Assistant / Store Keeper",
     location: "Cullera, Spain",
@@ -467,7 +307,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 4,
-    img: require("@/assets/images/users/avatar-2.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Philippa Santiago",
     designation: "Project Manager ",
     location: "Ugashik, US",
@@ -477,7 +317,7 @@ const candidategrid = [{
     bookmark: true
 }, {
     id: 5,
-    img: require("@/assets/images/users/avatar-4.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Elizabeth Allen",
     designation: "Education Training ",
     location: "Zuweihir, UAE",
@@ -487,7 +327,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 6,
-    img: require("@/assets/images/users/avatar-5.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Cassian Jenning",
     designation: "Graphic Designer ",
     location: "Limestone, US",
@@ -497,7 +337,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 7,
-    img: require("@/assets/images/users/avatar-6.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Scott Holt",
     designation: "UI/UX Designer ",
     location: "Germany",
@@ -507,7 +347,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 8,
-    img: require("@/assets/images/users/avatar-9.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Philbert Schwartz",
     designation: "React Developer ",
     location: "Zuweihir, UAE",
@@ -517,7 +357,7 @@ const candidategrid = [{
     bookmark: true
 }, {
     id: 9,
-    img: require("@/assets/images/users/avatar-2.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Larry Villa",
     designation: "Assistant / Store Keeper",
     location: "San Lorenzo",
@@ -527,7 +367,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 10,
-    img: require("@/assets/images/users/avatar-10.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Harley Watkins",
     designation: "Project Manager ",
     location: "Texanna, US",
@@ -537,7 +377,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 11,
-    img: require("@/assets/images/users/avatar-2.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Marie Stewart",
     designation: "Web Designer",
     location: "Cullera, Spain",
@@ -547,7 +387,7 @@ const candidategrid = [{
     bookmark: true
 }, {
     id: 12,
-    img: require("@/assets/images/users/avatar-9.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Hadley Leonard",
     designation: "Executive, HR Operations ",
     location: "Zuweihir, UAE",
@@ -557,7 +397,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 13,
-    img: require("@/assets/images/users/avatar-6.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Zoderick Rodriquez",
     designation: "Full Stack Developer",
     location: "Muhtarqah, UAE",
@@ -567,7 +407,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 14,
-    img: require("@/assets/images/users/avatar-7.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Nadia Harding",
     designation: "Web Designer",
     location: "Pahoa, US",
@@ -577,7 +417,7 @@ const candidategrid = [{
     bookmark: true
 }, {
     id: 15,
-    img: require("@/assets/images/users/avatar-9.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Addison Black",
     designation: "UI/UX Designer",
     location: "Phoenix, Arizona",
@@ -587,7 +427,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 16,
-    img: require("@/assets/images/users/avatar-4.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Priscilla Wise",
     designation: "Executive, HR Operations",
     location: "Ghurayfah, UAE",
@@ -597,7 +437,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 17,
-    img: require("@/assets/images/users/avatar-8.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Lizzie Chandler",
     designation: "React Developer",
     location: "Maidaq, UAE",
@@ -607,7 +447,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 18,
-    img: require("@/assets/images/users/avatar-1.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Jenson Carlson",
     designation: "Graphic Designer",
     location: "Quesada, US",
@@ -617,7 +457,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 19,
-    img: require("@/assets/images/users/avatar-6.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Jaylee Ward",
     designation: "Education Training",
     location: "Cullera, Spain",
@@ -627,7 +467,7 @@ const candidategrid = [{
     bookmark: true
 }, {
     id: 20,
-    img: require("@/assets/images/users/avatar-2.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Trista Guerrero",
     designation: "Product Director",
     location: "Jereirah, UAE",
@@ -637,7 +477,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 21,
-    img: require("@/assets/images/users/avatar-1.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "James Stone",
     designation: "Graphic Designer",
     location: "Quesada, US",
@@ -647,7 +487,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 22,
-    img: require("@/assets/images/users/avatar-4.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Mike Watson",
     designation: "Product Director",
     location: "Jereirah, UAE",
@@ -657,7 +497,7 @@ const candidategrid = [{
     bookmark: false
 }, {
     id: 23,
-    img: require("@/assets/images/users/avatar-5.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Mary Sak",
     designation: "Education Training",
     location: "Cullera, Spain",
@@ -667,7 +507,7 @@ const candidategrid = [{
     bookmark: true
 }, {
     id: 24,
-    img: require("@/assets/images/users/avatar-8.jpg"),
+    img: require("@/assets/images/users/user-dummy-img.jpg"),
     name: "Roderick Jones",
     designation: "React Developer",
     location: "Maidaq, UAE",
