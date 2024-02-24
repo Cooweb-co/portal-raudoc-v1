@@ -312,7 +312,7 @@ export default {
 
 
         <li class="nav-item">
-          <router-link class="nav-link menu-link" to="/apps/projects-create">
+          <router-link class="nav-link menu-link" to="/radicacion/radicar-documento">
             <FileTextIcon width="24" height="24" />
             <span data-key="t-dashboard">Radicar Documento</span>
           </router-link>

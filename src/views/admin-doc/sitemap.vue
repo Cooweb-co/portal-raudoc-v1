@@ -34,6 +34,14 @@ export default {
                                                     </li>
                                                 </ul>
                                                 <ul class="departments">
+                                                    
+                                                    <li>
+                                                        <BLink href="javascript:void(0);" class="fw-semibold"><span>Main
+                                                                Pages</span></BLink>
+                                                    </li>
+                                                    </ul>
+                                                <ul class="departments">
+                                                    
                                                     <li>
                                                         <BLink href="javascript:void(0);" class="fw-semibold"><span>Main
                                                                 Pages</span></BLink>
@@ -195,11 +203,23 @@ export default {
                     <BCardBody>
                         <div class="hori-sitemap">
                             <ul class="list-unstyled mb-0">
+                                
                                 <li class="p-0 parent-title">
                                     <BLink href="javascript: void(0);" class="fw-semibold fs-14">My
                                         Account</BLink>
                                 </li>
                                 <ul class="list-unstyled row g-0">
+                                    <li class="col-sm-3">
+                                        <BLink href="javascript: void(0);" class="fw-semibold sub-title">About Us</BLink>
+                                        <ul class="list-unstyled row g-0 second-list">
+                                            <li class="col-sm-6">
+                                                <BLink href="javascript: void(0);">Overview</BLink>
+                                            </li>
+                                            <li class="col-sm-6">
+                                                <BLink href="javascript: void(0);">History</BLink>
+                                            </li>
+                                        </ul>
+                                    </li>
                                     <li class="col-sm-3">
                                         <BLink href="javascript: void(0);" class="fw-semibold sub-title">About Us</BLink>
                                         <ul class="list-unstyled row g-0 second-list">
