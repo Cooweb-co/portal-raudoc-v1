@@ -75,6 +75,13 @@ export default [
     component: () => import("../views/admin-doc/sitemap"),
   },
 
+  {
+    path: "/gestion-documental/document-list",
+    name: "organigrama",
+    meta: { title: "Organigrama", authRequired: true },
+    component: () => import("../views/admin-doc/document-list"),
+  },
+
 
 
 

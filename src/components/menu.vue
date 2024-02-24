@@ -409,7 +409,7 @@ export default {
         
 
         <li class="nav-item">
-          <router-link class="nav-link menu-link" to="/jobs/candidate-lists">
+          <router-link class="nav-link menu-link" to="/gestion-documental/document-list">
             <SettingsIcon width="24" height="24" />
             <span data-key="t-dashboard">Tipos de Documentos</span>
           </router-link>
