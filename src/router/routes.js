@@ -85,7 +85,7 @@ export default [
   {
     path: "/radicacion/radicar-documento",
     name: "radicacion",
-    meta: { title: "Organigrama", authRequired: true },
+    meta: { title: "Radicación", authRequired: true },
     component: () => import("../views/admin-doc/create"),
   },
 

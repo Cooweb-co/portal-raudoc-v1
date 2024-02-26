@@ -50,13 +50,13 @@ export default {
                             <BRow class="mb-3">
                                 <BCol md>
                                     <BRow class="align-items-center g-3">
-                                        <BCol md="auto">
+                                        <!-- <BCol md="auto">
                                             <div class="avatar-md">
                                                 <div class="avatar-title bg-white rounded-circle">
                                                     <img src="@/assets/images/brands/slack.png" alt="" class="avatar-xs">
                                                 </div>
                                             </div>
-                                        </BCol>
+                                        </BCol> -->
                                         <BCol md>
                                             <div>
                                                 <h4 class="fw-bold">#TI-2881 - Denuncia por quema de arboles </h4>
@@ -170,8 +170,7 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
                                                                 <div class="flex-grow-1 overflow-hidden">
                                                                     <h5 class="fs-13 mb-1">
                                                                         <BLink href="#"
-                                                                            class="text-body text-truncate d-block">App
-                                                                            pages.zip</BLink>
+                                                                            class="text-body text-truncate d-block">Certificaciones.jpg</BLink>
                                                                     </h5>
                                                                     <div>2.2MB</div>
                                                                 </div>
@@ -215,8 +214,7 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
                                                                     <h5 class="fs-13 mb-1">
                                                                         <BLink href="#"
                                                                             class="text-body text-truncate d-block">
-                                                                            Velzon
-                                                                            admin.ppt</BLink>
+                                                                            Respuesta a derecho.pff</BLink>
                                                                     </h5>
                                                                     <div>2.4MB</div>
                                                                 </div>

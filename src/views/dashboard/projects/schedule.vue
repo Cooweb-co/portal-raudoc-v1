@@ -34,8 +34,8 @@ export default {
           </span>
         </div>
         <div class="flex-grow-1 ms-3">
-          <h6 class="mb-1">Development planning</h6>
-          <p class="text-muted mb-0">iTest Factory</p>
+          <h6 class="mb-1">Proceso en contra sel señor Juan</h6>
+          <p class="text-muted mb-0">Juridica</p>
         </div>
         <div class="flex-shrink-0">
           <p class="text-muted mb-0">
@@ -50,8 +50,8 @@ export default {
           </span>
         </div>
         <div class="flex-grow-1 ms-3">
-          <h6 class="mb-1">Design new UI and check sales</h6>
-          <p class="text-muted mb-0">Meta4Systems</p>
+          <h6 class="mb-1">Proceso de tutela en curso</h6>
+          <p class="text-muted mb-0">Juridica</p>
         </div>
         <div class="flex-shrink-0">
           <p class="text-muted mb-0">
@@ -66,8 +66,8 @@ export default {
           </span>
         </div>
         <div class="flex-grow-1 ms-3">
-          <h6 class="mb-1">Weekly catch-up</h6>
-          <p class="text-muted mb-0">Nesta Technologies</p>
+          <h6 class="mb-1">Emisión de de 20 cobro coactivo</h6>
+          <p class="text-muted mb-0">Financiera</p>
         </div>
         <div class="flex-shrink-0">
           <p class="text-muted mb-0">
@@ -75,7 +75,7 @@ export default {
           </p>
         </div>
       </div>
-      <div class="mini-stats-wid d-flex align-items-center mt-3">
+      <!-- <div class="mini-stats-wid d-flex align-items-center mt-3">
         <div class="flex-shrink-0 avatar-sm">
           <span class="mini-stat-icon avatar-title rounded-circle text-primary bg-primary-subtle fs-4">
             27
@@ -90,7 +90,7 @@ export default {
             03:45 <span class="text-uppercase">pm</span>
           </p>
         </div>
-      </div>
+      </div> -->
 
       <div class="mt-3 text-center">
         <BLink href="javascript:void(0);" class="text-muted text-decoration-underline">Ver todos los pendientes</BLink>

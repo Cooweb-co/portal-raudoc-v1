@@ -102,6 +102,7 @@ export default {
             <div class="mb-3">
               <label class="form-label" for="project-title-input">Asunto</label>
               <input type="text" class="form-control" id="project-title-input" placeholder="Ingrese asunto del radicado" />
+              <BButton>Resumen AI</BButton>
             </div>
 
             <BCard no-body>
