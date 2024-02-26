@@ -22,11 +22,16 @@ class FirebaseAuthBackend {
             });
 
             this.storage = getStorage(app);
+            this.firestore = firebase.firestore();
         }
     }
 
     getStorage() {
         return this.storage;
+    }
+
+    getCurrentUser() {
+        return firebase.auth().currentUser;
     }
 
     /**

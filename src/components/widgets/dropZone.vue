@@ -12,8 +12,8 @@
         <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
     </div>
 
-    <h5>Drop files here or click to upload.</h5>
-    <label for="dropzoneFile" class="stretched-link">Upload</label>
+    <h5>Cargar archivo para radicar PDF.</h5>
+    <label for="dropzoneFile" class="stretched-link">Cargar archivo</label>
    <input type="file" id="dropzoneFile" class="dropzoneFile btn btn-primary" />
   </div>
 </template>

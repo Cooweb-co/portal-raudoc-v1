@@ -1,5 +1,5 @@
 <script>
-import { ref, watch } from "vue";
+import {  ref, watch } from "vue";
 import Multiselect from "@vueform/multiselect";
 import "@vueform/multiselect/themes/default.css";
 
@@ -17,8 +17,14 @@ import { getFirebaseBackend } from '../../authUtils.js'
 
 import { uploadBytes, ref as storageRef } from "firebase/storage";
 
+import { useRouter } from 'vue-router';
+
+// import {createDocumentID} from '../../helpers/docservice/doc.service'
+
 export default {
   setup() {
+    const router = useRouter();
+
     let files = ref([]);
     let dropzoneFile = ref("");
     
@@ -29,8 +35,36 @@ export default {
 
     const storage = getFirebaseBackend().storage
 
-    console.log(storage);
 
+
+    // onMounted(async() => {
+    //   // const uniqueId = Date.now().toString();
+
+    //   try {
+
+    //     const user =this.$store.state.auth.currentUser
+    //     const userID = user.uid
+
+        
+    //     const id = await createDocumentID(userID)
+    //     console.log(id);
+      
+    //   // Reemplaza la URL sin navegar
+    //   router.replace({ path: `/radicacion/radicar-documento/${id}` });
+        
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+
+     
+    // });
+
+    // onBeforeMount(
+    //   async () =>   {
+    //     const id = await createDocumentID('asdasdasd')
+    //     console.log(id);
+    //   }
+    // )
 
     const selectedFile = async () => {
       dropzoneFile.value = document.querySelector(".dropzoneFile").files[0];
@@ -47,6 +81,12 @@ export default {
       try {
         await uploadBytes(fileRef, file);
         console.log("Archivo subido con éxito");
+
+        const uniqueId = Date.now().toString();
+
+
+        router.replace({ path: `/radicacion/radicar-documento/${uniqueId}` });
+
       } catch (error) {
         console.error("Error al subir el archivo:", error);
       }
@@ -70,9 +110,12 @@ export default {
       value5: ["Ellen Smith"],
       value1: ["Inprogress"],
       value2: ["High"],
+      country: ["Colombia"],
+      city: ["Barranquilla"],
+      value6: ["Low"],
+      value7: ["Low"],
       editor: ClassicEditor,
-      editorData:
-        "<p>It will be as simple as occidental in fact, it will be Occidental. To an English person, it will seem like simplified English, as a skeptical Cambridge friend of mine told me what Occidental is. The European languages are members of the same family. Their separate existence is a myth. For science, music, sport, etc, Europe uses the same vocabulary.</p><ul><li>Product Design, Figma (Software), Prototype</li><li>Four Dashboards : Ecommerce, Analytics, Project etc.</li><li>Create calendar, chat and email app pages.</li><li>Add authentication pages</li></ul>",
+      editorData:"", 
       content: "<h1>Some initial content</h1>",
     };
   },
@@ -97,12 +140,22 @@ export default {
     <PageHeader title="Radiación de documentos" subTitle="Crear"  pageTitle="proyectos" />
     <BRow>
       <BCol lg="8">
+
+        <div class="text-end mb-4">
+          <BButton type="button" variant="info" class="w-sm me-1 float-start">Aplicar IA
+            <i class="ri-magic-fill ms-1 align-bottom"></i>
+          </BButton>
+          <!-- <BButton type="submit" variant="primary" class="w-sm me-1"> Borrador </BButton> -->
+          <BButton type="submit" variant="success" class="w-sm">Guardar Rádicado</BButton>
+        </div>
+
+
         <BCard no-body>
           <BCardBody>
             <div class="mb-3">
               <label class="form-label" for="project-title-input">Asunto</label>
               <input type="text" class="form-control" id="project-title-input" placeholder="Ingrese asunto del radicado" />
-              <BButton>Resumen AI</BButton>
+            
             </div>
 
             <BCard no-body>
@@ -183,11 +236,7 @@ export default {
         </BCard>
 
       
-        <div class="text-end mb-4">
-          <BButton type="button" variant="soft-secondary" class="w-sm me-1">borrar</BButton>
-          <BButton type="submit" variant="primary" class="w-sm me-1"> borrador </BButton>
-          <BButton type="submit" variant="success" class="w-sm">Crear</BButton>
-        </div>
+       
       </BCol>
       <BCol lg="4">
         <BCard no-body>
@@ -241,7 +290,7 @@ export default {
             <div class="mb-3">
             
               <label for="choices-privacy-status-input" class="form-label">Pais de Recidencia</label>
-              <Multiselect v-model="value5" :close-on-select="true" :searchable="true" :create-option="true" :options="[
+              <Multiselect v-model="country" :close-on-select="true" :searchable="true" :create-option="true" :options="[
               
             {value: 'CO', label: 'Colombia'},
             {value: 'US', label: 'Estados Unidos'},
@@ -263,7 +312,7 @@ export default {
           <div >
 
               <label for="choices-privacy-status-input" class="form-label">Cuidad de Recidencia</label>
-              <Multiselect v-model="value6" :close-on-select="true" :searchable="true" :create-option="true" :options="[
+              <Multiselect v-model="city" :close-on-select="true" :searchable="true" :create-option="true" :options="[
               
           
             {value: 'smr', label: 'Santa Marta'},
