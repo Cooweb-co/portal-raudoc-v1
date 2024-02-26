@@ -76,16 +76,9 @@ export default [
   },
 
   {
-    path: "/gestion-documental/document-list",
-    name: "organigrama",
-    meta: { title: "Organigrama", authRequired: true },
-    component: () => import("../views/admin-doc/document-list"),
-  },
-  
-  {
-    path: "/radicacion/radicar-documento",
+    path: "/radicacion/radicar-documento/:id?",
     name: "radicacion",
-    meta: { title: "Organigrama", authRequired: true },
+    meta: { title: "Radicación", authRequired: true },
     component: () => import("../views/admin-doc/create"),
   },
 
