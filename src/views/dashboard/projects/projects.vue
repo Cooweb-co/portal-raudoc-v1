@@ -10,7 +10,7 @@ export default {
   setup() {
     return {
       series: [{
-        name: "Number of Projects",
+        name: "Number of Projects ",
         type: "bar",
         data: [34, 65, 46, 68, 49, 61, 42, 44, 78, 52, 63, 67],
       },
@@ -165,7 +165,7 @@ export default {
         <BCol cols="6" sm="3">
           <div class="p-3 border border-dashed border-start-0">
             <h5 class="mb-1">
-              <count-to :duration="1000" :startVal='0' :endVal="9851"></count-to>
+              <count-to :duration="1000" :startVal='0' :endVal="9851">PETICIONES</count-to>
             </h5>
             <p class="text-muted mb-0">Peticiones Recibidas</p>
           </div>
@@ -181,7 +181,7 @@ export default {
         <BCol cols="6" sm="3">
           <div class="p-3 border border-dashed border-start-0">
             <h5 class="mb-1">
-              $<count-to :duration="1000" :startVal='0' :endVal="228"></count-to>k
+              <count-to :duration="1000" :startVal='0' :endVal="228"></count-to>
             </h5>
             <p class="text-muted mb-0">Peticiones por Responder</p>
           </div>
@@ -189,7 +189,7 @@ export default {
         <BCol cols="6" sm="3">
           <div class="p-3 border border-dashed border-start-0 border-end-0">
             <h5 class="mb-1 text-success">
-              <count-to :duration="1000" :startVal='0' :endVal="10589"></count-to>h
+              <count-to :duration="1000" :startVal='0' :endVal="10589"></count-to>
             </h5>
             <p class="text-muted mb-0">Documentos Procesados</p>
           </div>

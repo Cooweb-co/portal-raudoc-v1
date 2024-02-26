@@ -509,7 +509,7 @@ export default {
                       <BCol lg="6">
                         <div class="form-check">
                           <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1" />
-                          <label class="form-check-label" for="inlineCheckbox1">New Leads</label>
+                          <label class="form-check-label" for="inlineCheckbox1">PETICIONES RESPONDIDAS</label>
                         </div>
                       </BCol>
                       <BCol lg="6">
