@@ -83,7 +83,7 @@ export default {
 <template>
   <BCard no-body>
     <BCardHeader class="d-flex align-items-center">
-      <BCardTitle class="flex-grow-1 mb-0">Pendeintes por Funcionarios/Peticiones Respondidas por Epleados</BCardTitle>
+      <BCardTitle class="flex-grow-1 mb-0">Pendientes por Funcionario / Peticiones Respondidas por Empleado</BCardTitle>
       <div class="flex-shrink-0">
         <BLink href="javascript:void(0);" class="btn btn-soft-secondary btn-sm">Export Report</BLink>
       </div>

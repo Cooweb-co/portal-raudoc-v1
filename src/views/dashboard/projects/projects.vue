@@ -151,7 +151,7 @@ export default {
 <template>
   <BCard no-body>
     <BCardHeader class="border-0 align-items-center d-flex">
-      <BCardTitle class="mb-0 flex-grow-1"></BCardTitle>
+      <BCardTitle class="mb-0 flex-grow-1">Peticiones</BCardTitle>
       <div class="hstack gap-1">
         <BButton type="button" variant="soft-secondary" size="sm">ALL</BButton>
         <BButton type="button" variant="soft-secondary" size="sm">1M</BButton>
@@ -167,7 +167,7 @@ export default {
             <h5 class="mb-1">
               <count-to :duration="1000" :startVal='0' :endVal="9851">PETICIONES</count-to>
             </h5>
-            <p class="text-muted mb-0">PETICIONES RECIBIDAS</p>
+            <p class="text-muted mb-0">Peticiones Recibidas</p>
           </div>
         </BCol>
         <BCol cols="6" sm="3">
@@ -175,7 +175,7 @@ export default {
             <h5 class="mb-1">
               <count-to :duration="1000" :startVal='0' :endVal="1026"></count-to>
             </h5>
-            <p class="text-muted mb-0">PETICIONES RESPONDIDAS</p>
+            <p class="text-muted mb-0">Peticiones Respondidas</p>
           </div>
         </BCol>
         <BCol cols="6" sm="3">
@@ -183,7 +183,7 @@ export default {
             <h5 class="mb-1">
               <count-to :duration="1000" :startVal='0' :endVal="228"></count-to>
             </h5>
-            <p class="text-muted mb-0">PETICIONES POR RESPONDER</p>
+            <p class="text-muted mb-0">Peticiones por Responder</p>
           </div>
         </BCol>
         <BCol cols="6" sm="3">
@@ -191,7 +191,7 @@ export default {
             <h5 class="mb-1 text-success">
               <count-to :duration="1000" :startVal='0' :endVal="10589"></count-to>
             </h5>
-            <p class="text-muted mb-0">DOCUMENTOS PROCESADOS</p>
+            <p class="text-muted mb-0">Documentos Procesados</p>
           </div>
         </BCol>
       </BRow>

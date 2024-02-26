@@ -6,9 +6,6 @@ import Widgets from "./widget.vue";
 import Schedules from "./schedule.vue";
 import Project from "./projects.vue";
 import Task from "./tasks.vue";
-import Member from "./members.vue";
-import Chat from "./chat.vue";
-import Status from "./status.vue";
 import ActiveProjects from "./active-projects.vue";
 
 export default {
@@ -19,17 +16,14 @@ export default {
     Schedules,
     Project,
     Task,
-    Member,
-    Chat,
     ActiveProjects,
-    Status
   },
 };
 </script>
 
 <template>
   <Layout>
-    <PageHeader title="Projects" pageTitle="Dashboards" />
+    <PageHeader title="FLUJO DE PETICIONES" pageTitle="Dashboards" />
 
     <BRow class="project-wrapper">
       <BCol xxl="8">
@@ -61,7 +55,7 @@ export default {
       </BCol>
     </BRow>
 
-    <BRow>
+    <!-- <BRow>
       <BCol xxl="4">
         <Member />
       </BCol>
@@ -71,7 +65,7 @@ export default {
       <BCol xxl="4" lg="6">
         <Status />
       </BCol>
-    </BRow>
+    </BRow> -->
 
   </Layout>
 </template>

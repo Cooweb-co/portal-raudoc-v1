@@ -15,7 +15,7 @@ export default {
           badgeClass: "danger",
           icon: "ri-arrow-down-s-line",
           percentage: "5.02 %",
-          caption: "acumulado",
+          caption: "Acumulado",
         },
         {
           id: 2,
@@ -28,7 +28,7 @@ export default {
           badgeClass: "success",
           icon: "ri-arrow-up-s-line",
           percentage: "3.58 %",
-          caption: "mes actual",
+          caption: "Mes Actual",
         },
         {
           id: 3,
@@ -40,7 +40,7 @@ export default {
           badgeClass: "danger",
           icon: "ri-arrow-down-s-line",
           percentage: "10.35 %",
-          caption: "04 ene - 04 feb",
+          caption: "04 Ene - 04 Feb",
         },
       ],
     };

@@ -40,7 +40,41 @@ export default {
       page: 1,
       perPage: 8,
       pages: [],
-      ticketsList: [],
+      ticketsList: [
+        {
+          id: "#202410001021-1",
+          title: "Radicacion por tala de arboles",
+          client: "Hernando Andres Castro",
+          assigned: "Agusting Florez",
+          create: "23 Mar, 2021",
+          due: "24 Mar, 2021",
+          status: "ABIERTO",
+          priority: "ALTA",
+          action: "Action",
+        },
+        {
+          id: "#202410001028-1",
+          title: "Desembargo judicial",
+          client: "Carlos Gutierrez",
+          assigned: "Luis Charris",
+          create: "23 Mar, 2021",
+          due: "24 Mar, 2021",
+          status: "ABIERTO",
+          priority: "ALTA",
+          action: "Action",
+        },
+        {
+          id: "#202410001022-2",
+          title: "Respuesta al cliente",
+          client: "Hernando Andres Castro",
+          assigned: "Andres Guzman",
+          create: "23 Mar, 2021",
+          due: "24 Mar, 2021",
+          status: "RESUELTO",
+          priority: "ALTA",
+          action: "Action",
+        }
+      ],
       defaultOptions: {
         animationData: animationData
       },
@@ -66,8 +100,32 @@ export default {
       },
       //
 
+      cardsData: [
+        {
+          title: 'Entradas Totales',
+          quantity: 547,
+          percent: '10.00%',
+        },
+        {
+          title: 'Salidas Totales',
+          quantity: 124,
+          percent: '10.00%',
+        },
+        {
+          title: 'Pendientes',
+          quantity: 107,
+          percent: '10.00%',
+        },
+        {
+          title: 'No requiere respuesta',
+          quantity: 15,
+          percent: '10.00%',
+        },
+      ]
+
     };
   },
+
   components: {
     Layout,
     PageHeader,
@@ -76,6 +134,7 @@ export default {
     Multiselect,
     flatPickr,
   },
+
   computed: {
     displayedPosts() {
       return this.paginate(this.ticketsList);
@@ -122,37 +181,43 @@ export default {
       }
     },
   },
+
   watch: {
     ticketsList() {
       this.setPages();
     },
   },
+
   created() {
     this.setPages();
   },
+
   filters: {
     trimWords(value) {
       return value.split(" ").splice(0, 20).join(" ") + "...";
     },
   },
-  beforeMount() {
-    axios.get('https://api-node.themesbrand.website/apps/ticket').then((data) => {
-      this.ticketsList = [];
-      data.data.data.forEach((row) => {
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
-          "Oct", "Nov", "Dec"
-        ];
-        var dd = new Date(row.create);
-        var due = new Date(row.due);
-        row.create = dd.getDate() + " " + monthNames[dd.getMonth()] + ", " + dd.getFullYear();
-        row.due = due.getDate() + " " + monthNames[due.getMonth()] + ", " + due.getFullYear();
-        this.ticketsList.push(row);
-      });
-    }).catch((er) => {
-      console.log(er);
-    });
-  },
+
+  // beforeMount() {
+  //   axios.get('https://api-node.themesbrand.website/apps/ticket').then((data) => {
+  //     this.ticketsList = [];
+  //     data.data.data.forEach((row) => {
+  //       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
+  //         "Oct", "Nov", "Dec"
+  //       ];
+  //       var dd = new Date(row.create);
+  //       var due = new Date(row.due);
+  //       row.create = dd.getDate() + " " + monthNames[dd.getMonth()] + ", " + dd.getFullYear();
+  //       row.due = due.getDate() + " " + monthNames[due.getMonth()] + ", " + due.getFullYear();
+  //       this.ticketsList.push(row);
+  //     });
+  //   }).catch((er) => {
+  //     console.log(er);
+  //   });
+  // },
+
   methods: {
+
     SearchData() {
       this.filterdate = this.filterdate1;
       this.filtervalue = this.filtervalue1;
@@ -240,7 +305,6 @@ export default {
       this.ticketsList = sortedArray;
     },
 
-
     deleteMultiple() {
       let ids_array = [];
       var items = document.getElementsByName("chk_child");
@@ -288,6 +352,7 @@ export default {
         this.pages.push(index);
       }
     },
+
     paginate(ticketsList) {
       let page = this.page;
       let perPage = this.perPage;
@@ -296,6 +361,7 @@ export default {
       return ticketsList.slice(from, to);
     },
   },
+
   mounted() {
     var checkAll = document.getElementById("checkAll");
     if (checkAll) {
@@ -338,22 +404,23 @@ export default {
 
 <template>
   <Layout>
-    <PageHeader title="Tickets List" pageTitle="Tickets" />
+    <PageHeader title="LISTA DE ENTRADAS" pageTitle="Tickets" />
+
     <BRow>
-      <BCol xxl="3" sm="6">
+      <BCol v-for="item in cardsData" :key="item" xxl="3" sm="6">
         <BCard no-body class="card-animate">
           <BCardBody>
             <div class="d-flex justify-content-between">
               <div>
-                <p class="fw-medium text-muted mb-0">Total Tickets</p>
+                <p class="fw-medium text-muted mb-0">{{item.title}}</p>
                 <h2 class="mt-4 ff-secondary fw-semibold">
-                  <count-to :duration="1000" :startVal="0" :endVal="547"></count-to>k
+                  <count-to :duration="1000" :startVal="0" :endVal="item.quantity"></count-to>k
                 </h2>
                 <p class="mb-0 text-muted">
                   <BBadge class="bg-light text-success mb-0">
-                    <i class="ri-arrow-up-line align-middle"></i> 17.32 %
+                    <i class="ri-arrow-up-line align-middle"></i> {{ item.percent }}
                   </BBadge>
-                  vs. previous month
+                  vs. mes anterior
                 </p>
               </div>
               <div>
@@ -367,145 +434,69 @@ export default {
           </BCardBody>
         </BCard>
       </BCol>
-      <BCol xxl="3" sm="6">
-        <BCard no-body class="card-animate">
-          <BCardBody>
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="fw-medium text-muted mb-0">Pending Tickets</p>
-                <h2 class="mt-4 ff-secondary fw-semibold">
-                  <count-to :duration="1000" :startVal="0" :endVal="124"></count-to>k
-                </h2>
-                <p class="mb-0 text-muted">
-                  <BBadge class="bg-light text-danger mb-0">
-                    <i class="ri-arrow-down-line align-middle"></i> 0.96 %
-                  </BBadge>
-                  vs. previous month
-                </p>
-              </div>
-              <div>
-                <div class="avatar-sm flex-shrink-0">
-                  <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-4">
-                    <i class="mdi mdi-timer-sand"></i>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </BCardBody>
-        </BCard>
-      </BCol>
-      <BCol xxl="3" sm="6">
-        <BCard no-body class="card-animate">
-          <BCardBody>
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="fw-medium text-muted mb-0">Closed Tickets</p>
-                <h2 class="mt-4 ff-secondary fw-semibold">
-                  <count-to :duration="1000" :startVal="0" :endVal="107"></count-to>K
-                </h2>
-                <p class="mb-0 text-muted">
-                  <BBadge class="bg-light text-danger mb-0">
-                    <i class="ri-arrow-down-line align-middle"></i> 3.87 %
-                  </BBadge>
-                  vs. previous month
-                </p>
-              </div>
-              <div>
-                <div class="avatar-sm flex-shrink-0">
-                  <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-4">
-                    <i class="ri-shopping-bag-line"></i>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </BCardBody>
-        </BCard>
-      </BCol>
-      <BCol xxl="3" sm="6">
-        <BCard no-body class="card-animate">
-          <BCardBody>
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="fw-medium text-muted mb-0">Deleted Tickets</p>
-                <h2 class="mt-4 ff-secondary fw-semibold">
-                  <count-to :duration="1000" :startVal="0" :endVal="15"></count-to>%
-                </h2>
-                <p class="mb-0 text-muted">
-                  <BBadge class="bg-light text-success mb-0">
-                    <i class="ri-arrow-up-line align-middle"></i> 1.09 %
-                  </BBadge>
-                  vs. previous month
-                </p>
-              </div>
-              <div>
-                <div class="avatar-sm flex-shrink-0">
-                  <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-4">
-                    <i class="ri-delete-bin-line"></i>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </BCardBody>
-        </BCard>
-      </BCol>
     </BRow>
 
     <BRow>
       <BCol lg="12">
         <BCard no-body id="ticketsList">
+
           <BCardHeader class="border-0">
             <div class="d-flex align-items-center">
-              <h5 class="card-title mb-0 flex-grow-1">Tickets</h5>
+              <h5 class="card-title mb-0 flex-grow-1">Entradas</h5>
               <div class="flex-shrink-0">
                 <div class="d-flex flex-wrap gap-2">
                   <BButton variant="soft-secondary" class="me-1" id="remove-actions" @click="deleteMultiple">
                     <i class="ri-delete-bin-2-line"></i>
                   </BButton>
                   <BButton variant="primary" class="add-btn" @click="toggleModal">
-                    <i class="ri-add-line align-bottom me-1"></i> Create Tickets
+                    <i class="ri-add-line align-bottom me-1"></i> Nuevo Radicado
                   </BButton>
                 </div>
               </div>
             </div>
           </BCardHeader>
+
           <BCardBody class="border border-dashed border-end-0 border-start-0">
             <form>
               <BRow class="g-3">
                 <BCol xxl="5" sm="12">
                   <div class="search-box">
                     <input type="text" class="form-control search bg-light border-light"
-                      placeholder="Search for ticket details or something..." v-model="searchQuery" />
+                      placeholder="Busque detalles del boleto o algo asi..." v-model="searchQuery" />
                     <i class="ri-search-line search-icon"></i>
                   </div>
                 </BCol>
 
                 <BCol xxl="3" sm="4">
                   <flat-pickr v-model="filterdate1" :config="rangeDateconfig" class="form-control bg-light border-light"
-                    placeholder="Select date"></flat-pickr>
+                    placeholder="Seleccione fecha"></flat-pickr>
                 </BCol>
 
                 <BCol xxl="3" sm="4">
                   <div class="input-light">
                     <Multiselect v-model="filtervalue1" :close-on-select="true" :searchable="true" :create-option="true"
                       :options="[
-                        { value: '', label: 'Status' },
-                        { value: 'All', label: 'All' },
-                        { value: 'Open', label: 'Open' },
-                        { value: 'Inprogress', label: 'Inprogress' },
-                        { value: 'Closed', label: 'Closed' },
-                        { value: 'New', label: 'New' },
+                        { value: '', label: 'Estado' },
+                        { value: 'All', label: 'Todo' },
+                        { value: 'ABIERTO', label: 'Abierto' },
+                        { value: 'PENDIENTE', label: 'Pendiente' },
+                        { value: 'RESPONDIDO', label: 'Respondido' },
+                        { value: 'NUEVO', label: 'Nuevo' },
                       ]" />
                   </div>
                 </BCol>
+
                 <BCol xxl="1" sm="4">
                   <BButton type="button" variant="primary" class="w-100" @click="SearchData">
                     <i class="ri-equalizer-fill me-1 align-bottom"></i>
-                    Filters
+                    Filtros
                   </BButton>
                 </BCol>
+
               </BRow>
             </form>
           </BCardBody>
+
           <BCardBody>
             <div class="table-responsive table-card mb-4">
               <table class="table align-middle table-nowrap mb-0" id="ticketTable">
@@ -516,15 +507,15 @@ export default {
                         <input class="form-check-input" type="checkbox" id="checkAll" value="option" />
                       </div>
                     </th>
-                    <th class="sort" data-sort="id" @click="onSort('id')">ID</th>
-                    <th class="sort" data-sort="tasks_name" @click="onSort('title')">Title</th>
-                    <th class="sort" data-sort="client_name" @click="onSort('client')">Client</th>
-                    <th class="sort" data-sort="assignedto" @click="onSort('assigned')">Assigned To</th>
-                    <th class="sort" data-sort="create_date" @click="onSort('create')">Create Date</th>
-                    <th class="sort" data-sort="due_date" @click="onSort('due')">Due Date</th>
-                    <th class="sort" data-sort="status" @click="onSort('status')">Status</th>
-                    <th class="sort" data-sort="priority" @click="onSort('priority')">Priority</th>
-                    <th class="sort" data-sort="action">Action</th>
+                    <th class="sort" data-sort="id" @click="onSort('id')">IDENTIFICACION</th>
+                    <th class="sort" data-sort="tasks_name" @click="onSort('title')">Titulo</th>
+                    <th class="sort" data-sort="client_name" @click="onSort('client')">Cliente</th>
+                    <th class="sort" data-sort="assignedto" @click="onSort('assigned')">Asignado A</th>
+                    <th class="sort" data-sort="create_date" @click="onSort('create')">Fecha de creacion</th>
+                    <th class="sort" data-sort="due_date" @click="onSort('due')">Fecha de vencimiento</th>
+                    <th class="sort" data-sort="status" @click="onSort('status')">Estado</th>
+                    <th class="sort" data-sort="priority" @click="onSort('priority')">Prioridad</th>
+                    <th class="sort" data-sort="action">Accion</th>
                   </tr>
                 </thead>
                 <tbody class="list form-check-all">
@@ -546,42 +537,48 @@ export default {
                     <td class="due_date">{{ data.due }}</td>
                     <td class="status">
                       <span class="badge text-uppercase" :class="{
-                        'bg-warning-subtle text-warning': data.status == 'Inprogress',
-                        'bg-info-subtle text-info': data.status == 'New',
-                        'bg-success-subtle text-success': data.status == 'Open',
-                        'bg-danger-subtle text-danger': data.status == 'Closed',
+                        'bg-warning-subtle text-warning': data.status == 'PENDIENTE',
+                        'bg-info-subtle text-info': data.status == 'NUEVO',
+                        'bg-success-subtle text-success': data.status == 'ABIERTO',
+                        'bg-danger-subtle text-danger': data.status == 'RESPONDIDO',
                       }">{{ data.status }}</span>
                     </td>
                     <td class="priority">
                       <span class="badge text-uppercase" :class="{
-                        'bg-danger': data.priority == 'High',
-                        'bg-success': data.priority == 'Low',
-                        'bg-warning': data.priority == 'Medium',
+                        'bg-danger': data.priority == 'ALTA',
+                        'bg-success': data.priority == 'BAJA',
+                        'bg-warning': data.priority == 'MEDIA',
                       }">{{ data.priority }}</span>
                     </td>
                     <td>
-                      <BDropdown toggle-class="btn btn-soft-secondary btn-sm arrow-none" size="sm"
+
+                      <BButton variant="btn btn-soft-secondary" size="sm" class=""   to="/apps/tickets-details" >
+                        <i class="ri-eye-fill"></i>
+                      </BButton>
+
+
+                      <!-- <BDropdown toggle-class="btn btn-soft-secondary btn-sm arrow-none" size="sm"
                         no-caret>
                         <template #button-content> <i class="ri-more-fill align-middle"></i> </template>
                         <BDropdownItem to="/apps/tickets-details"><i
-                            class="ri-eye-fill align-bottom me-2 text-muted"></i>View</BDropdownItem>
+                            class="ri-eye-fill align-bottom me-2 text-muted"></i>Ver</BDropdownItem>
                         <BDropdownItem href="#" class="edit-item-btn" @click="editDetails(data)"><i
-                            class="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit</BDropdownItem>
+                            class="ri-pencil-fill align-bottom me-2 text-muted"></i> Editar</BDropdownItem>
                         <BDropdownItem href="javascript:void(0);" class="remove-item-btn" @click="deleteModalToggle(data)"><i
-                            class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Delete</BDropdownItem>
-                      </BDropdown>
+                            class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Borrar</BDropdownItem>
+                      </BDropdown> -->
                     </td>
                   </tr>
                 </tbody>
               </table>
+
               <div class="noresult" v-if="resultQuery.length < 1">
                 <div class="text-center">
                   <lottie class="avatar-xl" colors="primary:#25a0e2,secondary:#00bd9d" :options="defaultOptions"
                     :height="90" :width="90" />
-                  <h5 class="mt-2">Sorry! No Result Found</h5>
+                  <h5 class="mt-2">¡Lo siento! No se han encontrado resultados</h5>
                   <p class="text-muted mb-0">
-                    We've searched more than 150+ Tickets We did not find any
-                    Tickets for you search.
+                    Hemos basado mas de 150 entradas. No encontramos ninguna entrada para su busqueda.
                   </p>
                 </div>
               </div>
@@ -589,7 +586,7 @@ export default {
             <div class="d-flex justify-content-end mt-3" v-if="resultQuery.length >= 1">
               <div class="pagination-wrap hstack gap-2">
                 <BLink class="page-item pagination-prev" href="#" :disabled="page <= 1" @click="page--">
-                  Previous
+                  Anterior
                 </BLink>
                 <ul class="pagination listjs-pagination mb-0">
                   <li :class="{ active: pageNumber == page, disabled: pageNumber == '...', }"
@@ -598,7 +595,7 @@ export default {
                   </li>
                 </ul>
                 <BLink class="page-item pagination-next" href="#" :disabled="page >= pages.length" @click="page++">
-                  Next
+                  Siguiente
                 </BLink>
               </div>
             </div>
@@ -608,7 +605,7 @@ export default {
     </BRow>
 
     <!-- ticket list modal -->
-    <BModal v-model="modalShow" id="showModal" modal-class="zoomIn" :title="dataEdit ? 'Edit Ticket' : 'Add Ticket'"
+    <BModal v-model="modalShow" id="showModal" modal-class="zoomIn" :title="dataEdit ? 'Ver Radicado' : 'Nuevo Radicadoc'"
       title-class="exampleModalLabel" hide-footer header-class="p-3 bg-primary-subtle" class="v-modal-custom" size="lg"
       centered>
       <b-form id="addform" class="tablelist-form" autocomplete="off">
