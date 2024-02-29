@@ -1,5 +1,5 @@
 <script>
-import simplebar from "simplebar-vue";
+// import simplebar from "simplebar-vue";
 import Multiselect from "@vueform/multiselect";
 import "@vueform/multiselect/themes/default.css";
 
@@ -9,7 +9,7 @@ export default {
     components: {
         Layout,
         Multiselect,
-        simplebar
+        // simplebar
     },
 };
 </script>
@@ -138,7 +138,7 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
 
                       
                     </BCardBody>
-                    <BCardBody class="p-4">
+                    <!-- <BCardBody class="p-4">
                         <h5 class="card-title mb-4">Comentarios</h5>
 
                         <simplebar data-simplebar style="height: 300px;" class="px-3 mx-n3">
@@ -237,7 +237,7 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
                                 </BCol>
                             </BRow>
                         </form>
-                    </BCardBody>
+                    </BCardBody> -->
                 </BCard>
             </BCol>
             <BCol xxl="3">

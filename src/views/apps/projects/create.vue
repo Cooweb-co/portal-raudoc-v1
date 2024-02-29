@@ -43,9 +43,9 @@ export default {
       value1: ["Inprogress"],
       value2: ["High"],
       editor: ClassicEditor,
-      editorData:
-        "<p>It will be as simple as occidental in fact, it will be Occidental. To an English person, it will seem like simplified English, as a skeptical Cambridge friend of mine told me what Occidental is. The European languages are members of the same family. Their separate existence is a myth. For science, music, sport, etc, Europe uses the same vocabulary.</p><ul><li>Product Design, Figma (Software), Prototype</li><li>Four Dashboards : Ecommerce, Analytics, Project etc.</li><li>Create calendar, chat and email app pages.</li><li>Add authentication pages</li></ul>",
+      editorData:"", 
       content: "<h1>Some initial content</h1>",
+      isActiveAI: false,
     };
   },
   methods: {
@@ -66,19 +66,19 @@ export default {
 
 <template>
   <Layout>
-    <PageHeader title="RADICACION DEL CIUDADANO" pageTitle="proyectos" />
+    <PageHeader title="RADICACION DEL CIUDADANO" pageTitle="Proyectos" />
     <BRow>
       <BCol lg="8">
         <BCard no-body>
           <BCardBody>
             <div class="mb-3">
-              <label class="form-label" for="project-title-input">titulo del proyecto</label>
+              <label class="form-label" for="project-title-input">Asunto de Radicación</label>
               <input type="text" class="form-control" id="project-title-input" placeholder="ingrese el titulo del proyecto" />
             </div>
 
             <BCard no-body>
           <BCardHeader>
-            <h5 class="card-title mb-0">Agrega archivo para eradicar</h5>
+            <h5 class="card-title mb-0">Agrega archivo para radicar</h5>
           </BCardHeader>
           <BCardBody>
             <div>
@@ -158,11 +158,11 @@ export default {
         </BCard>
 
       
-        <div class="text-end mb-4">
+        <!-- <div class="text-end mb-4">
           <BButton type="button" variant="soft-secondary" class="w-sm me-1">borrar</BButton>
           <BButton type="submit" variant="primary" class="w-sm me-1"> borrador </BButton>
           <BButton type="submit" variant="success" class="w-sm">Crear</BButton>
-        </div>
+        </div> -->
       </BCol>
       <BCol lg="4">
         <BCard no-body>

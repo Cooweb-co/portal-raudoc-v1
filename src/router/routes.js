@@ -82,7 +82,12 @@ export default [
     component: () => import("../views/admin-doc/create"),
   },
 
-
+  {
+    path: "/gestion-documental/document-list",
+    name: "document-list",
+    meta: { title: "Document - List", authRequired: true },
+    component: () => import("../views/admin-doc/document-list"),
+  },
 
 
 

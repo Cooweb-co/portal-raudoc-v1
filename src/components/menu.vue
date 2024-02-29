@@ -13,10 +13,10 @@ import {
   FileTextIcon,
   // DatabaseIcon,
   // PieChartIcon,
-  ArchiveIcon,
+  // ArchiveIcon,
   // MapPinIcon,
-  Share2Icon,
-  SearchIcon,
+  // Share2Icon,
+  // SearchIcon,
   SettingsIcon,
   ListIcon,
   // HelpCircleIcon,
@@ -36,10 +36,10 @@ export default {
     FileTextIcon,
     // DatabaseIcon,
     // PieChartIcon,
-    ArchiveIcon,
+    // ArchiveIcon,
     // MapPinIcon,
-    Share2Icon,
-    SearchIcon,
+    // Share2Icon,
+    // SearchIcon,
     SettingsIcon,
     ListIcon,
     // HelpCircleIcon,
@@ -334,7 +334,7 @@ export default {
 
       
 
-        <li class="menu-title">
+        <!-- <li class="menu-title">
           <i class="ri-more-fill"></i>
           <span data-key="t-pages">Gestión Documental</span>
         </li>
@@ -350,14 +350,14 @@ export default {
             <SearchIcon width="24" height="24" />
             <span data-key="t-dashboard">Buscador Documental</span>
           </router-link>
-        </li>
-
+        </li> -->
+<!-- 
         <li class="nav-item">
           <router-link class="nav-link menu-link" to="/gestion-documental/organigrama">
             <Share2Icon width="24" height="24" />
             <span data-key="t-dashboard">Organigrama</span>
           </router-link>
-        </li>
+        </li> -->
 
 
 

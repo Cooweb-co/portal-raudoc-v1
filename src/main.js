@@ -18,6 +18,10 @@ import '@/assets/scss/config/minimal/app.scss';
 import '@/assets/scss/mermaid.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle'
 
+// import { Button } from 'ant-design-vue';
+// import 'ant-design-vue/dist/reset.css';
+
+
 // FakeBackend authentication
 // import { configureFakeBackend } from './helpers/fake-backend';
 // configureFakeBackend();
@@ -44,8 +48,11 @@ AOS.init({
     duration: 1000
 });
 
-createApp(App)
-    .use(store)
+const app = createApp(App)
+
+// app.use(Button);
+
+    app.use(store)
     .use(router)
     .use(VueApexCharts)
     .use(BootstrapVueNext)

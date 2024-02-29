@@ -6,7 +6,12 @@ import simplebar from "simplebar-vue"
 import CKEditor from "@ckeditor/ckeditor5-vue";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
+import Multiselect from "@vueform/multiselect";
+import "@vueform/multiselect/themes/default.css";
+
 export default {
+
+
 
     setup() {
         const state = reactive({
@@ -23,13 +28,15 @@ export default {
     data(){
         return {
             editor: ClassicEditor,
+            value3: '',
         }
     },
 
     components: {
         Layout,
         simplebar,
-        ckeditor: CKEditor.component
+        ckeditor: CKEditor.component,
+        Multiselect
     },
 
     methods: {
@@ -37,6 +44,7 @@ export default {
             ele.target.closest('.favourite-btn').classList.toggle("active");
         }
     },
+
 };
 </script>
 
@@ -128,26 +136,26 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
 
                                                     <BCol lg="3" sm="6">
                                                         <div>
-                                                            <p class="mb-2 text-uppercase fw-medium">Create Date :</p>
+                                                            <p class="mb-2 text-uppercase fw-medium">Fecha de Creación:</p>
                                                             <h5 class="fs-15 mb-0">15 Sep, 2021</h5>
                                                         </div>
                                                     </BCol>
                                                     <BCol lg="3" sm="6">
                                                         <div>
-                                                            <p class="mb-2 text-uppercase fw-medium">Due Date :</p>
-                                                            <h5 class="fs-15 mb-0">29 Dec, 2021</h5>
+                                                            <p class="mb-2 text-uppercase fw-medium">Fecha limite:</p>
+                                                            <h5 class="fs-15 mb-0">29 Dic, 2021</h5>
                                                         </div>
                                                     </BCol>
                                                     <BCol lg="3" sm="6">
                                                         <div>
-                                                            <p class="mb-2 text-uppercase fw-medium">Priority :</p>
-                                                            <BBadge tag="div" class="bg-success fs-12">High</BBadge>
+                                                            <p class="mb-2 text-uppercase fw-medium">Prioridad :</p>
+                                                            <BBadge tag="div" class="bg-success fs-12">Alta</BBadge>
                                                         </div>
                                                     </BCol>
                                                     <BCol lg="3" sm="6">
                                                         <div>
-                                                            <p class="mb-2 text-uppercase fw-medium">Status :</p>
-                                                            <BBadge tag="div" class="bg-primary fs-12">Inprogress</BBadge>
+                                                            <p class="mb-2 text-uppercase fw-medium">Estatus :</p>
+                                                            <BBadge tag="div" class="bg-primary fs-12">Respuesta</BBadge>
                                                         </div>
                                                     </BCol>
                                                 </BRow>
@@ -249,7 +257,7 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
                                     </BCardBody>
                                 </BCard>
 
-                                <BCard no-body>
+                                <!-- <BCard no-body>
                                     <BCardHeader class="align-items-center d-flex py-0">
                                         <BCardTitle class="mb-0 flex-grow-1">Comentarios</BCardTitle>
                                         <div class="flex-shrink-0">
@@ -386,7 +394,7 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
                                             </BRow>
                                         </form>
                                     </BCardBody>
-                                </BCard>
+                                </BCard> -->
                             </BCol>
                             <BCol xl="3" lg="4">
                                 <BCard no-body>
@@ -721,18 +729,18 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex align-items-center mb-4">
-                                    <h5 class="card-title flex-grow-1">Docuemntos</h5>
+                                    <h5 class="card-title flex-grow-1">Documentos</h5>
                                 </div>
                                 <BRow>
                                     <div class="table-responsive table-card">
                                         <table class="table table-borderless align-middle mb-0">
                                             <thead class="table-light">
                                                 <tr>
-                                                    <th scope="col">File Name</th>
-                                                    <th scope="col">Type</th>
-                                                    <th scope="col">Size</th>
-                                                    <th scope="col">Upload Date</th>
-                                                    <th scope="col" style="width: 120px;">Action</th>
+                                                    <th scope="col">Nombre del Archivo</th>
+                                                    <th scope="col">Tipo</th>
+                                                    <th scope="col">Nombre del Cliente</th>
+                                                    <th scope="col">Fecha de Creación</th>
+                                                    <th scope="col" style="width: 120px;">Acción</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -748,15 +756,15 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
                                                             <div class="ms-3 flex-grow-1">
                                                                 <h5 class="fs-14 mb-0">
                                                                     <BLink href="javascript:void(0)" class="text-body">
-                                                                        Artboard-documents.zip
+                                                                        Cedula del ciudadano.pdf
                                                                     </BLink>
                                                                 </h5>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td>Zip File</td>
+                                                    <td>PDF</td>
                                                     <td>4.57 MB</td>
-                                                    <td>12 Dec 2021</td>
+                                                    <td>12 DIC 2021</td>
                                                     <td>
                                                         <BDropdown variant="link"
                                                             toggle-class="btn btn-soft-primary btn-sm btn-icon arrow-none"
@@ -789,13 +797,13 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
                                                             <div class="ms-3 flex-grow-1">
                                                                 <h5 class="fs-14 mb-0">
                                                                     <BLink href="javascript:void(0);" class="text-body">
-                                                                        Bank Management System
+                                                                        Reclamacion 2023001212-1.pdf
                                                                     </BLink>
                                                                 </h5>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td>PDF File</td>
+                                                    <td>PDF</td>
                                                     <td>8.89 MB</td>
                                                     <td>24 Nov 2021</td>
                                                     <td>
@@ -824,18 +832,18 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
                                                             <div class="avatar-sm">
                                                                 <div
                                                                     class="avatar-title bg-light text-primary rounded fs-24">
-                                                                    <i class="ri-video-line"></i>
+                                                                    <i class="ri-file-pdf-fill"></i>
                                                                 </div>
                                                             </div>
                                                             <div class="ms-3 flex-grow-1">
                                                                 <h5 class="fs-14 mb-0">
                                                                     <BLink href="javascript:void(0);" class="text-body">
-                                                                        Tour-video.mp4</BLink>
+                                                                        Resolución 12 de 2023.pdf</BLink>
                                                                 </h5>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td>MP4 File</td>
+                                                    <td>PDF</td>
                                                     <td>14.62 MB</td>
                                                     <td>19 Nov 2021</td>
                                                     <td>
@@ -858,128 +866,7 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
                                                         </BDropdown>
                                                     </td>
                                                 </tr>
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <div class="avatar-sm">
-                                                                <div
-                                                                    class="avatar-title bg-light text-primary rounded fs-24">
-                                                                    <i class="ri-file-excel-fill"></i>
-                                                                </div>
-                                                            </div>
-                                                            <div class="ms-3 flex-grow-1">
-                                                                <h5 class="fs-14 mb-0">
-                                                                    <BLink href="javascript:void(0);" class="text-body">
-                                                                        Account-statement.xsl
-                                                                    </BLink>
-                                                                </h5>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>XSL File</td>
-                                                    <td>2.38 KB</td>
-                                                    <td>14 Nov 2021</td>
-                                                    <td>
-                                                        <BDropdown variant="link"
-                                                            toggle-class="btn btn-soft-primary btn-sm btn-icon arrow-none"
-                                                            menu-class="dropdown-menu-end"
-                                                            :offset="{ alignmentAxis: -130, crossAxis: 0, mainAxis: 10 }">
-                                                            <template #button-content>
-                                                                <i class="ri-more-fill"></i>
-                                                            </template>
-                                                            <BDropdownItem><i
-                                                                    class="ri-eye-fill me-2 align-bottom text-muted"></i>
-                                                                View </BDropdownItem>
-                                                            <BDropdownItem><i
-                                                                    class="ri-download-2-fill me-2 align-bottom text-muted"></i>
-                                                                Download </BDropdownItem>
-                                                            <BDropdownItem><i
-                                                                    class="ri-delete-bin-5-fill me-2 align-bottom text-muted"></i>
-                                                                Delete </BDropdownItem>
-                                                        </BDropdown>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <div class="avatar-sm">
-                                                                <div
-                                                                    class="avatar-title bg-light text-primary rounded fs-24">
-                                                                    <i class="ri-folder-fill"></i>
-                                                                </div>
-                                                            </div>
-                                                            <div class="ms-3 flex-grow-1">
-                                                                <h5 class="fs-14 mb-0">
-                                                                    <BLink href="javascript:void(0);" class="text-body">
-                                                                        Project Screenshots
-                                                                        Collection</BLink>
-                                                                </h5>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>Folder File</td>
-                                                    <td>87.24 MB</td>
-                                                    <td>08 Nov 2021</td>
-                                                    <td>
-                                                        <BDropdown variant="link"
-                                                            toggle-class="btn btn-soft-primary btn-sm btn-icon arrow-none"
-                                                            menu-class="dropdown-menu-end"
-                                                            :offset="{ alignmentAxis: -130, crossAxis: 0, mainAxis: 10 }">
-                                                            <template #button-content>
-                                                                <i class="ri-more-fill"></i>
-                                                            </template>
-                                                            <BDropdownItem><i
-                                                                    class="ri-eye-fill me-2 align-bottom text-muted"></i>
-                                                                View </BDropdownItem>
-                                                            <BDropdownItem><i
-                                                                    class="ri-download-2-fill me-2 align-bottom text-muted"></i>
-                                                                Download </BDropdownItem>
-                                                            <BDropdownItem><i
-                                                                    class="ri-delete-bin-5-fill me-2 align-bottom text-muted"></i>
-                                                                Delete </BDropdownItem>
-                                                        </BDropdown>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <div class="avatar-sm">
-                                                                <div
-                                                                    class="avatar-title bg-light text-primary rounded fs-24">
-                                                                    <i class="ri-image-2-fill"></i>
-                                                                </div>
-                                                            </div>
-                                                            <div class="ms-3 flex-grow-1">
-                                                                <h5 class="fs-14 mb-0">
-                                                                    <BLink href="javascript:void(0);" class="text-body">
-                                                                        Velzon-logo.png</BLink>
-                                                                </h5>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>PNG File</td>
-                                                    <td>879 KB</td>
-                                                    <td>02 Nov 2021</td>
-                                                    <td>
-                                                        <BDropdown variant="link"
-                                                            toggle-class="btn btn-soft-primary btn-sm btn-icon arrow-none"
-                                                            menu-class="dropdown-menu-end"
-                                                            :offset="{ alignmentAxis: -130, crossAxis: 0, mainAxis: 10 }">
-                                                            <template #button-content>
-                                                                <i class="ri-more-fill"></i>
-                                                            </template>
-                                                            <BDropdownItem><i
-                                                                    class="ri-eye-fill me-2 align-bottom text-muted"></i>
-                                                                View </BDropdownItem>
-                                                            <BDropdownItem><i
-                                                                    class="ri-download-2-fill me-2 align-bottom text-muted"></i>
-                                                                Download </BDropdownItem>
-                                                            <BDropdownItem><i
-                                                                    class="ri-delete-bin-5-fill me-2 align-bottom text-muted"></i>
-                                                                Delete </BDropdownItem>
-                                                        </BDropdown>
-                                                    </td>
-                                                </tr>
+                                             
                                             </tbody>
                                         </table>
                                     </div>
@@ -1177,6 +1064,55 @@ El denunciante solicita a la autoridad ambiental que investigue el caso y sancio
 
 
                         <BCardBody>
+                            <!-- <div class="mb-3 mb-lg-0">
+                            <label for="choices-priority-input" class="form-label">Prioridad</label>
+
+                            <Multiselect v-model="value2" :close-on-select="true" :searchable="true" :create-option="true"
+                                :options="[
+                                { value: 'Alta', label: 'Alta' },
+                                { value: 'Media', label: 'Media' },
+                                { value: 'Baja', label: 'Baja' },
+                                ]" />
+                            </div> -->
+
+                            <div class="row">
+
+                           
+
+                            <div class="mb-3 col-4">
+                      
+                                    <label for="choices-privacy-status-input" class="form-label">Plantillas de Respuestas</label>
+                                    <Multiselect v-model="value3" :close-on-select="true" :searchable="true" :create-option="true" :options="[
+                                        { value: 'derecho-peticion', label: 'Respuesta de Derecho de Petición ' },
+                                        { value: 'certificaiones', label: 'Certificaciones' },
+                                        { value: 'cobro-coactivo', label: 'Cobro Coactivo' },
+                                    ]" />
+                                    
+                            
+                            </div>
+                            <div class="col-8">
+
+                            <div class="text-end mb-2 pt-4">
+
+                              
+                                <BButton type="button" :disabled="isDisabledAI" :loading="loadingBtnAI" variant="info" :loadingFill="false" loadingText="Aplicando IA " class="w-sm me-1">
+                                Previsualizar
+                                <i class="ri-eye-fill align-bottom ms-1 align-bottom"></i>
+                            </BButton>
+                             
+                            <BButton type="button" :disabled="isDisabledAI" :loading="loadingBtnAI" variant="danger" :loadingFill="false" loadingText="Aplicando IA " class="w-sm me-1 ">
+                                Enviar al peticionario
+                                <i class="ri-send-plane-fill align-bottom ms-1 align-bottom"></i>
+                            </BButton>
+                            <!-- <BButton type="submit" variant="primary" class="w-sm me-1"> Borrador </BButton> -->
+                            <BButton type="submit" variant="success" class="w-sm">Generar Radicado</BButton>
+                            </div>
+                        </div>
+
+                        </div>
+
+                            
+                            
                             
                             <div class="ckeditor-classic">
                                 <ckeditor v-model="editorData" :editor="editor"></ckeditor>

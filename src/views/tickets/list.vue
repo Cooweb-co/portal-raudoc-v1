@@ -414,7 +414,7 @@ export default {
               <div>
                 <p class="fw-medium text-muted mb-0">{{item.title}}</p>
                 <h2 class="mt-4 ff-secondary fw-semibold">
-                  <count-to :duration="1000" :startVal="0" :endVal="item.quantity"></count-to>k
+                  <count-to :duration="1000" :startVal="0" :endVal="item.quantity"></count-to>
                 </h2>
                 <p class="mb-0 text-muted">
                   <BBadge class="bg-light text-success mb-0">
@@ -448,9 +448,14 @@ export default {
                   <BButton variant="soft-secondary" class="me-1" id="remove-actions" @click="deleteMultiple">
                     <i class="ri-delete-bin-2-line"></i>
                   </BButton>
-                  <BButton variant="primary" class="add-btn" @click="toggleModal">
+                  <!-- <BButton variant="primary" class="add-btn" @click="toggleModal">
                     <i class="ri-add-line align-bottom me-1"></i> Nuevo Radicado
-                  </BButton>
+                  </BButton> -->
+                  <router-link class="nav-link menu-link" to="/radicacion/radicar-documento">
+                    <BButton variant="primary" class="add-btn">
+                      <i class="ri-add-line align-bottom me-1"></i> Radicar Documento
+                    </BButton>
+                  </router-link>
                 </div>
               </div>
             </div>

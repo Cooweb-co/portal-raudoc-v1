@@ -1,5 +1,5 @@
 <script>
-import {  ref, watch } from "vue";
+import {  ref, watch,getCurrentInstance } from "vue";
 import Multiselect from "@vueform/multiselect";
 import "@vueform/multiselect/themes/default.css";
 
@@ -17,16 +17,35 @@ import { getFirebaseBackend } from '../../authUtils.js'
 
 import { uploadBytes, ref as storageRef } from "firebase/storage";
 
-import { useRouter } from 'vue-router';
 
-// import {createDocumentID} from '../../helpers/docservice/doc.service'
+import {createClaimID} from '../../helpers/docservice/doc.service'
+
+// import VueRouter from 'vue-router'
+
+
+
+
+
+
 
 export default {
   setup() {
-    const router = useRouter();
+
+    // const router = VueRouter.useRoute()
+
+  
+
+    const instance = getCurrentInstance();
 
     let files = ref([]);
     let dropzoneFile = ref("");
+    let loadingBtnAI = ref(false)
+    let documentID = ref(null)
+    let companyID = ref('BAQVERDE')
+    let year = ref(new Date().getFullYear())
+
+
+
     
     const drop = (e) => {
       dropzoneFile.value = e.dataTransfer.files[0];
@@ -35,38 +54,9 @@ export default {
 
     const storage = getFirebaseBackend().storage
 
-
-
-    // onMounted(async() => {
-    //   // const uniqueId = Date.now().toString();
-
-    //   try {
-
-    //     const user =this.$store.state.auth.currentUser
-    //     const userID = user.uid
-
-        
-    //     const id = await createDocumentID(userID)
-    //     console.log(id);
-      
-    //   // Reemplaza la URL sin navegar
-    //   router.replace({ path: `/radicacion/radicar-documento/${id}` });
-        
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-
-     
-    // });
-
-    // onBeforeMount(
-    //   async () =>   {
-    //     const id = await createDocumentID('asdasdasd')
-    //     console.log(id);
-    //   }
-    // )
-
     const selectedFile = async () => {
+
+      // loadingBtnAI.value = true
       dropzoneFile.value = document.querySelector(".dropzoneFile").files[0];
 
 
@@ -74,18 +64,35 @@ export default {
 
       const file = dropzoneFile.value
 
+      console.log('file::::',file);
 
-      const storagePath = `uploads/${file.name}`;
-      const fileRef = storageRef(storage, storagePath);
 
+     
       try {
-        await uploadBytes(fileRef, file);
-        console.log("Archivo subido con éxito");
 
-        const uniqueId = Date.now().toString();
+        if(!documentID.value){
+          await instance.proxy.handleCreateClaimID()
+        }
 
 
-        router.replace({ path: `/radicacion/radicar-documento/${uniqueId}` });
+        const user = instance.proxy.user
+        console.log('Setup:',user);
+
+
+        const uniqueFileName = Date.now() + ".pdf";
+
+
+
+        const folder = `Companies/${companyID.value}/${year.value}/Claims/${documentID.value}`
+
+        const storagePath =  `${folder}/${uniqueFileName}`;
+        const fileRef = storageRef(storage, storagePath);
+
+
+        // const fileName = file.name
+        const uploadResult =  await uploadBytes(fileRef, file);
+        console.log("Archivo subido con éxito:", uploadResult.metadata.fullPath);
+
 
       } catch (error) {
         console.error("Error al subir el archivo:", error);
@@ -100,7 +107,7 @@ export default {
         return currentValue;
       }
     );
-    return { dropzoneFile, files, drop, selectedFile, v$: useVuelidate() };
+    return { dropzoneFile, files, drop, selectedFile, v$: useVuelidate(), loadingBtnAI, documentID };
   },
   data() {
     return {
@@ -117,13 +124,52 @@ export default {
       editor: ClassicEditor,
       editorData:"", 
       content: "<h1>Some initial content</h1>",
+      isDisabledAI:false,
+      // loadingBtnAI: false,
+      isDisabledCreate: false,
+      loadingBtnCreate: false,
     };
   },
   methods: {
+    async handleCreateClaimID(){
+      
+      try {
+
+        const user = this.$store.state.auth.currentUser
+        const userID = user.uid
+
+        
+        const id = await createClaimID(userID)
+        this.documentID = id
+
+        
+
+
+   
+          
+        } catch (error) {
+          console.log(error);
+        }
+    },
     deleteRecord(ele) {
       ele.target.parentElement.parentElement.parentElement.remove();
     },
   },
+  mounted() {
+    setTimeout(() => {
+      this.isDisabledAI = false;
+      //this.createIdRadicate()
+      // this.isDisabledCreate = false;
+      // this.loadingBtnCreate = false;
+    }, 1000);
+  },
+  computed: {
+    user() {
+      return this.$store.state.auth.currentUser
+    },
+  },
+ 
+ 
   components: {
     DropZone,
     Layout,
@@ -137,28 +183,25 @@ export default {
 
 <template>
   <Layout>
-    <PageHeader title="Radiación de documentos" subTitle="Crear"  pageTitle="proyectos" />
+    <PageHeader :title="`Radiación: #${documentID ? documentID : 'Nueva'}`" subTitle="Crear"  pageTitle="Proyectos" />
     <BRow>
       <BCol lg="8">
 
+        <BRow v-if="documentID">
+
         <div class="text-end mb-4">
-          <BButton type="button" variant="info" class="w-sm me-1 float-start">Aplicar IA
+          <BButton type="button" :disabled="isDisabledAI" v-if="documentID" :loading="loadingBtnAI" variant="info" :loadingFill="false" loadingText="Aplicando IA " class="w-sm me-1 float-start">Aplicar IA
             <i class="ri-magic-fill ms-1 align-bottom"></i>
           </BButton>
           <!-- <BButton type="submit" variant="primary" class="w-sm me-1"> Borrador </BButton> -->
-          <BButton type="submit" variant="success" class="w-sm">Guardar Rádicado</BButton>
+          <BButton type="submit" v-if="documentID" variant="success" class="w-sm">Guardar Cambios</BButton>
         </div>
+
+        </BRow>
 
 
         <BCard no-body>
-          <BCardBody>
-            <div class="mb-3">
-              <label class="form-label" for="project-title-input">Asunto</label>
-              <input type="text" class="form-control" id="project-title-input" placeholder="Ingrese asunto del radicado" />
-            
-            </div>
-
-            <BCard no-body>
+          
           <BCardHeader>
             <h5 class="card-title mb-0">Agrega archivo para radicar</h5>
           </BCardHeader>
@@ -191,6 +234,14 @@ export default {
               </div>
             </div>
           </BCardBody>
+          <BCardBody>
+            <div class="mb-3">
+              <label class="form-label" for="project-title-input">Asunto</label>
+              <input type="text" class="form-control" id="project-title-input" placeholder="Ingrese asunto del radicado" />
+            
+            </div>
+
+            <BCard no-body>
         </BCard>
 
 

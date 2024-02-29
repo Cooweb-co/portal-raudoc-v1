@@ -159,7 +159,7 @@ export default {
                         <BCol cols="6" sm="3">
                             <div class="p-3 border border-dashed border-start-0 border-end-0">
                                 <h5 class="mb-1 text-success">
-                                    <count-to :startVal="0" :endVal="8" :duration="5000"></count-to>k
+                                    <count-to :startVal="0" :endVal="8" :duration="5000"></count-to>
                                 </h5>
                                 <p class="text-muted mb-0">Total Applications</p>
                             </div>
