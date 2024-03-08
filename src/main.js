@@ -5,7 +5,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import i18n from './i18n';
 import store from "./state/store";
-
+import Antd from 'ant-design-vue';
 
 import BootstrapVueNext from 'bootstrap-vue-next';
 import vClickOutside from "click-outside-vue3";
@@ -13,9 +13,14 @@ import VueApexCharts from "vue3-apexcharts";
 import { vMaska } from "maska"
 
 import VueFeather from 'vue-feather';
+import VCalendar from 'v-calendar';
 
+// Use plugin with optional defaults
+
+import 'v-calendar/style.css';
 import '@/assets/scss/config/minimal/app.scss';
 import '@/assets/scss/mermaid.min.css';
+import 'ant-design-vue/dist/reset.css';
 import 'bootstrap/dist/js/bootstrap.bundle'
 
 import Vue3Toasity from 'vue3-toastify';
@@ -66,4 +71,6 @@ app.use(  Vue3Toasity,
     .component(VueFeather.type, VueFeather)
     .directive("maska", vMaska)
     .use(i18n)
+    .use(Antd)
+    .use(VCalendar, {})
     .use(vClickOutside).mount('#app');
