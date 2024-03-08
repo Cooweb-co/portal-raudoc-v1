@@ -150,20 +150,12 @@
                     {{
                         text == "-"
                             ? text
-                            : text.split("T")[0] +
-                              " " +
-                              text.split("T")[1].split(".")[0]
+                            : this.convertToUTC5(text)
                     }}
                 </template>
                 <template v-if="column.dataIndex === 'deadline'">
                     <!-- 2024-03-04T01:59:45.891Z -->
-                    {{
-                        text == "-"
-                            ? text
-                            : text.split("T")[0] +
-                              " " +
-                              text.split("T")[1].split(".")[0]
-                    }}
+                    {{ text }}
                 </template>
                 <template v-if="column.dataIndex === 'state'">
                     <div class="centerContentTableRadicates">
@@ -365,8 +357,12 @@ export default {
                     dataIndex: "deadline",
                     key: "deadline",
                     className: "text-center",
-                    sorter: (a, b) =>
-                        new Date(a.deadline) - new Date(b.deadline),
+                    sorter: (a, b) => {
+                        const firstDate = moment(a.deadline, "DD MMM, YYYY").startOf('day').toISOString();
+                        const secondDate = moment(b.deadline, "DD MMM, YYYY").startOf('day').toISOString();
+                        return new Date(firstDate) - new Date(secondDate);
+                    },
+
                     sortOrder: sorted.columnKey === "deadline" && sorted.order,
                     ellipsis: true,
                 },
@@ -505,10 +501,18 @@ export default {
             }
         },
         clearFilterDate() {
-            if(this.originDataSource.length <= 0) return ""
+            if (this.originDataSource.length <= 0) return "";
             this.dataSource = [...this.originDataSource];
             this.originDataSource = [];
         },
+
+        //Convertir fecha de created a UTC-5
+        convertToUTC5(date){
+            // const dateMoment = moment(date);
+            // const dateUTC5 = dateMoment.subtract(5, 'hours').toISOString();
+            const transformedDate = moment(date).utcOffset(-5).format("D MMM, YYYY HH:mm:ss");
+            return transformedDate;
+        }
     },
     components: {
         SearchOutlined,
