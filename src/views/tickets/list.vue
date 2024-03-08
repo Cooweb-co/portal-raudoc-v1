@@ -12,6 +12,7 @@ import axios from 'axios';
 import Lottie from "@/components/widgets/lottie.vue";
 import animationData from "@/components/widgets/msoeawqm.json";
 import animationData1 from "@/components/widgets/gsqxdxog.json";
+import tableTickets from "./components/tableTickets.vue";
 
 export default {
   data() {
@@ -133,6 +134,7 @@ export default {
     lottie: Lottie,
     Multiselect,
     flatPickr,
+    tableTickets
   },
 
   computed: {
@@ -142,7 +144,7 @@ export default {
     resultQuery() {
       if (this.searchQuery) {
         const search = this.searchQuery.toLowerCase();
-        return this.displayedPosts.filter((data) => {
+        return this.ticketsList.filter((data) => {
           return (
             data.title.toLowerCase().includes(search) ||
             data.client.toLowerCase().includes(search) ||
@@ -223,7 +225,7 @@ export default {
       this.filtervalue = this.filtervalue1;
     },
 
-    // 
+    //
     handleSubmit() {
       if (this.dataEdit) {
         this.submitted = true;
@@ -532,7 +534,7 @@ export default {
                       {{ data.title }}
                     </td>
                     <td class="client_name">{{ data.client }}</td>
-                    <td class="assignedto">{{ data.assigned }}</td>
+                    <td class="assignedto">{{ data.assignedto }}</td>
                     <td class="create_date">{{ data.create }}</td>
                     <td class="due_date">{{ data.due }}</td>
                     <td class="status">
@@ -704,5 +706,6 @@ export default {
         <button type="button" class="btn w-sm btn-primary" id="delete-record" @click="deleteData">Yes, Delete It!</button>
       </div>
     </BModal>
+    <tableTickets />
   </Layout>
 </template>
