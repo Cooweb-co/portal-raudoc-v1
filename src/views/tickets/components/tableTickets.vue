@@ -161,12 +161,12 @@
                     <div class="centerContentTableRadicates">
                         <span
                             :class="
-                                text == 'ABIERTO'
+                                text.toLowerCase() == 'completed'
                                     ? 'badge text-uppercase bg-success-subtle text-success'
-                                    : 'badge text-uppercase bg-danger-subtle text-danger'
+                                    : 'badge text-uppercase bg-danger-subtle text-warning'
                             "
                         >
-                            {{ text }}
+                            {{ text.toUpperCase() == "COMPLETED"? "COMPLETADO": text.toUpperCase() == "INPROGRESS" ? "EN PROGRESO": text.toUpperCase() }}
                         </span>
                     </div>
                 </template>
@@ -174,15 +174,15 @@
                     <div class="centerContentTableRadicates">
                         <span
                             :class="
-                                text == 'ALTA'
+                                text.toLowerCase() == 'alta'
                                     ? 'badge text-uppercase bg-danger'
-                                    : text == 'MEDIA'
+                                    : text == 'media'
                                     ? 'badge text-uppercase bg-warning'
                                     : 'badge text-uppercase bg-info'
                             "
                             class="span-table"
                         >
-                            {{ text }}
+                            {{ text.toUpperCase() }}
                         </span>
                     </div>
                 </template>
@@ -373,12 +373,12 @@ export default {
                     width: "6%",
                     filters: [
                         {
-                            text: "Abierto",
-                            value: "ABIERTO",
+                            text: "Completado",
+                            value: "Completed",
                         },
                         {
-                            text: "Cerrado",
-                            value: "CERRADO",
+                            text: "En proceso",
+                            value: "Inprogress",
                         },
                     ],
                     onFilter: (value, record) =>

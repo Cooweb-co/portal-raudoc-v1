@@ -454,9 +454,9 @@ export default {
                                         :searchable="true"
                                         :create-option="true"
                                         :options="[
-                                            { value: 'Alta', label: 'Alta' },
-                                            { value: 'Media', label: 'Media' },
-                                            { value: 'Baja', label: 'Baja' },
+                                            { value: 'ALTA', label: 'Alta' },
+                                            { value: 'MEDIA', label: 'Media' },
+                                            { value: 'BAJA', label: 'Baja' },
                                         ]"
                                     />
                                 </div>
