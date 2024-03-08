@@ -22,7 +22,7 @@ class FirebaseAuthBackend {
             });
 
             this.storage = getStorage(app);
-            this.firestore = firebase.firestore();
+            this.firestore= firebase.firestore()
         }
     }
 

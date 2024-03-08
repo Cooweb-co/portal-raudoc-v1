@@ -459,7 +459,6 @@ export default {
           </router-link>
         </li>  -->
 
-<!-- 
         <li class="nav-item">
           <a class="nav-link menu-link" href="#sidebarApps" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarApps">
             <GridIcon width="24" height="24" />
@@ -1438,7 +1437,7 @@ export default {
               </li>
             </ul>
           </div>
-        </li> -->
+        </li> 
       </ul>
     </template>
   </BContainer>

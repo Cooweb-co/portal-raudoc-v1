@@ -18,6 +18,9 @@ import '@/assets/scss/config/minimal/app.scss';
 import '@/assets/scss/mermaid.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle'
 
+import Vue3Toasity from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+
 // import { Button } from 'ant-design-vue';
 // import 'ant-design-vue/dist/reset.css';
 
@@ -50,7 +53,11 @@ AOS.init({
 
 const app = createApp(App)
 
-// app.use(Button);
+app.use(  Vue3Toasity,
+    {
+      autoClose: 3000,
+      // ...
+    } )
 
     app.use(store)
     .use(router)

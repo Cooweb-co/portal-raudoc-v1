@@ -5,6 +5,12 @@ import { getFirebaseBackend } from '../../authUtils.js'
 
 const firestore = getFirebaseBackend().firestore
 
+import { doc, onSnapshot } from 'firebase/firestore';
+// import { getStorage } from 'firebase/storage';
+
+// const app = getFirebaseBackend().app
+// const firestore = getFirestore(app)
+
 
 
 export const createClaimID = async (uid) => {
@@ -23,6 +29,20 @@ export const createClaimID = async (uid) => {
     } catch (error) {
         throw error
     }
+
+
+}
+
+export const onListenClaimData = async (claimId, companyId, callback) => {
+
+    
+
+    // eslint-disable-next-line no-useless-catch
+    return onSnapshot(doc(firestore, "Companies", companyId, "Claims", claimId), (doc) => {
+
+        console.log('onListenClaimData::::OnSnapshot',doc.data());
+        callback(doc.data())
+    })
 
 
 }

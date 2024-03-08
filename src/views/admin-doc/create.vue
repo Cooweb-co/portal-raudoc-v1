@@ -1,155 +1,189 @@
 <script>
-import {  ref, watch,getCurrentInstance } from "vue";
+import { ref, watch, getCurrentInstance, onUnmounted } from "vue";
 import Multiselect from "@vueform/multiselect";
 import "@vueform/multiselect/themes/default.css";
-
 import CKEditor from "@ckeditor/ckeditor5-vue";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import DropZone from "@/components/widgets/dropZone";
 import useVuelidate from "@vuelidate/core";
-
 import Layout from "@/layouts/main.vue";
 import PageHeader from "@/components/page-header";
-
+import { toast } from 'vue3-toastify';
 import flatPickr from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
 import { getFirebaseBackend } from '../../authUtils.js'
-
 import { uploadBytes, ref as storageRef } from "firebase/storage";
-
-
-import {createClaimID} from '../../helpers/docservice/doc.service'
-
-// import VueRouter from 'vue-router'
-
-
-
-
-
-
+import { createClaimID, onListenClaimData } from '../../helpers/docservice/doc.service';
 
 export default {
   setup() {
-
-    // const router = VueRouter.useRoute()
-
-  
-
     const instance = getCurrentInstance();
+    const files = ref([]);
+    const dropzoneFile = ref("");
+    const loadingBtnAI = ref(false);
+    const documentID = ref(null);
+    const companyID = ref('BAQVERDE');
+    const year = ref(new Date().getFullYear());
+    const claimData = ref(null);
+    let unsubscribe;
+    let idProccessAI;
 
-    let files = ref([]);
-    let dropzoneFile = ref("");
-    let loadingBtnAI = ref(false)
-    let documentID = ref(null)
-    let companyID = ref('BAQVERDE')
-    let year = ref(new Date().getFullYear())
+    const startListening = () => {
+
+      
+      idProccessAI = toast("Analizando documento con IA...", {
+          isLoading: true,
+          hideProgressBar: true,
+          closeButton: false,
+          closeOnClick: false,
+        }); 
 
 
+        
+      console.log('startListening');
+      
 
-    
+      unsubscribe = onListenClaimData(documentID.value, companyID.value, (data) => {
+        console.log("onListenClaimData >>", data);
+        claimData.value = data;
+        if (data.status == 'DRAFT' && data.summary == null ) {
+
+          setTimeout(() => {
+
+            toast.update(idProccessAI, {
+              render: "Extrayendo información relevante...",
+              type:  toast.TYPE.INFO,
+              // delay: 3000,
+              // isLoading: true,
+            });
+          } , 3000);
+        
+         
+        }
+        if (data.summary) {
+          toast.update(idProccessAI, {
+            render: "Resumen realizado con exito!",
+            type: toast.TYPE.SUCCESS,
+            isLoading: false,
+            autoClose: 3000,
+          });
+        }
+        
+        instance.proxy.subject = data.subject ? data.subject : '';
+        instance.proxy.editorData = data.summary ? data.summary : '';
+      });
+      console.log('unsubscribe::', unsubscribe);
+      return unsubscribe;
+    };
+
+    onUnmounted(() => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    });
+
     const drop = (e) => {
       dropzoneFile.value = e.dataTransfer.files[0];
       files.value.push(dropzoneFile.value);
     };
 
-    const storage = getFirebaseBackend().storage
+    const storage = getFirebaseBackend().storage;
+
+   
+
 
     const selectedFile = async () => {
 
-      // loadingBtnAI.value = true
-      dropzoneFile.value = document.querySelector(".dropzoneFile").files[0];
-
-
-      files.value.push(dropzoneFile.value);
-
-      const file = dropzoneFile.value
-
-      console.log('file::::',file);
-
-
      
+        
+      dropzoneFile.value = document.querySelector(".dropzoneFile").files[0];
+      files.value.push(dropzoneFile.value);
+      const file = dropzoneFile.value;
+      console.log('file::::', file);
       try {
+        if (!documentID.value) {
+          await instance.proxy.handleCreateClaimID();
 
-        if(!documentID.value){
-          await instance.proxy.handleCreateClaimID()
+          toast.success("Radicado en borrador creado!", {
+            position: toast.POSITION.TOP_RIGHT,
+            autoClose: 3000,
+          });
+          
         }
-
-
-        const user = instance.proxy.user
-        console.log('Setup:',user);
-
-
         const uniqueFileName = Date.now() + ".pdf";
-
-
-
-        const folder = `Companies/${companyID.value}/${year.value}/Claims/${documentID.value}`
-
-        const storagePath =  `${folder}/${uniqueFileName}`;
+        const folder = `Companies/${companyID.value}/${year.value}/Claims/${documentID.value}`;
+        const storagePath = `${folder}/${uniqueFileName}`;
         const fileRef = storageRef(storage, storagePath);
-
-
-        // const fileName = file.name
-        const uploadResult =  await uploadBytes(fileRef, file);
+        const idLoadFile = toast("Cargando archivo..", {
+          isLoading: true,
+          hideProgressBar: true,
+          closeButton: false,
+          closeOnClick: false,
+        }); 
+        const uploadResult = await uploadBytes(fileRef, file);
         console.log("Archivo subido con éxito:", uploadResult.metadata.fullPath);
+        toast.update(idLoadFile, {
+          render: "Archivo cargado con éxito",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+        });
 
 
+        
+
+        // idProccessAI = toast("Analizando documento con AI...", {
+        //   type: "info",
+        //   isLoading: true,
+        //   hideProgressBar: true,
+        // }); 
+        
+        startListening();
       } catch (error) {
         console.error("Error al subir el archivo:", error);
       }
-
-
-
     };
+
     watch(
       () => [...files.value],
       (currentValue) => {
         return currentValue;
       }
     );
-    return { dropzoneFile, files, drop, selectedFile, v$: useVuelidate(), loadingBtnAI, documentID };
+
+    return {
+      dropzoneFile,
+      files,
+      drop,
+      selectedFile,
+      v$: useVuelidate(),
+      loadingBtnAI,
+      documentID,
+      claimData
+    };
   },
   data() {
     return {
       value: ["C#", "HTML", "CSS"],
-      value3: ["Private"],
-      value4: ["Designing"],
-      value5: ["Ellen Smith"],
-      value1: ["Inprogress"],
-      value2: ["High"],
-      country: ["Colombia"],
-      city: ["Barranquilla"],
-      value6: ["Low"],
-      value7: ["Low"],
       editor: ClassicEditor,
-      editorData:"", 
+      editorData: "",
       content: "<h1>Some initial content</h1>",
-      isDisabledAI:false,
-      // loadingBtnAI: false,
+      isDisabledAI: false,
       isDisabledCreate: false,
       loadingBtnCreate: false,
+      subject: "",
     };
   },
   methods: {
-    async handleCreateClaimID(){
-      
+    async handleCreateClaimID() {
       try {
-
-        const user = this.$store.state.auth.currentUser
-        const userID = user.uid
-
-        
-        const id = await createClaimID(userID)
-        this.documentID = id
-
-        
-
-
-   
-          
-        } catch (error) {
-          console.log(error);
-        }
+        const user = this.$store.state.auth.currentUser;
+        const userID = user.uid;
+        const id = await createClaimID(userID);
+        this.documentID = id;
+      } catch (error) {
+        console.log(error);
+      }
     },
     deleteRecord(ele) {
       ele.target.parentElement.parentElement.parentElement.remove();
@@ -158,18 +192,13 @@ export default {
   mounted() {
     setTimeout(() => {
       this.isDisabledAI = false;
-      //this.createIdRadicate()
-      // this.isDisabledCreate = false;
-      // this.loadingBtnCreate = false;
     }, 1000);
   },
   computed: {
     user() {
-      return this.$store.state.auth.currentUser
+      return this.$store.state.auth.currentUser;
     },
   },
- 
- 
   components: {
     DropZone,
     Layout,
@@ -181,11 +210,15 @@ export default {
 };
 </script>
 
+
+
 <template>
   <Layout>
     <PageHeader :title="`Radiación: #${documentID ? documentID : 'Nueva'}`" subTitle="Crear"  pageTitle="Proyectos" />
     <BRow>
       <BCol lg="8">
+
+        <!-- {{ claimData }} -->
 
         <BRow v-if="documentID">
 
@@ -237,7 +270,7 @@ export default {
           <BCardBody>
             <div class="mb-3">
               <label class="form-label" for="project-title-input">Asunto</label>
-              <input type="text" class="form-control" id="project-title-input" placeholder="Ingrese asunto del radicado" />
+              <input type="text" v-model="subject" class="form-control" id="project-title-input" placeholder="Ingrese asunto del radicado" />
             
             </div>
 
