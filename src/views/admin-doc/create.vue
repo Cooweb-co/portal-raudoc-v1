@@ -16,7 +16,7 @@ import { uploadBytes, ref as storageRef } from "firebase/storage";
 import {
     createClaimID,
     onListenClaimData,
-} from "../../helpers/docservice/doc.service";
+} from "../../services/docservice/doc.service";
 import axios from "axios";
 
 export default {
@@ -815,7 +815,5 @@ export default {
     </Layout>
 </template>
 <style>
-.footer {
-    display: none !important;
-}
+
 </style>

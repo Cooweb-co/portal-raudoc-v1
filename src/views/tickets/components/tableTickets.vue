@@ -176,7 +176,7 @@
                             :class="
                                 text.toLowerCase() == 'alta'
                                     ? 'badge text-uppercase bg-danger'
-                                    : text == 'media'
+                                    : text.toLowerCase() == 'media'
                                     ? 'badge text-uppercase bg-warning'
                                     : 'badge text-uppercase bg-info'
                             "
@@ -188,7 +188,7 @@
                 </template>
                 <template v-if="column.dataIndex === 'action'">
                     <a
-                        class="fw-medium link-primary text-center actionButtonTableRadicates"
+                        class="fw-medium link-primary text-center actionButtonTableRadicates" :href="`/apps/projects-overview?id=${text}`"
                     >
                         <EyeOutlined />
                     </a>
@@ -251,6 +251,7 @@ export default {
                         assignedTo: data.dataSummary.destinationEntity || "-",
                         state: data.dataSummary.state || "-",
                         priority: data.dataSummary.priority || "-",
+                        action: data.id
                     });
                 });
             })

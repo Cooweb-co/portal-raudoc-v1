@@ -31,7 +31,7 @@ import 'vue3-toastify/dist/index.css';
 
 
 // FakeBackend authentication
-// import { configureFakeBackend } from './helpers/fake-backend';
+// import { configureFakeBackend } from './services/fake-backend';
 // configureFakeBackend();
 
 

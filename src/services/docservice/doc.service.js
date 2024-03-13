@@ -5,7 +5,7 @@ import { getFirebaseBackend } from '../../authUtils.js'
 
 const firestore = getFirebaseBackend().firestore
 
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc, getDocs, collection } from 'firebase/firestore';
 // import { getStorage } from 'firebase/storage';
 
 // const app = getFirebaseBackend().app
@@ -68,3 +68,40 @@ export const saveFile = async (pathDocument,urlPDF, fileName) => {
     }
 
 }
+
+export const getDocument = async (companyId, claimId) => {
+    try {
+        const docRef = doc(firestore, "Companies", companyId, "Claims", claimId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            return docSnap.data();
+        } else {
+            console.log("No existe el document!");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error al obtener el documento:", error);
+    }
+}
+
+export const getDocumentFilesUploads = async (companyId, claimId) => {
+    try {
+        const collectionRef = collection(firestore, "Companies", companyId, "Claims", claimId, "Files");
+        const docsSnap = await getDocs(collectionRef);
+
+        if (!docsSnap.empty) {
+            let documents = [];
+            docsSnap.forEach(doc => {
+                documents.push(doc.data());
+            });
+            return documents;
+        } else {
+            console.log("No existen documentos en la colección!");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error al obtener los documentos:", error);
+    }
+}
+
