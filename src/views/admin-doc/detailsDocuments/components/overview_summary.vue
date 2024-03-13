@@ -79,16 +79,16 @@ export default {
                                             </p>
                                             <BBadge
                                                 tag="div"
-                                                :class="
+                                                :variant="
                                                     data?.priority?.toLowerCase() ==
                                                     'alta'
-                                                        ? 'badge text-uppercase bg-danger'
+                                                        ? 'danger'
                                                         : data?.priority?.toLowerCase() ==
                                                             'media' ||
-                                                        data?.priority?.toLowerCase() ==
+                                                          data?.priority?.toLowerCase() ==
                                                             'no definido'
-                                                        ? 'badge text-uppercase bg-warning'
-                                                        : 'badge text-uppercase bg-info'
+                                                        ? 'warning'
+                                                        : 'info'
                                                 "
                                                 >{{ data.priority }}</BBadge
                                             >
@@ -103,11 +103,14 @@ export default {
                                             </p>
                                             <BBadge
                                                 tag="div"
-                                                :class="
+                                                :variant="
                                                     data?.status?.toLowerCase() ==
                                                     'completado'
-                                                        ? 'badge text-uppercase bg-success-subtle text-success'
-                                                        : 'badge text-uppercase bg-danger-subtle text-warning'
+                                                        ? 'success'
+                                                        : data?.status?.toLowerCase() ==
+                                                          'en progreso'
+                                                        ? 'info'
+                                                        : 'warning'
                                                 "
                                                 >{{ data.status }}</BBadge
                                             >
@@ -124,6 +127,7 @@ export default {
                                     <overview_summary_element
                                         v-for="file in files"
                                         :key="file.name"
+                                        :id="data.id"
                                         :file="file"
                                     />
                                 </BRow>
@@ -356,18 +360,20 @@ export default {
                                     <tr>
                                         <td class="fw-medium">Prioridad</td>
                                         <td>
-                                            <BBadge :variant="
-                                                            data?.priority?.toLowerCase() ==
-                                                            'alta'
-                                                                ? 'danger'
-                                                                : data?.priority?.toLowerCase() ==
-                                                                'media' || data?.priority?.toLowerCase() ==
-                                                                'no definido'
-                                                                ? 'warning'
-                                                                : 'info'
-                                                        ">{{
-                                                data.priority
-                                            }}</BBadge>
+                                            <BBadge
+                                                :variant="
+                                                    data?.priority?.toLowerCase() ==
+                                                    'alta'
+                                                        ? 'danger'
+                                                        : data?.priority?.toLowerCase() ==
+                                                              'media' ||
+                                                          data?.priority?.toLowerCase() ==
+                                                              'no definido'
+                                                        ? 'warning'
+                                                        : 'info'
+                                                "
+                                                >{{ data.priority }}</BBadge
+                                            >
                                         </td>
                                     </tr>
                                     <tr>

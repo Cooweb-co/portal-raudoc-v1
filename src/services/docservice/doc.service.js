@@ -6,6 +6,7 @@ import { getFirebaseBackend } from '../../authUtils.js'
 const firestore = getFirebaseBackend().firestore
 
 import { doc, onSnapshot, getDoc, getDocs, collection } from 'firebase/firestore';
+import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 // import { getStorage } from 'firebase/storage';
 
 // const app = getFirebaseBackend().app
@@ -105,3 +106,14 @@ export const getDocumentFilesUploads = async (companyId, claimId) => {
     }
 }
 
+export async function openDocument(fileName, filePath) {
+    const storage = getStorage();
+    const storageRef = ref(storage, `${filePath}/${fileName}`);
+
+    try {
+        const url = await getDownloadURL(storageRef);
+        window.open(url, '_blank');
+    } catch (error) {
+        console.error("Error al obtener URL del archivo:", error);
+    }
+}

@@ -135,28 +135,31 @@ export default {
                                                     <div class="vr"></div>
                                                     <BBadge
                                                         pill
-                                                        :class="
+                                                        :variant="
                                                             data?.status?.toLowerCase() ==
                                                             'completado'
-                                                                ? 'badge text-uppercase bg-success-subtle text-success'
-                                                                : 'badge text-uppercase bg-danger-subtle text-warning'
+                                                                ? 'success'
+                                                                : data?.status?.toLowerCase() ==
+                                                                  'en progreso'
+                                                                ? 'info'
+                                                                : 'warning'
                                                         "
                                                         >{{
                                                             data.status
                                                         }}</BBadge
                                                     >
                                                     <BBadge
-                                                        variant="danger"
                                                         pill
-                                                        :class="
+                                                        :variant="
                                                             data?.priority?.toLowerCase() ==
                                                             'alta'
-                                                                ? 'badge text-uppercase bg-danger'
+                                                                ? 'danger'
                                                                 : data?.priority?.toLowerCase() ==
-                                                                'media' || data?.priority?.toLowerCase() ==
-                                                                'no definido'
-                                                                ? 'badge text-uppercase bg-warning'
-                                                                : 'badge text-uppercase bg-info'
+                                                                      'media' ||
+                                                                  data?.priority?.toLowerCase() ==
+                                                                      'no definido'
+                                                                ? 'warning'
+                                                                : 'info'
                                                         "
                                                         >{{
                                                             data.priority

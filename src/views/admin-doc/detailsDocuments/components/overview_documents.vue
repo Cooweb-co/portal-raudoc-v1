@@ -34,7 +34,7 @@ export default {
                                 </tr>
                             </thead>
                             <tbody>
-                                <overview_documents_elementVue v-for="file in files" :file="file" :key="file.name" />
+                                <overview_documents_elementVue v-for="file in files" :file="file" :id="data.id" :key="file.name" />
                             </tbody>
                         </table>
                     </div>

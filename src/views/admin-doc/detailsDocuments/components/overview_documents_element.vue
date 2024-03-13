@@ -1,10 +1,12 @@
 <script>
 import transform_date from "@/helpers/transform_date";
 import { EyeOutlined } from "@ant-design/icons-vue";
+import { openDocument } from "@/services/docservice/doc.service";
 
 export default {
     props: {
         file: Object,
+        id: String
     },
     data() {
         return {
@@ -16,6 +18,13 @@ export default {
     },
     components: {
         EyeOutlined,
+    },
+    methods: {
+        goToDocument() {
+            const year = this.file.startProccessAt.toDate().getFullYear();
+            const path = `/Companies/BAQVERDE/${year}/Claims/${this.id}`;
+            openDocument(this.file.name, path);
+        },
     },
 };
 </script>
@@ -44,7 +53,7 @@ export default {
         <td>{{ startProccessAt }}</td>
         <td class="">
             <div class="d-flex justify-content-center">
-                <BButton variant="info" size="sm" class="btn-icon">
+                <BButton variant="info" size="sm" class="btn-icon" @click="goToDocument">
                     <EyeOutlined />
                 </BButton>
             </div>
