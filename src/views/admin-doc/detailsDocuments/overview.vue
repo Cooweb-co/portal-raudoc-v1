@@ -1,7 +1,10 @@
 <script>
 import { reactive } from "vue";
 import Layout from "@/layouts/main.vue";
-import { getDocument, getDocumentFilesUploads } from "@/services/docservice/doc.service";
+import {
+    getDocument,
+    getDocumentFilesUploads,
+} from "@/services/docservice/doc.service";
 
 import overview_summaryVue from "./components/overview_summary.vue";
 import overview_documentsVue from "./components/overview_documents.vue";
@@ -30,23 +33,29 @@ export default {
         this.id = this.$route.query.id;
         // axios.get()
         getDocument("BAQVERDE", this.id).then((data) => {
-            if (data.createdAt && data.createdAt.seconds) {// Convertir a milisegundos
+            if (data.createdAt && data.createdAt.seconds) {
+                // Convertir a milisegundos
                 const formattedDate = transform_date(data.createdAt.seconds); // Formatear fecha
                 this.createdAt = formattedDate; // Guardar la fecha formateada
                 this.data = {
                     id: this.id,
-                    createdAt: this.createdAt || "",
-                    deadline: data.deadline || "",
-                    priority: data.priority || "",
-                    status: data.state.toUpperCase() == "COMPLETED"? "COMPLETADO": data.state.toUpperCase() == "INPROGRESS" ? "EN PROGRESO": data.state.toUpperCase() || "" || "",
+                    createdAt: this.createdAt || "No definido",
+                    deadline: data.deadline || "No definido",
+                    priority: data.priority || "No definido",
+                    status:
+                        data.state?.toUpperCase() == "COMPLETED"
+                            ? "COMPLETADO"
+                            : data.state?.toUpperCase() == "INPROGRESS"
+                            ? "EN PROGRESO"
+                            : data.state?.toUpperCase() || "No definido",
                     summary:
                         data.summary.replace("<p>", "").replace("</p>", "") ||
-                        "",
-                    subject: data.subject || "",
-                    fullName: data.applicant.fullName || "",
-                    address: data.applicant.address || "",
-                    phone: data.applicant.phone || "",
-                    email: data.applicant.email || "",
+                        "No definido",
+                    subject: data.subject || "No definido",
+                    fullName: data.applicant.fullName || "No definido",
+                    address: data.applicant.address || "No definido",
+                    phone: data.applicant.phone || "No definido",
+                    email: data.applicant.email || "No definido",
                 };
             }
         });
@@ -126,7 +135,12 @@ export default {
                                                     <div class="vr"></div>
                                                     <BBadge
                                                         pill
-                                                        class="bg-primary fs-12"
+                                                        :class="
+                                                            data?.status?.toLowerCase() ==
+                                                            'completado'
+                                                                ? 'badge text-uppercase bg-success-subtle text-success'
+                                                                : 'badge text-uppercase bg-danger-subtle text-warning'
+                                                        "
                                                         >{{
                                                             data.status
                                                         }}</BBadge
@@ -134,7 +148,16 @@ export default {
                                                     <BBadge
                                                         variant="danger"
                                                         pill
-                                                        class="bg-success fs-12"
+                                                        :class="
+                                                            data?.priority?.toLowerCase() ==
+                                                            'alta'
+                                                                ? 'badge text-uppercase bg-danger'
+                                                                : data?.priority?.toLowerCase() ==
+                                                                'media' || data?.priority?.toLowerCase() ==
+                                                                'no definido'
+                                                                ? 'badge text-uppercase bg-warning'
+                                                                : 'badge text-uppercase bg-info'
+                                                        "
                                                         >{{
                                                             data.priority
                                                         }}</BBadge
@@ -183,9 +206,9 @@ export default {
                     nav-class="nav-tabs-custom border-bottom-0"
                 >
                     <!-- Resumen -->
-                    <overview_summaryVue :data="data" :files="files"/>
+                    <overview_summaryVue :data="data" :files="files" />
 
-                    <overview_documentsVue :data="data" :files="files"/>
+                    <overview_documentsVue :data="data" :files="files" />
                     <!-- <BTab title="Actividad" class="fw-semibold pt-2">
                         <BCard no-body>
                             <BCardBody>
