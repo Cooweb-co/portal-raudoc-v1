@@ -79,7 +79,7 @@ export default {
 
         onUnmounted(() => {
             if (unsubscribe) {
-                unsubscribe();
+                unsubscribe;
             }
         });
 

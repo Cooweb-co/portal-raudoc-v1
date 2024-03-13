@@ -28,34 +28,34 @@ export default {
         return { data: "", id: "", files: [] };
     },
 
-    mounted() {
+    async mounted() {
         console.log(this.$route.query.id);
         this.id = this.$route.query.id;
         // axios.get()
-        getDocument("BAQVERDE", this.id).then((data) => {
-            if (data.createdAt && data.createdAt.seconds) {
+        await getDocument("BAQVERDE", this.id).then((data) => {
+            if (data?.createdAt && data?.createdAt.seconds) {
                 // Convertir a milisegundos
-                const formattedDate = transform_date(data.createdAt.seconds); // Formatear fecha
+                const formattedDate = transform_date(data?.createdAt.seconds); // Formatear fecha
                 this.createdAt = formattedDate; // Guardar la fecha formateada
                 this.data = {
                     id: this.id,
                     createdAt: this.createdAt || "No definido",
-                    deadline: data.deadline || "No definido",
-                    priority: data.priority || "No definido",
+                    deadline: data?.deadline || "No definido",
+                    priority: data?.priority || "No definido",
                     status:
-                        data.state?.toUpperCase() == "COMPLETED"
+                        data?.state?.toUpperCase() == "COMPLETED"
                             ? "COMPLETADO"
-                            : data.state?.toUpperCase() == "INPROGRESS"
+                            : data?.state?.toUpperCase() == "INPROGRESS"
                             ? "EN PROGRESO"
-                            : data.state?.toUpperCase() || "No definido",
+                            : data?.state?.toUpperCase() || "No definido",
                     summary:
-                        data.summary.replace("<p>", "").replace("</p>", "") ||
+                        data?.summary?.replace("<p>", "").replace("</p>", "") ||
                         "No definido",
-                    subject: data.subject || "No definido",
-                    fullName: data.applicant.fullName || "No definido",
-                    address: data.applicant.address || "No definido",
-                    phone: data.applicant.phone || "No definido",
-                    email: data.applicant.email || "No definido",
+                    subject: data?.subject || "No definido",
+                    fullName: data?.applicant?.fullName || "No definido",
+                    address: data?.applicant?.address || "No definido",
+                    phone: data?.applicant?.phone || "No definido",
+                    email: data?.applicant?.email || "No definido",
                 };
             }
         });

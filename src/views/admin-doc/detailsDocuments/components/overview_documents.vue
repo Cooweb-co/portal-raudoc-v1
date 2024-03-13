@@ -20,8 +20,8 @@ export default {
                     <h5 class="card-title flex-grow-1">Documentos</h5>
                 </div>
                 <BRow>
-                    <div class="table-responsive table-card">
-                        <table class="table table-borderless align-middle mb-0">
+                    <div class="table-responsive table-card p-0">
+                        <table class="table table-borderless align-middle mb-0 p-0">
                             <thead class="table-light">
                                 <tr>
                                     <th scope="col">Nombre del Archivo</th>
@@ -38,16 +38,24 @@ export default {
                             </tbody>
                         </table>
                     </div>
-                    <div class="text-center mt-3">
+                    <!-- <div class="text-center mt-3">
                         <BLink href="javascript:void(0);" class="text-primary"
                             ><i
                                 class="mdi mdi-loading mdi-spin fs-20 align-middle me-2"
                             ></i>
                             Load more
                         </BLink>
-                    </div>
+                    </div> -->
                 </BRow>
             </div>
         </div>
     </BTab>
 </template>
+
+<style lang="scss" scoped>
+
+.table-responsive {
+    margin: 0 !important;
+}
+
+</style>

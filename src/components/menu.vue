@@ -325,15 +325,6 @@ export default {
           </router-link>
         </li>
 
-        <li class="nav-item">
-          <router-link class="nav-link menu-link" to="/apps/projects-overview">
-            <ListIcon width="24" height="24" />
-            <span data-key="t-dashboard">Ej. Radicado #TI-2881</span>
-          </router-link>
-        </li>
-
-      
-
         <!-- <li class="menu-title">
           <i class="ri-more-fill"></i>
           <span data-key="t-pages">Gestión Documental</span>
