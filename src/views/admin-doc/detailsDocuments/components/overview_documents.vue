@@ -21,7 +21,7 @@ export default {
                 </div>
                 <BRow>
                     <div class="table-responsive table-card p-0">
-                        <table class="table table-borderless align-middle mb-0 p-0">
+                        <table class="table table-borderless align-middle mb-0 p-0" style="width: 100% !important;">
                             <thead class="table-light">
                                 <tr>
                                     <th scope="col">Nombre del Archivo</th>
@@ -57,5 +57,4 @@ export default {
 .table-responsive {
     margin: 0 !important;
 }
-
 </style>

@@ -10,10 +10,10 @@ export default {
     },
     data() {
         return {
-            name: this.file.name || "-",
-            extension: this.file.name.split(".").pop().toUpperCase() || "-",
-            fullNameClient: this.file.summary.applicant.fullName || "-",
-            startProccessAt: transform_date(this.file.startProccessAt.seconds),
+            name: this.file?.name || "-",
+            extension: this.file?.name.split(".").pop().toUpperCase() || "-",
+            fullNameClient: this.file?.summary?.applicant?.fullName || "-",
+            startProccessAt: transform_date(this.file?.startProccessAt?.seconds),
         };
     },
     components: {

@@ -59,7 +59,7 @@ export default {
                 };
             }
         });
-        getDocumentFilesUploads("BAQVERDE", this.id).then((data) => {
+        await getDocumentFilesUploads("BAQVERDE", this.id).then((data) => {
             console.log(data);
             this.files = data;
         });

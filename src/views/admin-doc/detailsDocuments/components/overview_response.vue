@@ -3,19 +3,44 @@ import CKEditor from "@ckeditor/ckeditor5-vue";
 import Multiselect from "@vueform/multiselect";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import "@vueform/multiselect/themes/default.css";
+import useVuelidate from "@vuelidate/core";
+import DropZone from "@/components/widgets/dropZone";
+import { ref, watch } from "vue";
 
 export default {
+    setup() {
+        let files = ref([]);
+        let dropzoneFile = ref("");
+        const drop = (e) => {
+            dropzoneFile.value = e.dataTransfer.files[0];
+            files.value.push(dropzoneFile.value);
+        };
+        const selectedFile = () => {
+            dropzoneFile.value =
+                document.querySelector(".dropzoneFile").files[0];
+            files.value.push(dropzoneFile.value);
+        };
+        watch(
+            () => [...files.value],
+            (currentValue) => {
+                return currentValue;
+            }
+        );
+        return { dropzoneFile, files, drop, selectedFile, v$: useVuelidate() };
+    },
     data() {
         return {
             editor: ClassicEditor,
             value3: "",
             id: "",
             data: "",
+            editorData: "",
         };
     },
     components: {
         ckeditor: CKEditor.component,
         Multiselect,
+        DropZone
     },
 };
 </script>
@@ -107,5 +132,61 @@ export default {
                 <ckeditor v-model="editorData" :editor="editor"></ckeditor>
             </div>
         </BCardBody>
+        <BCard no-body class="mt-3">
+            <BCardHeader>
+                <h5 class="card-title mb-0">Agrega archivo para radicar</h5>
+            </BCardHeader>
+            <BCardBody>
+                <div>
+                    <p class="text-muted">Agregue archivos aquí.</p>
+
+                    <DropZone
+                        @drop.prevent="drop"
+                        @change="selectedFile"
+                        class="mb-2"
+                    />
+                    <div class="vstack gap-2">
+                        <div
+                            class="border rounded"
+                            v-for="(file, index) of files"
+                            :key="index"
+                        >
+                            <div class="d-flex align-items-center p-2">
+                                <div class="flex-grow-1">
+                                    <div class="pt-1">
+                                        <h5 class="fs-14 mb-1" data-dz-name="">
+                                            {{ file.name }}
+                                        </h5>
+                                        <p
+                                            class="fs-13 text-muted mb-0"
+                                            data-dz-size=""
+                                        >
+                                            <strong>{{
+                                                file.size / 1024
+                                            }}</strong>
+                                            KB
+                                        </p>
+                                        <strong
+                                            class="error text-danger"
+                                            data-dz-errormessage=""
+                                        ></strong>
+                                    </div>
+                                </div>
+                                <div class="flex-shrink-0 ms-3">
+                                    <BButton
+                                        variant="danger"
+                                        size="sm"
+                                        data-dz-remove=""
+                                        @click="deleteRecord"
+                                    >
+                                        borrar
+                                    </BButton>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </BCardBody>
+        </BCard>
     </BTab>
 </template>
