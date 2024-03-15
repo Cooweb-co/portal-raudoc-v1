@@ -15,7 +15,7 @@ import { getFirebaseBackend } from "../../authUtils.js";
 import { uploadBytes, ref as storageRef } from "firebase/storage";
 import Modal from "../modals/Modal.vue";
 import ValidateLabel from '../../utils/ValidateLabel.vue'
-import { MESSAGE_REQUIRED } from "../../constants/rules.ts";
+import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
 
 import {
   createClaimID,
@@ -37,7 +37,7 @@ export default {
     let unsubscribe;
     let idProccessAI;
 
-    const form = {
+    const form = ref({
       area: "",
       date: "",
       inputMethod: "",
@@ -56,7 +56,7 @@ export default {
       lastNames: "",
       email: "",
       address: "",
-    };
+    });
 
     const rules = {
       area: { required: MESSAGE_REQUIRED },
@@ -75,11 +75,11 @@ export default {
       contactPhone: { required: MESSAGE_REQUIRED },
       names: { required: MESSAGE_REQUIRED },
       lastNames: { required: MESSAGE_REQUIRED },
-      email: { required: MESSAGE_REQUIRED },
+      email: { required: MESSAGE_REQUIRED, MESSAGE_EMAIL },
       address: { required: MESSAGE_REQUIRED },
     }
 
-    const v$ = useVuelidate(rules, form);
+    const v$ = useVuelidate(rules, form.value);
 
     async function handleSaveInfo() {
       try {
@@ -411,7 +411,7 @@ export default {
                 :close-on-select="true"
                 :searchable="true"
                 :create-option="true"
-                placeholder="Enter Email"
+                placeholder="Seleccione area"
                 :options="[
                   { value: 'Aporedado', label: 'Aporedado' },
                   {
@@ -444,7 +444,7 @@ export default {
               ></flat-pickr>
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="date"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -459,6 +459,7 @@ export default {
                 :close-on-select="true"
                 :searchable="true"
                 :create-option="true"
+                placeholder="Seleccione metodo de entrada"
                 :options="[
                   { value: 'Aporedado', label: 'Aporedado' },
                   {
@@ -477,7 +478,7 @@ export default {
               />
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="inputMethod"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -492,6 +493,7 @@ export default {
                 :close-on-select="true"
                 :searchable="true"
                 :create-option="true"
+                placeholder="Seleccione serie"
                 :options="[
                   { value: 'Aporedado', label: 'Aporedado' },
                   {
@@ -510,7 +512,7 @@ export default {
               />
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="serie"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -525,6 +527,7 @@ export default {
                 :close-on-select="true"
                 :searchable="true"
                 :create-option="true"
+                placeholder="Seleccione subserie"
                 :options="[
                   { value: 'Aporedado', label: 'Aporedado' },
                   {
@@ -543,7 +546,7 @@ export default {
               />
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="subSerie"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -558,6 +561,7 @@ export default {
                 :close-on-select="true"
                 :searchable="true"
                 :create-option="true"
+                placeholder="Seleccione tipo de documento"
                 :options="[
                   { value: 'Aporedado', label: 'Aporedado' },
                   {
@@ -576,7 +580,7 @@ export default {
               />
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="documentType"
               />
             </BCol>
             <BCol lg="3">
@@ -591,7 +595,7 @@ export default {
               ></flat-pickr>
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="untilDate"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -618,7 +622,7 @@ export default {
               </div>
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="folios"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -645,7 +649,7 @@ export default {
               </div>
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="externalFiling"
               />
             </BCol>
             <BCol lg="12" class="mb-3">
@@ -686,6 +690,7 @@ export default {
                 :close-on-select="true"
                 :searchable="true"
                 :create-option="true"
+                placeholder="Seleccione tipo de persona"
                 :options="[
                   { value: 'Aporedado', label: 'Aporedado' },
                   {
@@ -704,14 +709,14 @@ export default {
               />
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="personType"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
               <label
                 for="choices-privacy-status-input"
                 class="form-label fw-bold"
-                >Tipo de identificación</label
+                >Tipo de documento</label
               >
               <Multiselect
                 v-model="form.idType"
@@ -719,6 +724,7 @@ export default {
                 :close-on-select="true"
                 :searchable="true"
                 :create-option="true"
+                placeholder="Seleccione tipo de documento"
                 :options="[
                   { value: 'Aporedado', label: 'Aporedado' },
                   {
@@ -737,23 +743,23 @@ export default {
               />
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="idType"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
               <label for="username" class="form-label"
-                >Número de identificación
+                >Número de documento
                 <span class="text-danger fw-bold">*</span></label
               >
               <input
                 type="text"
                 class="form-control"
-                v-model="form.names"
+                v-model="form.idNumber"
                 :class="{
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
                 id="username"
-                placeholder="Enter username"
+                placeholder="Ingrese numero de documento"
               />
               <div
                 v-if="submitted && v$.user.username.$error"
@@ -765,7 +771,7 @@ export default {
               </div>
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="idNumber"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -781,7 +787,7 @@ export default {
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
                 id="username"
-                placeholder="Enter username"
+                placeholder="Ingrese telefono de contacto"
               />
               <div
                 v-if="submitted && v$.user.username.$error"
@@ -793,7 +799,7 @@ export default {
               </div>
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="contactPhone"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -808,7 +814,7 @@ export default {
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
                 id="username"
-                placeholder="Enter username"
+                placeholder="Ingrese nombres"
               />
               <div
                 v-if="submitted && v$.user.username.$error"
@@ -820,7 +826,7 @@ export default {
               </div>
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="names"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -835,7 +841,7 @@ export default {
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
                 id="username"
-                placeholder="Enter username"
+                placeholder="Ingrese apellidos"
               />
               <div
                 v-if="submitted && v$.user.username.$error"
@@ -847,7 +853,7 @@ export default {
               </div>
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="lastNames"
               />
             </BCol>
             <BCol lg="6" class="mb-3">
@@ -863,7 +869,7 @@ export default {
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
                 id="username"
-                placeholder="Enter username"
+                placeholder="Ingrese email"
               />
               <div
                 v-if="submitted && v$.user.username.$error"
@@ -875,7 +881,7 @@ export default {
               </div>
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="email"
               />
             </BCol>
             <BCol lg="12" class="mb-3">
@@ -890,7 +896,7 @@ export default {
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
                 id="username"
-                placeholder="Enter username"
+                placeholder="Ingrese una dirección"
               />
               <div
                 v-if="submitted && v$.user.username.$error"
@@ -902,7 +908,7 @@ export default {
               </div>
               <ValidateLabel
                 v-bind="{ v$ }"
-                attribute="area"
+                attribute="address"
               />
             </BCol>
           </BRow>
