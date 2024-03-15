@@ -14,6 +14,8 @@ import "flatpickr/dist/flatpickr.css";
 import { getFirebaseBackend } from "../../authUtils.js";
 import { uploadBytes, ref as storageRef } from "firebase/storage";
 import Modal from "../modals/Modal.vue";
+import ValidateLabel from '../../utils/ValidateLabel.vue'
+import { MESSAGE_REQUIRED } from "../../constants/rules.ts";
 
 import {
   createClaimID,
@@ -31,16 +33,76 @@ export default {
     const companyID = ref("BAQVERDE");
     const year = ref(new Date().getFullYear());
     const claimData = ref(null);
-    const isModalOpen = ref(false)
+    const isModalOpen = ref(false);
     let unsubscribe;
     let idProccessAI;
 
+    const form = {
+      area: "",
+      date: "",
+      inputMethod: "",
+      serie: "",
+      subSerie: "",
+      documentType: "",
+      untilDate: "",
+      folios: "",
+      externalFiling: "",
+      observations: "",
+      personType: "",
+      idType: "",
+      idNumber: "",
+      contactPhone: "",
+      names: "",
+      lastNames: "",
+      email: "",
+      address: "",
+    };
+
+    const rules = {
+      area: { required: MESSAGE_REQUIRED },
+      date: { required: MESSAGE_REQUIRED },
+      inputMethod: { required: MESSAGE_REQUIRED },
+      serie: { required: MESSAGE_REQUIRED },
+      subSerie: { required: MESSAGE_REQUIRED },
+      documentType: { required: MESSAGE_REQUIRED },
+      untilDate: { required: MESSAGE_REQUIRED },
+      folios: { required: MESSAGE_REQUIRED },
+      externalFiling: { required: MESSAGE_REQUIRED },
+      observations: { required: MESSAGE_REQUIRED },
+      personType: { required: MESSAGE_REQUIRED },
+      idType: { required: MESSAGE_REQUIRED },
+      idNumber: { required: MESSAGE_REQUIRED },
+      contactPhone: { required: MESSAGE_REQUIRED },
+      names: { required: MESSAGE_REQUIRED },
+      lastNames: { required: MESSAGE_REQUIRED },
+      email: { required: MESSAGE_REQUIRED },
+      address: { required: MESSAGE_REQUIRED },
+    }
+
+    const v$ = useVuelidate(rules, form);
+
+    async function handleSaveInfo() {
+      try {
+        this.v$.$touch();
+
+        if (!this.v$.$invalid) {
+          return;
+        } else {
+          console.log(form);
+
+        }
+
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
     function handleOpenModal() {
-      isModalOpen.value = true
+      isModalOpen.value = true;
     }
 
     function handleCloseModal() {
-      isModalOpen.value = false
+      isModalOpen.value = false;
     }
 
     const startListening = () => {
@@ -52,7 +114,7 @@ export default {
       });
 
       console.log("startListening");
-      handleOpenModal()
+      handleOpenModal();
 
       unsubscribe = onListenClaimData(
         documentID.value,
@@ -160,14 +222,15 @@ export default {
       files,
       drop,
       selectedFile,
-      v$: useVuelidate(),
       loadingBtnAI,
       documentID,
       claimData,
       handleOpenModal,
       handleCloseModal,
-      isModalOpen
-
+      isModalOpen,
+      form,
+      v$,
+      handleSaveInfo,
     };
   },
   data() {
@@ -319,17 +382,14 @@ export default {
     Multiselect,
     flatPickr,
     Modal,
+    ValidateLabel
   },
 };
 </script>
 
 <template>
   <!-- Modal -->
-   <Modal
-    v-if="isModalOpen"
-    title="Completar información"
-    size="big"
-  >
+  <Modal v-if="isModalOpen" title="Completar información" size="big">
     <template #content>
       <BCard no-body>
         <BCardHeader>
@@ -346,7 +406,55 @@ export default {
                 >Área</label
               >
               <Multiselect
-                v-model="typeOfApplicant"
+                v-model="form.area"
+                :required="true"
+                :close-on-select="true"
+                :searchable="true"
+                :create-option="true"
+                placeholder="Enter Email"
+                :options="[
+                  { value: 'Aporedado', label: 'Aporedado' },
+                  {
+                    value: 'Nino, nina, adolescente',
+                    label: 'Nino, Nina, Adolescente',
+                  },
+                  {
+                    value: 'persona judirica',
+                    label: 'Persona Judirica',
+                  },
+                  {
+                    value: 'persona natural',
+                    label: 'Persona Natural',
+                  },
+                ]"
+              />
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
+            </BCol>
+            <BCol lg="3">
+              <label for="datepicker-deadline-input" class="form-label fw-bold"
+                >Fecha</label
+              >
+              <flat-pickr
+                v-model="form.date"
+                :config="rangeDateconfig"
+                class="form-control flatpickr-input"
+              ></flat-pickr>
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
+            </BCol>
+            <BCol lg="3" class="mb-3">
+              <label
+                for="choices-privacy-status-input"
+                class="form-label fw-bold"
+                >Método de entrada</label
+              >
+              <Multiselect
+                v-model="form.inputMethod"
                 :required="true"
                 :close-on-select="true"
                 :searchable="true"
@@ -367,45 +475,9 @@ export default {
                   },
                 ]"
               />
-            </BCol>
-            <BCol lg="3">
-              <label for="datepicker-deadline-input" class="form-label fw-bold"
-                >Fecha</label
-              >
-
-              <flat-pickr
-                v-model="deadline"
-                :config="rangeDateconfig"
-                class="form-control flatpickr-input"
-              ></flat-pickr>
-            </BCol>
-            <BCol lg="3" class="mb-3">
-              <label
-                for="choices-privacy-status-input"
-                class="form-label fw-bold"
-                >Método de entrada</label
-              >
-              <Multiselect
-                v-model="typeOfApplicant"
-                :required="true"
-                :close-on-select="true"
-                :searchable="true"
-                :create-option="true"
-                :options="[
-                  { value: 'Aporedado', label: 'Aporedado' },
-                  {
-                    value: 'Nino, nina, adolescente',
-                    label: 'Nino, Nina, Adolescente',
-                  },
-                  {
-                    value: 'persona judirica',
-                    label: 'Persona Judirica',
-                  },
-                  {
-                    value: 'persona natural',
-                    label: 'Persona Natural',
-                  },
-                ]"
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -415,7 +487,7 @@ export default {
                 >Serie</label
               >
               <Multiselect
-                v-model="typeOfApplicant"
+                v-model="form.serie"
                 :required="true"
                 :close-on-select="true"
                 :searchable="true"
@@ -435,6 +507,10 @@ export default {
                     label: 'Persona Natural',
                   },
                 ]"
+              />
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -444,7 +520,7 @@ export default {
                 >Subserie</label
               >
               <Multiselect
-                v-model="typeOfApplicant"
+                v-model="form.subSerie"
                 :required="true"
                 :close-on-select="true"
                 :searchable="true"
@@ -464,6 +540,10 @@ export default {
                     label: 'Persona Natural',
                   },
                 ]"
+              />
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -473,7 +553,7 @@ export default {
                 >Tipología Documental</label
               >
               <Multiselect
-                v-model="typeOfApplicant"
+                v-model="form.documentType"
                 :required="true"
                 :close-on-select="true"
                 :searchable="true"
@@ -494,6 +574,10 @@ export default {
                   },
                 ]"
               />
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
             </BCol>
             <BCol lg="3">
               <label for="datepicker-deadline-input" class="form-label fw-bold"
@@ -501,10 +585,14 @@ export default {
               >
 
               <flat-pickr
-                v-model="deadline"
+                v-model="form.untilDate"
                 :config="rangeDateconfig"
                 class="form-control flatpickr-input"
               ></flat-pickr>
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
             </BCol>
             <BCol lg="3" class="mb-3">
               <label for="username" class="form-label"
@@ -513,12 +601,12 @@ export default {
               <input
                 type="text"
                 class="form-control"
-                v-model="user.username"
+                v-model="form.folios"
                 :class="{
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
-                id="username"
-                placeholder="Enter username"
+                id="folios"
+                placeholder="Ingrese folios"
               />
               <div
                 v-if="submitted && v$.user.username.$error"
@@ -528,6 +616,10 @@ export default {
                   v$.user.username.required.$message
                 }}</span>
               </div>
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
             </BCol>
             <BCol lg="3" class="mb-3">
               <label for="username" class="form-label fw-bold"
@@ -536,12 +628,12 @@ export default {
               <input
                 type="text"
                 class="form-control"
-                v-model="user.username"
+                v-model="form.externalFiling"
                 :class="{
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
-                id="username"
-                placeholder="Enter username"
+                id="RadicadoExterno"
+                placeholder="# Radicado externo"
               />
               <div
                 v-if="submitted && v$.user.username.$error"
@@ -551,6 +643,10 @@ export default {
                   v$.user.username.required.$message
                 }}</span>
               </div>
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
             </BCol>
             <BCol lg="12" class="mb-3">
               <label
@@ -559,6 +655,7 @@ export default {
                 >Observaciones</label
               >
               <textarea
+                v-model="form.observations"
                 class="form-control bg-white border-grey"
                 id="exampleFormControlTextarea1"
                 rows="5"
@@ -584,7 +681,7 @@ export default {
                 >Tipo de personal</label
               >
               <Multiselect
-                v-model="typeOfApplicant"
+                v-model="form.personType"
                 :required="true"
                 :close-on-select="true"
                 :searchable="true"
@@ -605,6 +702,10 @@ export default {
                   },
                 ]"
               />
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
             </BCol>
             <BCol lg="3" class="mb-3">
               <label
@@ -613,7 +714,7 @@ export default {
                 >Tipo de identificación</label
               >
               <Multiselect
-                v-model="typeOfApplicant"
+                v-model="form.idType"
                 :required="true"
                 :close-on-select="true"
                 :searchable="true"
@@ -633,6 +734,10 @@ export default {
                     label: 'Persona Natural',
                   },
                 ]"
+              />
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
               />
             </BCol>
             <BCol lg="3" class="mb-3">
@@ -643,7 +748,7 @@ export default {
               <input
                 type="text"
                 class="form-control"
-                v-model="user.username"
+                v-model="form.names"
                 :class="{
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
@@ -658,6 +763,10 @@ export default {
                   v$.user.username.required.$message
                 }}</span>
               </div>
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
             </BCol>
             <BCol lg="3" class="mb-3">
               <label for="username" class="form-label"
@@ -667,7 +776,7 @@ export default {
               <input
                 type="text"
                 class="form-control"
-                v-model="user.username"
+                v-model="form.contactPhone"
                 :class="{
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
@@ -682,6 +791,10 @@ export default {
                   v$.user.username.required.$message
                 }}</span>
               </div>
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
             </BCol>
             <BCol lg="3" class="mb-3">
               <label for="username" class="form-label"
@@ -690,7 +803,7 @@ export default {
               <input
                 type="text"
                 class="form-control"
-                v-model="user.username"
+                v-model="form.names"
                 :class="{
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
@@ -705,6 +818,10 @@ export default {
                   v$.user.username.required.$message
                 }}</span>
               </div>
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
             </BCol>
             <BCol lg="3" class="mb-3">
               <label for="username" class="form-label"
@@ -713,7 +830,7 @@ export default {
               <input
                 type="text"
                 class="form-control"
-                v-model="user.username"
+                v-model="form.lastNames"
                 :class="{
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
@@ -728,6 +845,10 @@ export default {
                   v$.user.username.required.$message
                 }}</span>
               </div>
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
             </BCol>
             <BCol lg="6" class="mb-3">
               <label for="username" class="form-label"
@@ -737,7 +858,7 @@ export default {
               <input
                 type="text"
                 class="form-control"
-                v-model="user.username"
+                v-model="form.email"
                 :class="{
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
@@ -752,6 +873,10 @@ export default {
                   v$.user.username.required.$message
                 }}</span>
               </div>
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
             </BCol>
             <BCol lg="12" class="mb-3">
               <label for="username" class="form-label"
@@ -760,7 +885,7 @@ export default {
               <input
                 type="text"
                 class="form-control"
-                v-model="user.username"
+                v-model="form.address"
                 :class="{
                   'is-invalid': submitted && v$.user.username.$error,
                 }"
@@ -775,6 +900,10 @@ export default {
                   v$.user.username.required.$message
                 }}</span>
               </div>
+              <ValidateLabel
+                v-bind="{ v$ }"
+                attribute="area"
+              />
             </BCol>
           </BRow>
         </BCardBody>
@@ -783,10 +912,18 @@ export default {
 
     <template #action>
       <BRow class="justify-content-lg-end">
-        <button type="button" class="btn btn-secondary col-lg-2 me-2" @click="handleCloseModal()">
+        <button
+          type="button"
+          class="btn btn-secondary col-lg-2 me-2"
+          @click="handleCloseModal()"
+        >
           Cancelar
         </button>
-        <button type="button" class="btn btn-primary col-lg-3 me-2">
+        <button
+          type="button"
+          class="btn btn-primary col-lg-3 me-2"
+          @click="handleSaveInfo()"
+        >
           Guardar información
         </button>
       </BRow>
@@ -1250,11 +1387,14 @@ export default {
       </BCol>
     </BRow>
   </Layout>
- 
 </template>
 
 <style lang="scss" scoped>
 .section {
   border: 1px solid;
+}
+
+.is-danger {
+  color: red;
 }
 </style>
