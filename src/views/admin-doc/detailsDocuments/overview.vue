@@ -25,40 +25,73 @@ export default {
         };
     },
     data() {
-        return { data: "", id: "", files: [] };
+        return {
+            data: "",
+            id: "",
+            files: [],
+            entryDate: "",
+            expirationDate: "",
+        };
     },
 
     async mounted() {
         console.log(this.$route.query.id);
         this.id = this.$route.query.id;
-        // axios.get()
-        await getDocument("BAQVERDE", this.id).then((data) => {
-            if (data?.createdAt && data?.createdAt.seconds) {
-                // Convertir a milisegundos
-                const formattedDate = transform_date(data?.createdAt.seconds); // Formatear fecha
-                this.createdAt = formattedDate; // Guardar la fecha formateada
-                this.data = {
-                    id: this.id,
-                    createdAt: this.createdAt || "No definido",
-                    deadline: data?.deadline || "No definido",
-                    priority: data?.priority || "No definido",
-                    status:
-                        data?.state?.toUpperCase() == "COMPLETED"
-                            ? "COMPLETADO"
-                            : data?.state?.toUpperCase() == "INPROGRESS"
-                            ? "EN PROGRESO"
-                            : data?.state?.toUpperCase() || "No definido",
-                    summary:
-                        data?.summary?.replace("<p>", "").replace("</p>", "") ||
-                        "No definido",
-                    subject: data?.subject || "No definido",
-                    fullName: data?.applicant?.fullName || "No definido",
-                    address: data?.applicant?.address || "No definido",
-                    phone: data?.applicant?.phone || "No definido",
-                    email: data?.applicant?.email || "No definido",
-                };
-            }
-        });
+        const docData = await getDocument("BAQVERDE", this.id);
+        if (docData?.entryDate && docData?.entryDate.seconds) {
+            const formattedDate = transform_date(docData?.entryDate.seconds); // Formatear fecha
+            this.entryDate = formattedDate; // Guardar la fecha formateada
+        }
+
+        if (docData?.expirationDate && docData?.expirationDate.seconds) {
+            const formattedDate = transform_date(
+                docData?.expirationDate.seconds
+            ); // Formatear fecha
+            this.expirationDate = formattedDate; // Guardar la fecha formateada
+        }
+
+        this.data = {
+            id: this.id,
+            numberEntryClaim: docData?.numberEntryClaim || "No definido",
+            area: docData?.area || "No definido",
+            documentaryTypologyOut:
+                docData?.documentaryTypologyOut || "No definido",
+            entryDate: this.entryDate || "No definido",
+            status:
+                docData?.status?.toUpperCase() == "COMPLETED"
+                    ? "COMPLETADO"
+                    : docData?.status?.toUpperCase() == "INPROGRESS"
+                    ? "EN PROGRESO"
+                    : docData?.status?.toUpperCase() == "PENDING"
+                    ? "PENDIENTE"
+                    : docData?.status?.toUpperCase() == "CREATED"
+                    ? "CREADO"
+                    : docData?.status?.toUpperCase() || "No definido",
+            expirationDate: this.expirationDate || "No definido",
+            priority: docData?.priority || "BAJA",
+            serie: docData?.serie,
+            subSerie: docData?.subSerie,
+            externalRadicate: docData?.externalRadicate,
+            assignedTo: docData?.assignedTo,
+            folios: docData?.folios,
+            observations: docData?.observations,
+            summary:
+                docData?.summary?.replace("<p>", "").replace("</p>", "") ||
+                "No definido",
+            personType: docData?.petitionerInformation?.personType,
+            IdentificationType:
+                docData?.petitionerInformation?.identificationType,
+            identificationNumber:
+                docData?.petitionerInformation?.identificationNumber,
+            fullName:
+                docData?.petitionerInformation?.firstNames +
+                    " " +
+                    docData?.petitionerInformation?.firstNames || "No definido",
+            email: docData?.petitionerInformation?.email || "No definido",
+            phoneNumber:
+                docData?.petitionerInformation?.phoneNumber || "No definido",
+            address: docData?.petitionerInformation?.address || "No definido",
+        };
         await getDocumentFilesUploads("BAQVERDE", this.id).then((data) => {
             console.log(data);
             this.files = data;
@@ -100,8 +133,11 @@ export default {
                                         <BCol md>
                                             <div>
                                                 <h4 class="fw-bold">
-                                                    #{{ data.id }} -
-                                                    {{ data.subject }}
+                                                    {{ data.numberEntryClaim }}
+                                                    -
+                                                    {{
+                                                        data.documentaryTypologyOut
+                                                    }}
                                                 </h4>
                                                 <div
                                                     class="hstack gap-3 flex-wrap"
@@ -110,7 +146,7 @@ export default {
                                                         <i
                                                             class="ri-building-line align-bottom me-1"
                                                         ></i>
-                                                        Juridica
+                                                        {{ data.area }}
                                                     </div>
                                                     <div class="vr"></div>
                                                     <div>
@@ -118,7 +154,7 @@ export default {
                                                         <span
                                                             class="fw-medium"
                                                             >{{
-                                                                data.createdAt
+                                                                data.entryDate
                                                             }}</span
                                                         >
                                                     </div>
@@ -128,7 +164,7 @@ export default {
                                                         <span
                                                             class="fw-medium"
                                                             >{{
-                                                                data.deadline
+                                                                data.expirationDate
                                                             }}</span
                                                         >
                                                     </div>
@@ -142,7 +178,13 @@ export default {
                                                                 : data?.status?.toLowerCase() ==
                                                                   'en progreso'
                                                                 ? 'info'
-                                                                : 'warning'
+                                                                : data?.status?.toLowerCase() ==
+                                                                  'pendiente'
+                                                                ? 'warning'
+                                                                : data?.status?.toLowerCase() ==
+                                                                  'creado'
+                                                                ? 'primary'
+                                                                : 'danger'
                                                         "
                                                         >{{
                                                             data.status

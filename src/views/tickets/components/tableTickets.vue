@@ -106,6 +106,37 @@
                     </template>
                 </span>
                 <span
+                    v-if="
+                        state.searchText &&
+                        state.searchedColumn === column.dataIndex &&
+                        column.dataIndex === 'id'
+                    "
+                    class="fw-medium link-primary"
+                >
+                    <template
+                        v-for="(fragment, i) in text
+                            .toString()
+                            .split(
+                                new RegExp(
+                                    `(?<=${state.searchText})|(?=${state.searchText})`,
+                                    'i'
+                                )
+                            )"
+                    >
+                        <a
+                            v-if="
+                                fragment.toLowerCase() ===
+                                state.searchText.toLowerCase()
+                            "
+                            :key="i"
+                            class="highlight-id fw-medium link-primary"
+                        >
+                            {{ fragment }}
+                        </a>
+                        <template v-else>{{ fragment }}</template>
+                    </template>
+                </span>
+                <span
                     v-else-if="
                         state.searchText &&
                         state.searchedColumn === column.dataIndex
@@ -145,28 +176,32 @@
                         {{ text }}
                     </a>
                 </template>
-                <template v-if="column.dataIndex === 'created'">
-                    <!-- 2024-03-04T01:59:45.891Z -->
-                    {{
-                        text == "-"
-                            ? text
-                            : this.convertToUTC5(text)
-                    }}
-                </template>
-                <template v-if="column.dataIndex === 'deadline'">
-                    <!-- 2024-03-04T01:59:45.891Z -->
-                    {{ text }}
-                </template>
-                <template v-if="column.dataIndex === 'state'">
+                <template v-if="column.dataIndex === 'status'">
                     <div class="centerContentTableRadicates">
                         <span
                             :class="
-                                text.toLowerCase() == 'completed'
+                                text?.toLowerCase() == 'completed'
                                     ? 'badge text-uppercase bg-success-subtle text-success'
-                                    : 'badge text-uppercase bg-danger-subtle text-warning'
+                                    : text?.toLowerCase() == 'inprogress'
+                                    ? 'badge text-uppercase bg-info-subtle text-info'
+                                    : text?.toLowerCase() == 'pending'
+                                    ? 'badge text-uppercase bg-warning-subtle text-warning'
+                                    : text?.toLowerCase() == 'created'
+                                    ? 'badge text-uppercase bg-primary-subtle text-primary'
+                                    : 'badge text-uppercase bg-danger-subtle text-danger'
                             "
                         >
-                            {{ text.toUpperCase() == "COMPLETED"? "COMPLETADO": text.toUpperCase() == "INPROGRESS" ? "EN PROGRESO": text.toUpperCase() }}
+                            {{
+                                text?.toUpperCase() == "COMPLETED"
+                                    ? "COMPLETADO"
+                                    : text?.toUpperCase() == "INPROGRESS"
+                                    ? "EN PROGRESO"
+                                    : text?.toUpperCase() == "PENDING"
+                                    ? "PENDIENTE"
+                                    : text?.toUpperCase() == "CREATED"
+                                    ? "CREADO"
+                                    : text?.toUpperCase()
+                            }}
                         </span>
                     </div>
                 </template>
@@ -188,7 +223,8 @@
                 </template>
                 <template v-if="column.dataIndex === 'action'">
                     <a
-                        class="fw-medium link-primary text-center actionButtonTableRadicates" :href="`/apps/projects-overview?id=${text}`"
+                        class="fw-medium link-primary text-center actionButtonTableRadicates"
+                        :href="`/apps/projects-overview?id=${text}`"
                     >
                         <EyeOutlined />
                     </a>
@@ -205,6 +241,7 @@ import { SearchOutlined, EyeOutlined } from "@ant-design/icons-vue";
 import calendarFilter from "./calendarFilter.vue";
 import { ref, reactive } from "vue";
 import moment from "moment";
+import transform_date from "@/helpers/transform_date";
 export default {
     data() {
         return {
@@ -229,29 +266,42 @@ export default {
             originDataSource: [],
         };
     },
-    beforeMount() {
+    async beforeMount() {
         const headers = {
             company: "BAQVERDE",
             "Content-Type": "application/json",
         };
-        axios
+        await axios
             .get(
                 "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_LIST_V1",
                 { headers }
             )
             .then((response) => {
                 response.data.map((data) => {
+                    console.log(data)
                     this.dataSource.push({
-                        id: data.id,
-                        key: data.id,
-                        created: data.processedAt || "-",
-                        subject: data.dataSummary.subject || "-",
-                        client: data.dataSummary.applicant.fullName || "-",
-                        deadline: data.dataSummary.deadline || "-",
-                        assignedTo: data.dataSummary.destinationEntity || "-",
-                        state: data.dataSummary.state || "-",
-                        priority: data.dataSummary.priority || "-",
-                        action: data.id
+                        id: data?.claimId,
+                        key: data?.claimId,
+                        numberEntryClaim: data?.numberEntryClaim || "-",
+                        outputDocument: data?.externalRadicate || "-",
+                        entryDate:
+                            data?.entryDate && data?.entryDate._seconds
+                                ? transform_date(data?.entryDate._seconds)
+                                : "-",
+                        expirationDate:
+                            data?.expirationDate &&
+                            data?.expirationDate._seconds
+                                ? transform_date(data?.entryDate._seconds)
+                                : "-",
+                        subject: data?.documentaryTypologyEntry || "-",
+                        petitioner:
+                            data?.petitionerInformation?.firstNames +
+                                " " +
+                                data?.petitionerInformation?.lastNames || "-",
+                        assignedTo: data?.assignedTo || "-",
+                        status: data?.status || "Pending",
+                        priority: data?.priority || "BAJA",
+                        action: data?.claimId,
                     });
                 });
             })
@@ -286,7 +336,7 @@ export default {
             const sorted = this.sortedInfo || {};
             return [
                 {
-                    title: "Identificación",
+                    title: "ID",
                     dataIndex: "id",
                     key: "id",
                     customFilterDropdown: true,
@@ -309,12 +359,12 @@ export default {
                     key: "subject",
                 },
                 {
-                    title: "Cliente",
-                    dataIndex: "client",
-                    key: "client",
+                    title: "Peticionario",
+                    dataIndex: "petitioner",
+                    key: "petitioner",
                     customFilterDropdown: true,
                     onFilter: (value, record) =>
-                        record.client
+                        record.petitioner
                             .toString()
                             .toLowerCase()
                             .includes(value.toLowerCase()),
@@ -327,7 +377,7 @@ export default {
                     },
                 },
                 {
-                    title: "Asignado",
+                    title: "Asignado a",
                     dataIndex: "assignedTo",
                     key: "assignedTo",
                     customFilterDropdown: true,
@@ -345,45 +395,84 @@ export default {
                     },
                 },
                 {
-                    title: "Fecha de creación",
-                    dataIndex: "created",
-                    key: "created",
+                    title: "Radicado de salida",
+                    dataIndex: "outputDocument",
+                    key: "outputDocument",
                     className: "text-center",
-                    sorter: (a, b) => new Date(a.created) - new Date(b.created),
-                    sortOrder: sorted.columnKey === "created" && sorted.order,
+                    customFilterDropdown: true,
+                    onFilter: (value, record) =>
+                        record.outputDocument
+                            .toString()
+                            .toLowerCase()
+                            .includes(value.toLowerCase()),
+                    onFilterDropdownOpenChange: (visible) => {
+                        if (visible) {
+                            setTimeout(() => {
+                                this.searchInput?.focus();
+                            }, 100);
+                        }
+                    },
+                },
+                {
+                    title: "Fecha de entrada",
+                    dataIndex: "entryDate",
+                    key: "entryDate",
+                    className: "text-center",
+                    sorter: (a, b) =>
+                        new Date(a.entryDate) - new Date(b.entryDate),
+                    sortOrder: sorted.columnKey === "entryDate" && sorted.order,
                     ellipsis: true,
                 },
                 {
                     title: "Fecha de vencimiento",
-                    dataIndex: "deadline",
-                    key: "deadline",
+                    dataIndex: "expirationDate",
+                    key: "expirationDate",
                     className: "text-center",
                     sorter: (a, b) => {
-                        const firstDate = moment(a.deadline, "DD MMM, YYYY").startOf('day').toISOString();
-                        const secondDate = moment(b.deadline, "DD MMM, YYYY").startOf('day').toISOString();
+                        const firstDate = moment(
+                            a.expirationDate,
+                            "DD MMM, YYYY"
+                        )
+                            .startOf("day")
+                            .toISOString();
+                        const secondDate = moment(
+                            b.expirationDate,
+                            "DD MMM, YYYY"
+                        )
+                            .startOf("day")
+                            .toISOString();
                         return new Date(firstDate) - new Date(secondDate);
                     },
 
-                    sortOrder: sorted.columnKey === "deadline" && sorted.order,
+                    sortOrder:
+                        sorted.columnKey === "expirationDate" && sorted.order,
                     ellipsis: true,
                 },
                 {
                     title: "Estado",
-                    dataIndex: "state",
-                    key: "state",
+                    dataIndex: "status",
+                    key: "status",
                     width: "6%",
                     filters: [
                         {
                             text: "Completado",
-                            value: "Completed",
+                            value: "COMPLETED",
                         },
                         {
                             text: "En proceso",
-                            value: "Inprogress",
+                            value: "INPROGRESS",
+                        },
+                        {
+                            text: "Creadas",
+                            value: "CREATED",
+                        },
+                        {
+                            text: "Pendientes",
+                            value: "PENDING",
                         },
                     ],
                     onFilter: (value, record) =>
-                        record.state.indexOf(value) === 0,
+                        record.status.indexOf(value) === 0,
                 },
                 {
                     title: "Prioridad",
@@ -508,12 +597,14 @@ export default {
         },
 
         //Convertir fecha de created a UTC-5
-        convertToUTC5(date){
+        convertToUTC5(date) {
             // const dateMoment = moment(date);
             // const dateUTC5 = dateMoment.subtract(5, 'hours').toISOString();
-            const transformedDate = moment(date).utcOffset(-5).format("D MMM, YYYY HH:mm:ss");
+            const transformedDate = moment(date)
+                .utcOffset(-5)
+                .format("D MMM, YYYY HH:mm:ss");
             return transformedDate;
-        }
+        },
     },
     components: {
         SearchOutlined,
