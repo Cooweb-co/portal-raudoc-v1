@@ -1,6 +1,6 @@
 <script>
-import CKEditor from "@ckeditor/ckeditor5-vue";
-import Multiselect from "@vueform/multiselect";
+// import CKEditor from "@ckeditor/ckeditor5-vue";
+// import Multiselect from "@vueform/multiselect";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import "@vueform/multiselect/themes/default.css";
 import useVuelidate from "@vuelidate/core";
@@ -38,8 +38,8 @@ export default {
         };
     },
     components: {
-        ckeditor: CKEditor.component,
-        Multiselect,
+        // ckeditor: CKEditor.component,
+        // Multiselect,
         DropZone,
     },
     props: {
@@ -56,8 +56,8 @@ export default {
         <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" active />
 
         <div v-else>
-            <BCardBody>
-                <!-- <div class="mb-3 mb-lg-0">
+            <!-- <BCardBody>
+                <div class="mb-3 mb-lg-0">
                             <label for="choices-priority-input" class="form-label">Prioridad</label>
 
                             <Multiselect v-model="value2" :close-on-select="true" :searchable="true" :create-option="true"
@@ -66,7 +66,7 @@ export default {
                                 { value: 'Media', label: 'Media' },
                                 { value: 'Baja', label: 'Baja' },
                                 ]" />
-                            </div> -->
+                            </div> 
 
                 <div class="row">
                     <div class="mb-3 col-4">
@@ -113,27 +113,28 @@ export default {
                                 ></i>
                             </BButton>
 
-                            <BButton
-                                type="button"
-                                :disabled="isDisabledAI"
-                                :loading="loadingBtnAI"
-                                variant="danger"
-                                :loadingFill="false"
-                                loadingText="Aplicando IA "
-                                class="w-sm me-1"
-                            >
-                                Enviar al peticionario
-                                <i
-                                    class="ri-send-plane-fill align-bottom ms-1 align-bottom"
-                                ></i>
-                            </BButton>
-                            <!-- <BButton type="submit" variant="primary" class="w-sm me-1"> Borrador </BButton> -->
-                            <BButton
-                                type="submit"
-                                variant="success"
-                                class="w-sm"
-                                >Generar Radicado</BButton
-                            >
+                            -->
+            <BButton
+                type="button"
+                :disabled="isDisabledAI"
+                :loading="loadingBtnAI"
+                variant="primary"
+                :loadingFill="false"
+                loadingText="Aplicando IA "
+                class="w-sm me-1"
+            >
+                Enviar al peticionario
+                <i
+                    class="ri-send-plane-fill align-bottom ms-1 align-bottom"
+                ></i>
+            </BButton>
+            <!-- <BButton type="submit" variant="primary" class="w-sm me-1">
+                Borrador
+            </BButton>
+            <BButton type="submit" variant="success" class="w-sm"
+                >Generar Radicado</BButton
+            > -->
+            <!--
                         </div>
                     </div>
                 </div>
@@ -141,7 +142,7 @@ export default {
                 <div class="ckeditor-classic">
                     <ckeditor v-model="editorData" :editor="editor"></ckeditor>
                 </div>
-            </BCardBody>
+            </BCardBody> -->
             <BCard no-body class="mt-3">
                 <BCardHeader>
                     <h5 class="card-title mb-0">Agrega archivo para radicar</h5>
