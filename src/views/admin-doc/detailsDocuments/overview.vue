@@ -31,72 +31,83 @@ export default {
             files: [],
             entryDate: "",
             expirationDate: "",
-            loading: false  ,
+            loading: false,
         };
     },
 
     async beforeMount() {
-        this.id = this.$route.query.id;
-        this.loading = true;
-        const docData = await getDocument("BAQVERDE", this.id);
-        if (docData?.entryDate && docData?.entryDate.seconds) {
-            const formattedDate = transform_date(docData?.entryDate.seconds); // Formatear fecha
-            this.entryDate = formattedDate; // Guardar la fecha formateada
-        }
+        try {
+            this.id = this.$route.query.id;
+            this.loading = true;
+            const docData = await getDocument("BAQVERDE", this.id);
+            if (docData?.entryDate && docData?.entryDate.seconds) {
+                const formattedDate = transform_date(
+                    docData?.entryDate.seconds
+                ); // Formatear fecha
+                this.entryDate = formattedDate; // Guardar la fecha formateada
+            }
 
-        if (docData?.expirationDate && docData?.expirationDate.seconds) {
-            const formattedDate = transform_date(
-                docData?.expirationDate.seconds
-            ); // Formatear fecha
-            this.expirationDate = formattedDate; // Guardar la fecha formateada
-        }
+            if (docData?.expirationDate && docData?.expirationDate.seconds) {
+                const formattedDate = transform_date(
+                    docData?.expirationDate.seconds
+                ); // Formatear fecha
+                this.expirationDate = formattedDate; // Guardar la fecha formateada
+            }
 
-        this.data = {
-            id: this.id,
-            numberEntryClaim: docData?.numberEntryClaim || "No definido",
-            area: docData?.area || "No definido",
-            documentaryTypologyEntry:
-                docData?.documentaryTypologyEntry || "No definido",
-            entryDate: this.entryDate || "No definido",
-            status:
-                docData?.status?.toUpperCase() == "EXPIRE"
-                    ? "Vencido"
-                    : docData?.status?.toUpperCase() == "ABOUT_TO_EXPIRE"
-                    ? "aboutToExpire"
-                    : docData?.status?.toUpperCase() == "IN_TERM"
-                    ? "En Termino"
-                    : docData?.status?.toUpperCase() == "ANSWERED"
-                    ? "Respondido"
-                    : docData?.status?.toUpperCase() || "No definido",
-            expirationDate: this.expirationDate || "No definido",
-            priority: docData?.priority || "BAJA",
-            serie: docData?.serie,
-            subSerie: docData?.subSerie,
-            externalRadicate: docData?.externalRadicate,
-            assignedTo: docData?.assignedTo,
-            folios: docData?.folios,
-            observations: docData?.observations,
-            summary:
-                docData?.summary?.replace("<p>", "").replace("</p>", "") ||
-                "No definido",
-            personType: docData?.petitionerInformation?.personType,
-            IdentificationType:
-                docData?.petitionerInformation?.identificationType,
-            identificationNumber:
-                docData?.petitionerInformation?.identificationNumber,
-            fullName:
-                docData?.petitionerInformation?.firstNames +
-                    " " +
-                    docData?.petitionerInformation?.firstNames || "No definido",
-            email: docData?.petitionerInformation?.email || "No definido",
-            phoneNumber:
-                docData?.petitionerInformation?.phoneNumber || "No definido",
-            address: docData?.petitionerInformation?.address || "No definido",
-        };
-        await getDocumentFilesUploads("BAQVERDE", this.id).then((data) => {
-            this.files = data;
-        });
-        this.loading = false;
+            this.data = {
+                id: this.id,
+                numberEntryClaim: docData?.numberEntryClaim || "No definido",
+                area: docData?.area || "No definido",
+                documentaryTypologyEntry:
+                    docData?.documentaryTypologyEntry || "No definido",
+                subject: docData?.subject || "No definido",
+                entryDate: this.entryDate || "No definido",
+                status:
+                    docData?.status?.toUpperCase() == "EXPIRE"
+                        ? "Vencido"
+                        : docData?.status?.toUpperCase() == "ABOUT_TO_EXPIRE"
+                        ? "aboutToExpire"
+                        : docData?.status?.toUpperCase() == "IN_TERM"
+                        ? "En Termino"
+                        : docData?.status?.toUpperCase() == "ANSWERED"
+                        ? "Respondido"
+                        : docData?.status?.toUpperCase() || "No definido",
+                expirationDate: this.expirationDate || "No definido",
+                priority: docData?.priority || "BAJA",
+                serie: docData?.serie,
+                subSerie: docData?.subSerie,
+                externalRadicate: docData?.externalRadicate,
+                assignedTo: docData?.assignedTo,
+                folios: docData?.folios,
+                observations: docData?.observations,
+                summary:
+                    docData?.summary?.replace("<p>", "").replace("</p>", "") ||
+                    "No definido",
+                personType: docData?.petitionerInformation?.personType,
+                IdentificationType:
+                    docData?.petitionerInformation?.identificationType,
+                identificationNumber:
+                    docData?.petitionerInformation?.identificationNumber,
+                fullName:
+                    docData?.petitionerInformation?.firstNames +
+                        " " +
+                        docData?.petitionerInformation?.firstNames ||
+                    "No definido",
+                email: docData?.petitionerInformation?.email || "No definido",
+                phoneNumber:
+                    docData?.petitionerInformation?.phoneNumber ||
+                    "No definido",
+                address:
+                    docData?.petitionerInformation?.address || "No definido",
+            };
+            await getDocumentFilesUploads("BAQVERDE", this.id).then((data) => {
+                this.files = data;
+            });
+            this.loading = false;
+        } catch (error) {
+            this.loading = false;
+            console.log("Error viste de documentos: ", error);
+        }
     },
 
     components: {
@@ -139,9 +150,7 @@ export default {
                                                             data.numberEntryClaim
                                                         }}
                                                         -
-                                                        {{
-                                                            data.documentaryTypologyEntry
-                                                        }}
+                                                        {{ data.subject }}
                                                     </h4>
                                                     <div
                                                         class="hstack gap-3 flex-wrap"
@@ -441,7 +450,11 @@ export default {
             </BRow>
         </div>
         <div class="spinner-container" v-show="loading">
-            <b-spinner variant="primary" type="grow" label="Spinning"></b-spinner>
+            <b-spinner
+                variant="primary"
+                type="grow"
+                label="Spinning"
+            ></b-spinner>
         </div>
     </Layout>
 </template>

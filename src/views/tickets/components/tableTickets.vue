@@ -12,6 +12,7 @@
             :scroll="{ x: 2000 }"
             :row-selection="rowSelection"
             @change="handleChangeSort"
+            :loading="loading"
         >
             <template
                 #customFilterDropdown="{
@@ -238,9 +239,11 @@ export default {
             dateStart: null,
             dateEnd: null,
             originDataSource: [],
+            loading: false
         };
     },
     async beforeMount() {
+        this.loading = true;
         const headers = {
             company: "BAQVERDE",
             "Content-Type": "application/json",
@@ -266,7 +269,7 @@ export default {
                             data?.expirationDate._seconds
                                 ? transform_date(data?.expirationDate._seconds)
                                 : "-",
-                        subject: data?.documentaryTypologyEntry || "-",
+                        subject: data?.subject || "-",
                         petitioner:
                             data?.petitionerInformation?.firstNames +
                                 " " +
@@ -277,8 +280,10 @@ export default {
                         action: data?.claimId,
                     });
                 });
+                this.loading = false;
             })
             .catch((error) => {
+                this.loading = false;
                 console.error("Error:", error);
             });
     },
@@ -331,6 +336,7 @@ export default {
                     title: "Titulo",
                     dataIndex: "subject",
                     key: "subject",
+                    width: "15%"
                 },
                 {
                     title: "Peticionario",

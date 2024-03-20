@@ -330,12 +330,6 @@ export default {
                                         <td>{{ data.externalRadicate }}</td>
                                     </tr>
                                     <tr>
-                                        <td class="fw-medium">
-                                            Radicado Externo
-                                        </td>
-                                        <td>{{ data.externalRadicate }}</td>
-                                    </tr>
-                                    <tr>
                                         <td class="fw-medium">Asiganado a:</td>
                                         <td>
                                             <!-- <div class="avatar-group">
