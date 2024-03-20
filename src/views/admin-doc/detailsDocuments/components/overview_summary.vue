@@ -22,6 +22,10 @@ export default {
                                 Resumen
                             </h6>
                             <p class="text-muted">{{ data.summary }}</p>
+                            <h6 class="fw-semibold text-uppercase mb-3">
+                                Observaciones
+                            </h6>
+                            <p class="text-muted">{{ data.observations }}</p>
 
                             <h6 class="fw-semibold text-uppercase mb-3">
                                 Información de contacto
@@ -36,7 +40,8 @@ export default {
                                     {{ data.address }}
                                 </li>
                                 <li>
-                                    <strong>Teléfono:</strong> {{ data.phone }}
+                                    <strong>Teléfono:</strong>
+                                    {{ data.phoneNumber }}
                                 </li>
                                 <li>
                                     <strong>Correo electrónico:</strong>
@@ -54,7 +59,7 @@ export default {
                                                 Fecha de Creación:
                                             </p>
                                             <h5 class="fs-15 mb-0">
-                                                {{ data.createdAt }}
+                                                {{ data.entryDate }}
                                             </h5>
                                         </div>
                                     </BCol>
@@ -66,7 +71,7 @@ export default {
                                                 Fecha limite:
                                             </p>
                                             <h5 class="fs-15 mb-0">
-                                                {{ data.deadline }}
+                                                {{ data.expirationDate }}
                                             </h5>
                                         </div>
                                     </BCol>
@@ -84,9 +89,9 @@ export default {
                                                     'alta'
                                                         ? 'danger'
                                                         : data?.priority?.toLowerCase() ==
-                                                            'media' ||
+                                                              'media' ||
                                                           data?.priority?.toLowerCase() ==
-                                                            'no definido'
+                                                              'no definido'
                                                         ? 'warning'
                                                         : 'info'
                                                 "
@@ -105,12 +110,18 @@ export default {
                                                 tag="div"
                                                 :variant="
                                                     data?.status?.toLowerCase() ==
-                                                    'completado'
+                                                    'vencido'
+                                                        ? 'danger'
+                                                        : data?.status?.toLowerCase() ==
+                                                          'por vencer'
+                                                        ? 'warning'
+                                                        : data?.status?.toLowerCase() ==
+                                                          'en termino'
                                                         ? 'success'
                                                         : data?.status?.toLowerCase() ==
-                                                          'en progreso'
-                                                        ? 'info'
-                                                        : 'warning'
+                                                          'respondido'
+                                                        ? 'primary'
+                                                        : 'secondary'
                                                 "
                                                 >{{ data.status }}</BBadge
                                             >
@@ -123,7 +134,7 @@ export default {
                                 <h6 class="mb-3 fw-semibold text-uppercase">
                                     Adjuntos
                                 </h6>
-                                <BRow class="g-3">
+                                <BRow class="g-3" v-show="files">
                                     <overview_summary_element
                                         v-for="file in files"
                                         :key="file.name"
@@ -131,6 +142,7 @@ export default {
                                         :file="file"
                                     />
                                 </BRow>
+                                <h6 class="mb-3 fw-semibold text-uppercase" v-show="!files">No se adjuntaron archivos</h6>
                             </div>
                         </div>
                     </BCardBody>
@@ -288,21 +300,45 @@ export default {
                             >
                                 <tbody>
                                     <tr>
-                                        <td class="fw-medium">Ticket</td>
-                                        <td>#{{ data.id }}</td>
+                                        <td class="fw-medium">
+                                            Número de Radicación
+                                        </td>
+                                        <td>{{ data.numberEntryClaim }}</td>
                                     </tr>
                                     <tr>
                                         <td class="fw-medium">Area</td>
-                                        <td>Juridica</td>
+                                        <td>{{ data.area }}</td>
                                     </tr>
                                     <tr>
-                                        <td class="fw-medium">Departamente</td>
-                                        <td>Gerencia</td>
+                                        <td class="fw-medium">
+                                            Método de entrada
+                                        </td>
+                                        <td>Página web</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-medium">Serie</td>
+                                        <td>{{ data.serie }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-medium">Subserie</td>
+                                        <td>{{ data.subSerie }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-medium">
+                                            Radicado Externo
+                                        </td>
+                                        <td>{{ data.externalRadicate }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-medium">
+                                            Radicado Externo
+                                        </td>
+                                        <td>{{ data.externalRadicate }}</td>
                                     </tr>
                                     <tr>
                                         <td class="fw-medium">Asiganado a:</td>
                                         <td>
-                                            <div class="avatar-group">
+                                            <!-- <div class="avatar-group">
                                                 <BLink
                                                     href="javascript:void(0);"
                                                     class="avatar-group-item"
@@ -353,7 +389,8 @@ export default {
                                                         </div>
                                                     </div>
                                                 </BLink>
-                                            </div>
+                                            </div> -->
+                                            {{ data.assignedTo }}
                                         </td>
                                     </tr>
 
@@ -380,13 +417,13 @@ export default {
                                         <td class="fw-medium">
                                             Fecha de Creación
                                         </td>
-                                        <td>{{ data.createdAt }}</td>
+                                        <td>{{ data.entryDate }}</td>
                                     </tr>
                                     <tr>
                                         <td class="fw-medium">Fecha limite</td>
-                                        <td>{{ data.deadline }}</td>
+                                        <td>{{ data.expirationDate }}</td>
                                     </tr>
-                                    <tr>
+                                    <!-- <tr>
                                         <td class="fw-medium">
                                             Última actualización
                                         </td>
@@ -411,415 +448,47 @@ export default {
                                                 >Comparendo</BBadge
                                             >
                                         </td>
-                                    </tr>
+                                    </tr> -->
                                 </tbody>
                             </table>
                         </div>
                     </BCardBody>
                 </BCard>
 
-                <!-- <BCard no-body>
+                <BCard no-body>
                     <BCardHeader
                         class="align-items-center d-flex border-bottom-dashed"
                     >
                         <BCardTitle class="mb-0 flex-grow-1"
-                            >Colaboradores</BCardTitle
+                            ><h5>Detalles del destinatario</h5></BCardTitle
                         >
-                        <div class="flex-shrink-0">
-                            <BButton
-                                type="button"
-                                variant="soft-primary"
-                                size="sm"
-                                ><i class="ri-share-line me-1 align-bottom"></i>
-                                Invitar Colaborador
-                            </BButton>
-                        </div>
                     </BCardHeader>
 
                     <BCardBody>
-                        <simplebar
-                            data-simplebar
-                            style="height: 235px"
-                            class="mx-n3 px-3"
-                        >
-                            <div class="vstack gap-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                        <img
-                                            src="@/assets/images/users/avatar-2.jpg"
-                                            alt=""
-                                            class="img-fluid rounded-circle"
-                                        />
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h5 class="fs-13 mb-0">
-                                            <BLink
-                                                href="#"
-                                                class="text-body d-block"
-                                                >Nancy Martino
-                                            </BLink>
-                                        </h5>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="d-flex align-items-center gap-1"
-                                        >
-                                            <BButton
-                                                type="button"
-                                                variant="light"
-                                                size="sm"
-                                                >Message
-                                            </BButton>
-
-                                            <BDropdown
-                                                variant="link"
-                                                toggle-class="btn btn-icon btn-sm fs-16 text-muted arrow-none"
-                                                menu-class="dropdown-menu-end"
-                                                :offset="{
-                                                    alignmentAxis: -130,
-                                                    crossAxis: 0,
-                                                    mainAxis: 10,
-                                                }"
-                                            >
-                                                <template #button-content>
-                                                    <i class="ri-more-fill"></i>
-                                                </template>
-                                                <BDropdownItem
-                                                    ><i
-                                                        class="ri-eye-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    View</BDropdownItem
-                                                >
-                                                <BDropdownItem
-                                                    ><i
-                                                        class="ri-pencil-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    Favorite
-                                                </BDropdownItem>
-                                                <BDropdownItem>
-                                                    <i
-                                                        class="ri-delete-bin-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    Delete
-                                                </BDropdownItem>
-                                            </BDropdown>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                        <div
-                                            class="avatar-title bg-success-subtle text-success rounded-circle"
-                                        >
-                                            HB
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h5 class="fs-13 mb-0">
-                                            <BLink
-                                                href="#"
-                                                class="text-body d-block"
-                                                >Henry Baird
-                                            </BLink>
-                                        </h5>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="d-flex align-items-center gap-1"
-                                        >
-                                            <BButton
-                                                type="button"
-                                                variant="light"
-                                                size="sm"
-                                                >Message
-                                            </BButton>
-                                            <BDropdown
-                                                variant="link"
-                                                toggle-class="btn btn-icon btn-sm fs-16 text-muted arrow-none"
-                                                menu-class="dropdown-menu-end"
-                                                :offset="{
-                                                    alignmentAxis: -130,
-                                                    crossAxis: 0,
-                                                    mainAxis: 10,
-                                                }"
-                                            >
-                                                <template #button-content>
-                                                    <i class="ri-more-fill"></i>
-                                                </template>
-                                                <BDropdownItem
-                                                    ><i
-                                                        class="ri-eye-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    View</BDropdownItem
-                                                >
-                                                <BDropdownItem
-                                                    ><i
-                                                        class="ri-pencil-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    Favorite
-                                                </BDropdownItem>
-                                                <BDropdownItem>
-                                                    <i
-                                                        class="ri-delete-bin-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    Delete
-                                                </BDropdownItem>
-                                            </BDropdown>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                        <img
-                                            src="@/assets/images/users/avatar-3.jpg"
-                                            alt=""
-                                            class="img-fluid rounded-circle"
-                                        />
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h5 class="fs-13 mb-0">
-                                            <BLink
-                                                href="#"
-                                                class="text-body d-block"
-                                                >Frank Hook
-                                            </BLink>
-                                        </h5>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="d-flex align-items-center gap-1"
-                                        >
-                                            <BButton
-                                                type="button"
-                                                variant="light"
-                                                size="sm"
-                                                >Message
-                                            </BButton>
-                                            <BDropdown
-                                                variant="link"
-                                                toggle-class="btn btn-icon btn-sm fs-16 text-muted arrow-none"
-                                                menu-class="dropdown-menu-end"
-                                                :offset="{
-                                                    alignmentAxis: -130,
-                                                    crossAxis: 0,
-                                                    mainAxis: 10,
-                                                }"
-                                            >
-                                                <template #button-content>
-                                                    <i class="ri-more-fill"></i>
-                                                </template>
-                                                <BDropdownItem
-                                                    ><i
-                                                        class="ri-eye-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    View</BDropdownItem
-                                                >
-                                                <BDropdownItem
-                                                    ><i
-                                                        class="ri-pencil-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    Favorite
-                                                </BDropdownItem>
-                                                <BDropdownItem>
-                                                    <i
-                                                        class="ri-delete-bin-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    Delete
-                                                </BDropdownItem>
-                                            </BDropdown>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                        <img
-                                            src="@/assets/images/users/avatar-4.jpg"
-                                            alt=""
-                                            class="img-fluid rounded-circle"
-                                        />
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h5 class="fs-13 mb-0">
-                                            <BLink
-                                                href="#"
-                                                class="text-body d-block"
-                                                >Jennifer Carter
-                                            </BLink>
-                                        </h5>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="d-flex align-items-center gap-1"
-                                        >
-                                            <BButton
-                                                type="button"
-                                                variant="light"
-                                                size="sm"
-                                                >Message
-                                            </BButton>
-                                            <BDropdown
-                                                variant="link"
-                                                toggle-class="btn btn-icon btn-sm fs-16 text-muted arrow-none"
-                                                menu-class="dropdown-menu-end"
-                                                :offset="{
-                                                    alignmentAxis: -130,
-                                                    crossAxis: 0,
-                                                    mainAxis: 10,
-                                                }"
-                                            >
-                                                <template #button-content>
-                                                    <i class="ri-more-fill"></i>
-                                                </template>
-                                                <BDropdownItem
-                                                    ><i
-                                                        class="ri-eye-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    View</BDropdownItem
-                                                >
-                                                <BDropdownItem
-                                                    ><i
-                                                        class="ri-pencil-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    Favorite
-                                                </BDropdownItem>
-                                                <BDropdownItem>
-                                                    <i
-                                                        class="ri-delete-bin-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    Delete
-                                                </BDropdownItem>
-                                            </BDropdown>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                        <div
-                                            class="avatar-title bg-success-subtle text-success rounded-circle"
-                                        >
-                                            AC
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h5 class="fs-13 mb-0">
-                                            <BLink
-                                                href="#"
-                                                class="text-body d-block"
-                                                >Alexis Clarke
-                                            </BLink>
-                                        </h5>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="d-flex align-items-center gap-1"
-                                        >
-                                            <BButton
-                                                type="button"
-                                                variant="light"
-                                                size="sm"
-                                                >Message
-                                            </BButton>
-                                            <BDropdown
-                                                variant="link"
-                                                toggle-class="btn btn-icon btn-sm fs-16 text-muted arrow-none"
-                                                menu-class="dropdown-menu-end"
-                                                :offset="{
-                                                    alignmentAxis: -130,
-                                                    crossAxis: 0,
-                                                    mainAxis: 10,
-                                                }"
-                                            >
-                                                <template #button-content>
-                                                    <i class="ri-more-fill"></i>
-                                                </template>
-                                                <BDropdownItem
-                                                    ><i
-                                                        class="ri-eye-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    View</BDropdownItem
-                                                >
-                                                <BDropdownItem
-                                                    ><i
-                                                        class="ri-pencil-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    Favorite
-                                                </BDropdownItem>
-                                                <BDropdownItem>
-                                                    <i
-                                                        class="ri-delete-bin-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    Delete
-                                                </BDropdownItem>
-                                            </BDropdown>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-xs flex-shrink-0 me-3">
-                                        <img
-                                            src="@/assets/images/users/avatar-7.jpg"
-                                            alt=""
-                                            class="img-fluid rounded-circle"
-                                        />
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h5 class="fs-13 mb-0">
-                                            <BLink
-                                                href="#"
-                                                class="text-body d-block"
-                                                >Joseph Parker
-                                            </BLink>
-                                        </h5>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="d-flex align-items-center gap-1"
-                                        >
-                                            <BButton
-                                                type="button"
-                                                variant="light"
-                                                size="sm"
-                                                >Message
-                                            </BButton>
-                                            <BDropdown
-                                                variant="link"
-                                                toggle-class="btn btn-icon btn-sm fs-16 text-muted arrow-none"
-                                                menu-class="dropdown-menu-end"
-                                                :offset="{
-                                                    alignmentAxis: -130,
-                                                    crossAxis: 0,
-                                                    mainAxis: 10,
-                                                }"
-                                            >
-                                                <template #button-content>
-                                                    <i class="ri-more-fill"></i>
-                                                </template>
-                                                <BDropdownItem
-                                                    ><i
-                                                        class="ri-eye-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    View</BDropdownItem
-                                                >
-                                                <BDropdownItem
-                                                    ><i
-                                                        class="ri-pencil-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    Favorite
-                                                </BDropdownItem>
-                                                <BDropdownItem>
-                                                    <i
-                                                        class="ri-delete-bin-fill align-bottom me-2 text-muted"
-                                                    ></i>
-                                                    Delete
-                                                </BDropdownItem>
-                                            </BDropdown>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </simplebar>
+                        <table class="table table-borderless align-middle mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-medium">
+                                        Tipo de Peticionario
+                                    </td>
+                                    <td>{{ data.personType }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-medium">
+                                        Tipo de Identificación
+                                    </td>
+                                    <td>{{ data.IdentificationType }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-medium">
+                                        Número de Identificación
+                                    </td>
+                                    <td>{{ data.identificationNumber }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </BCardBody>
-                </BCard> -->
+                </BCard>
             </BCol>
         </BRow>
     </BTab>
