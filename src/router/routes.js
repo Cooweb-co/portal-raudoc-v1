@@ -69,6 +69,22 @@ export default [
   // RouDoc - Gestion Documental
 
   {
+    path: "/r/:company/:documentID",
+    name: "consulta-de-radicado",
+    meta: {
+      title: "Consulta de radicado",
+    },
+    component: () => import("../views/admin-doc/overview-without-sign"),
+  },
+
+  {
+    path: "/gestion-documental/radicado/:documentID",
+    name: "projects Overview",
+    meta: { title: "Projects Overview", authRequired: true },
+    component: () => import("../views/admin-doc/detailsDocuments/overview"),
+  },
+
+  {
     path: "/gestion-documental/organigrama",
     name: "organigrama",
     meta: { title: "Organigrama", authRequired: true },
@@ -76,20 +92,18 @@ export default [
   },
 
   {
-    path: "/gestion-documental/document-list",
-    name: "organigrama",
-    meta: { title: "Organigrama", authRequired: true },
-    component: () => import("../views/admin-doc/document-list"),
-  },
-  
-  {
-    path: "/radicacion/radicar-documento",
+    path: "/radicacion/radicar-documento/:id?",
     name: "radicacion",
-    meta: { title: "Organigrama", authRequired: true },
+    meta: { title: "Radicación", authRequired: true },
     component: () => import("../views/admin-doc/create"),
   },
 
-
+  {
+    path: "/gestion-documental/document-list",
+    name: "document-list",
+    meta: { title: "Document - List", authRequired: true },
+    component: () => import("../views/admin-doc/document-list"),
+  },
 
 
 
@@ -275,25 +289,20 @@ export default [
     path: "/apps/projects-list",
     name: "projects-list",
     meta: { title: "Projects List", authRequired: true },
-    component: () => import("../views/apps/projects/list"),
+    component: () => import("../views/admin-doc/detailsDocuments/list"),
   },
-  {
-    path: "/apps/projects-overview",
-    name: "projects Overview",
-    meta: { title: "Projects Overview", authRequired: true },
-    component: () => import("../views/apps/projects/overview"),
-  },
+
   {
     path: "/apps/projects-create",
     name: "projects-create",
     meta: { title: "Projects Create", authRequired: true },
-    component: () => import("../views/apps/projects/create"),
+    component: () => import("../views/admin-doc/detailsDocuments/create"),
   },
   {
     path: "/apps/projects-new",
     name: "projects-new",
     meta: { title: "Projects Create", authRequired: true },
-    component: () => import("../views/apps/projects/new"),
+    component: () => import("../views/admin-doc/detailsDocuments/new"),
   },
   {
     path: "/apps/tasks-details",

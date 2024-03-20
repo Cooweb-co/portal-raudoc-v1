@@ -81,7 +81,7 @@ export default {
 </script>
 
 <template>
-  <BCard no-body>
+  <BCard no-body hide>
     <BCardHeader class="d-flex align-items-center">
       <BCardTitle class="flex-grow-1 mb-0">Pendientes por Funcionario / Peticiones Respondidas por Empleado</BCardTitle>
       <div class="flex-shrink-0">

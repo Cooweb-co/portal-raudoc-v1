@@ -6,22 +6,22 @@ import {
   HomeIcon,
   // GridIcon,
   UsersIcon,
-  CommandIcon,
-  PackageIcon,
-  LayersIcon,
-  CopyIcon,
+  // CommandIcon,
+  // PackageIcon,
+  // LayersIcon,
+  // CopyIcon,
   FileTextIcon,
-  DatabaseIcon,
-  PieChartIcon,
-  ArchiveIcon,
-  MapPinIcon,
-  Share2Icon,
-  SearchIcon,
+  // DatabaseIcon,
+  // PieChartIcon,
+  // ArchiveIcon,
+  // MapPinIcon,
+  // Share2Icon,
+  // SearchIcon,
   SettingsIcon,
-  ListIcon,
-  HelpCircleIcon,
-LifeBuoyIcon,
-GitMergeIcon
+  // ListIcon,
+  // HelpCircleIcon,
+// LifeBuoyIcon,
+// GitMergeIcon
 } from "@zhuowenli/vue-feather-icons";
 
 export default {
@@ -29,22 +29,22 @@ export default {
     HomeIcon,
     // GridIcon,
     UsersIcon,
-    CommandIcon,
-    PackageIcon,
-    LayersIcon,
-    CopyIcon,
+    // CommandIcon,
+    // PackageIcon,
+    // LayersIcon,
+    // CopyIcon,
     FileTextIcon,
-    DatabaseIcon,
-    PieChartIcon,
-    ArchiveIcon,
-    MapPinIcon,
-    Share2Icon,
-    SearchIcon,
+    // DatabaseIcon,
+    // PieChartIcon,
+    // ArchiveIcon,
+    // MapPinIcon,
+    // Share2Icon,
+    // SearchIcon,
     SettingsIcon,
-    ListIcon,
-    HelpCircleIcon,
-    LifeBuoyIcon,
-    GitMergeIcon
+    // ListIcon,
+    // HelpCircleIcon,
+    // LifeBuoyIcon,
+    // GitMergeIcon
   },
   data() {
     return {
@@ -228,11 +228,11 @@ export default {
           if (!item.classList.contains("active")) {
             item.setAttribute("aria-expanded", false);
           }
-          item.nextElementSibling.classList.remove("show");
+          // item.nextElementSibling.classList.remove("show");
         }
         if (item.classList.contains("nav-link")) {
           if (item.nextElementSibling) {
-            item.nextElementSibling.classList.remove("show");
+            // item.nextElementSibling.classList.remove("show");
           }
           item.setAttribute("aria-expanded", false);
         }
@@ -325,16 +325,7 @@ export default {
           </router-link>
         </li>
 
-        <li class="nav-item">
-          <router-link class="nav-link menu-link" to="/apps/projects-overview">
-            <ListIcon width="24" height="24" />
-            <span data-key="t-dashboard">Ej. Radicado #TI-2881</span>
-          </router-link>
-        </li>
-
-      
-
-        <li class="menu-title">
+        <!-- <li class="menu-title">
           <i class="ri-more-fill"></i>
           <span data-key="t-pages">Gestión Documental</span>
         </li>
@@ -350,18 +341,18 @@ export default {
             <SearchIcon width="24" height="24" />
             <span data-key="t-dashboard">Buscador Documental</span>
           </router-link>
-        </li>
-
+        </li> -->
+<!-- 
         <li class="nav-item">
           <router-link class="nav-link menu-link" to="/gestion-documental/organigrama">
             <Share2Icon width="24" height="24" />
             <span data-key="t-dashboard">Organigrama</span>
           </router-link>
-        </li>
+        </li> -->
 
 
 
-        <li class="menu-title">
+        <!-- <li class="menu-title">
           <i class="ri-more-fill"></i>
           <span data-key="t-components">Gestión de Jurídica</span>
         </li>
@@ -391,7 +382,7 @@ export default {
             <ListIcon width="24" height="24" />
             <span data-key="t-dashboard">Autos</span>
           </router-link>
-        </li>
+        </li> -->
 
 
 
@@ -416,7 +407,7 @@ export default {
         </li>
         
 
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <router-link class="nav-link menu-link" to="/jobs/candidate-lists">
             <GitMergeIcon width="24" height="24" />
             <span data-key="t-dashboard">Flujo Documental</span>
@@ -433,25 +424,25 @@ export default {
 
 
 
-   
+    -->
        
-        <li class="menu-title">
+        <!-- <li class="menu-title">
           <i class="ri-more-fill"></i>
           <span data-key="t-components">Ayuda</span>
-        </li>
+        </li> -->
 
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <router-link class="nav-link menu-link" to="/pages/privacy-policy">
             <HelpCircleIcon width="24" height="24" />
             <span data-key="t-dashboard">Manual de usuario</span>
           </router-link>
-        </li> 
-        <li class="nav-item">
+        </li>  -->
+        <!-- <li class="nav-item">
           <router-link class="nav-link menu-link" to="/pages/faqs">
             <LifeBuoyIcon width="24" height="24" />
             <span data-key="t-dashboard">Preguntas frecuentes</span>
           </router-link>
-        </li> 
+        </li>  -->
         <!-- <li class="nav-item">
           <router-link class="nav-link menu-link" to="/jobs/candidate-lists">
             <SettingsIcon width="24" height="24" />
@@ -459,8 +450,7 @@ export default {
           </router-link>
         </li>  -->
 
-
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <a class="nav-link menu-link" href="#sidebarApps" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarApps">
             <GridIcon width="24" height="24" />
             <span data-key="t-apps"> {{ $t("t-apps") }}</span>
@@ -894,12 +884,12 @@ export default {
               </li>
             </ul>
           </div>
-        </li>
+        </li> -->
 
 
 
 
-        <li class="menu-title">
+        <!-- <li class="menu-title">
           <i class="ri-more-fill"></i>
           <span data-key="t-components">{{ $t("t-components") }}</span>
         </li>
@@ -1438,7 +1428,7 @@ export default {
               </li>
             </ul>
           </div>
-        </li>
+        </li>  -->
       </ul>
     </template>
   </BContainer>

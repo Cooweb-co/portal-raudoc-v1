@@ -17,17 +17,17 @@ export default {
                         <BRow>
                             <BCol xxl="5" class="align-self-center">
                                 <div class="py-4">
-                                    <h4 class="display-6 coming-soon-text">preguntas frecuentes</h4>
-                                    <p class="text-muted fs-15 mt-3">en este apartado podras resolver algunas dudas que tengas 
+                                    <h4 class="">Preguntas Frecuentes</h4>
+                                    <p class="text-muted fs-15 mt-3">Aqui podras resolver algunas dudas que tengas 
                                         sobre lo que hacemos, informate!</p>
-                                    <div class="hstack flex-wrap gap-2">
+                                    <!-- <div class="hstack flex-wrap gap-2">
                                         <BButton pill variant="primary" type="button" class="btn-label"><i
                                                 class="ri-mail-line label-icon align-middle rounded-pill fs-16 me-2"></i>
                                             envianos un mensaje</BButton>
                                         <BButton pill variant="secondary" type="button" class="btn-label"><i
                                             class="ri-close-line label-icon align-middle rounded-pill fs-16 me-2"></i>
                                             o contactans en X</BButton>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </BCol>
                             <BCol xxl="3" class="ms-auto">

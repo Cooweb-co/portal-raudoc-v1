@@ -10,7 +10,7 @@ export default {
           feaIcon: "briefcase",
           feaIconClass: "primary",
           label: "PETICIONES RECIBIDAS",
-          counter: "825",
+          counter: "8250",
           suffix: "",
           badgeClass: "danger",
           icon: "ri-arrow-down-s-line",

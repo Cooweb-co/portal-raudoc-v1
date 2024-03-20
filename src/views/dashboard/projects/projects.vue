@@ -10,12 +10,12 @@ export default {
   setup() {
     return {
       series: [{
-        name: "Number of Projects ",
+        name: "Peticiones",
         type: "bar",
         data: [34, 65, 46, 68, 49, 61, 42, 44, 78, 52, 63, 67],
       },
       {
-        name: "Revenue",
+        name: "Respuestas",
         type: "area",
         data: [
           89.25, 98.58, 68.74, 108.87, 77.54, 84.03, 51.24, 28.57, 92.57,
@@ -23,7 +23,7 @@ export default {
         ],
       },
       {
-        name: "Active Projects",
+        name: "Pendientes",
         type: "bar",
         data: [8, 12, 7, 17, 21, 11, 5, 9, 7, 29, 12, 35],
       },
@@ -165,7 +165,7 @@ export default {
         <BCol cols="6" sm="3">
           <div class="p-3 border border-dashed border-start-0">
             <h5 class="mb-1">
-              <count-to :duration="1000" :startVal='0' :endVal="9851">PETICIONES</count-to>
+              <count-to :duration="1000" :startVal='0' :endVal="8250">PETICIONES</count-to>
             </h5>
             <p class="text-muted mb-0">Peticiones Recibidas</p>
           </div>
@@ -173,7 +173,7 @@ export default {
         <BCol cols="6" sm="3">
           <div class="p-3 border border-dashed border-start-0">
             <h5 class="mb-1">
-              <count-to :duration="1000" :startVal='0' :endVal="1026"></count-to>
+              <count-to :duration="1000" :startVal='0' :endVal="7522"></count-to>
             </h5>
             <p class="text-muted mb-0">Peticiones Respondidas</p>
           </div>
@@ -181,7 +181,7 @@ export default {
         <BCol cols="6" sm="3">
           <div class="p-3 border border-dashed border-start-0">
             <h5 class="mb-1">
-              <count-to :duration="1000" :startVal='0' :endVal="228"></count-to>
+              <count-to :duration="1000" :startVal='0' :endVal="168"></count-to>
             </h5>
             <p class="text-muted mb-0">Peticiones por Responder</p>
           </div>

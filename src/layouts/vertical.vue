@@ -164,3 +164,8 @@ export default {
     <RightBar />
   </div>
 </template>
+<style scoped>
+.page-content {
+  min-height: 93vh !important;
+}
+</style>

@@ -5,8 +5,8 @@ import PageHeader from "@/components/page-header";
 import Widgets from "./widget.vue";
 import Schedules from "./schedule.vue";
 import Project from "./projects.vue";
-import Task from "./tasks.vue";
-import ActiveProjects from "./active-projects.vue";
+// import Task from "./tasks.vue";
+// import ActiveProjects from "./active-projects.vue";
 
 export default {
   components: {
@@ -15,8 +15,8 @@ export default {
     Widgets,
     Schedules,
     Project,
-    Task,
-    ActiveProjects,
+    // Task,
+    // ActiveProjects,
   },
 };
 </script>
@@ -46,14 +46,14 @@ export default {
       </BCol>
     </BRow>
 
-    <BRow>
+    <!-- <BRow>
       <BCol xl="7">
         <ActiveProjects />
       </BCol>
       <BCol xl="5">
         <Task />
       </BCol>
-    </BRow>
+    </BRow> -->
 
     <!-- <BRow>
       <BCol xxl="4">
