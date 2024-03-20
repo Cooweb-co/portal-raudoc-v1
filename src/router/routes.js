@@ -69,6 +69,15 @@ export default [
   // RouDoc - Gestion Documental
 
   {
+    path: "/r/:company/:documentID",
+    name: "default",
+    meta: {
+      title: "Consulta de radicado",
+    },
+    component: () => import("../views/admin-doc/overview-without-sign"),
+  },
+
+  {
     path: "/gestion-documental/organigrama",
     name: "organigrama",
     meta: { title: "Organigrama", authRequired: true },
