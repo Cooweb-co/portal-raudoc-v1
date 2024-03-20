@@ -318,12 +318,12 @@ export default {
           </router-link>
         </li>
 
-        <!-- <li class="nav-item">
+        <li class="nav-item">
           <router-link class="nav-link menu-link" to="/apps/tickets-list">
             <ListIcon width="24" height="24" />
             <span data-key="t-dashboard">Gestión de Radicados</span>
           </router-link>
-        </li> -->
+        </li>
 
         <!-- <li class="menu-title">
           <i class="ri-more-fill"></i>

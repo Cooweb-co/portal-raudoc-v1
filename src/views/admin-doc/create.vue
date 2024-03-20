@@ -2,7 +2,6 @@
 import { ref, watch, getCurrentInstance, onUnmounted } from "vue";
 import Multiselect from "@vueform/multiselect";
 import "@vueform/multiselect/themes/default.css";
-// import DropZone from "@/components/widgets/dropZone";
 import useVuelidate from "@vuelidate/core";
 import Layout from "@/layouts/main.vue";
 import PageHeader from "@/components/page-header";
@@ -13,6 +12,7 @@ import { getFirebaseBackend } from "../../authUtils.js";
 import { uploadBytes, ref as storageRef } from "firebase/storage";
 import ValidateLabel from "../../utils/ValidateLabel.vue";
 import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
+import Modal from "../modals/Modal.vue";
 
 import {
   createClaimID,
@@ -30,7 +30,10 @@ export default {
     const companyID = ref("BAQVERDE");
     const year = ref(new Date().getFullYear());
     const claimData = ref(null);
-    const mode = ref('entrada')
+    const mode = ref("Entry");
+    const saveLoading = ref(false);
+    const submitLoading = ref(false);
+    const qrModal = ref(false);
     let unsubscribe;
     let idProccessAI;
 
@@ -52,6 +55,7 @@ export default {
       lastNames: "",
       email: "",
       address: "",
+      assignedTo: "",
     });
 
     const rules = {
@@ -72,6 +76,7 @@ export default {
       lastNames: { required: MESSAGE_REQUIRED },
       email: { required: MESSAGE_REQUIRED, MESSAGE_EMAIL },
       address: { required: MESSAGE_REQUIRED },
+      assignedTo: { required: MESSAGE_REQUIRED },
     };
 
     const v$ = useVuelidate(rules, form.value);
@@ -84,13 +89,13 @@ export default {
         closeOnClick: false,
       });
 
-      console.log("startListening");
+      // console.log("startListening");
 
       unsubscribe = onListenClaimData(
         documentID.value,
         companyID.value,
         (data) => {
-          console.log("onListenClaimData >>", data);
+          // console.log("onListenClaimData >>", data);
           claimData.value = data;
           if (data.status == "DRAFT" && data.summary == null) {
             setTimeout(() => {
@@ -115,7 +120,7 @@ export default {
           instance.proxy.editorData = data.summary ? data.summary : "";
         }
       );
-      console.log("unsubscribe::", unsubscribe);
+      // console.log("unsubscribe::", unsubscribe);
       return unsubscribe;
     };
 
@@ -136,7 +141,7 @@ export default {
       dropzoneFile.value = document.getElementById("formFile").files[0];
       files.value.push(dropzoneFile.value);
       const file = dropzoneFile.value;
-      console.log("file::::", file);
+      // console.log("file::::", file);
       try {
         if (!documentID.value) {
           await instance.proxy.handleCreateClaimID();
@@ -190,7 +195,10 @@ export default {
       claimData,
       form,
       v$,
-      mode
+      mode,
+      saveLoading,
+      submitLoading,
+      qrModal,
     };
   },
   data() {
@@ -216,6 +224,7 @@ export default {
         altInput: true,
         dateFormat: "d M, Y",
       },
+      showRadicationButton: false,
     };
   },
   methods: {
@@ -229,17 +238,102 @@ export default {
         console.log(error);
       }
     },
+
     deleteRecord(ele) {
       ele.target.parentElement.parentElement.parentElement.remove();
     },
+
     fillFieldWithAI() {
-      console.log(this.claimData.applicant.address);
+      // console.log(this.claimData.applicant.address);
       this.identificationType = this.claimData.applicant.identificationType;
       this.gender = this.claimData.applicant.gender;
       this.countryOfResidence = this.claimData.applicant.countryOfResidence;
       this.cityOfResidence = this.claimData.applicant.cityOfResidence;
       this.deadline = this.claimData.deadline;
     },
+
+    async handleSaveChanges() {
+      try {
+        const config = {
+          headers: {
+            company: "BAQVERDE",
+            "Content-Type": "application/json", // Puedes ajustar el tipo de contenido según sea necesario
+          },
+        };
+
+        const body = {
+          area: this.form.area,
+          serie: this.form.serie,
+          subSerie: this.form.subSerie,
+          days: 15,
+          documentaryTypologyEntry: this.form.documentType,
+          entryDate: this.form.date,
+          folios: parseInt(this.form.folios),
+          assignedTo: this.form.assignedTo,
+          observations: "prueba",
+          externalRadicate: this.form.externalFiling,
+          petitionerInformation: {
+            personType: this.form.personType,
+            identificationType: this.form.idType,
+            identificationNumber: this.form.idNumber,
+            firstNames: this.form.names,
+            lastNames: this.form.lastNames,
+            address: this.form.address,
+            phoneNumber: this.form.contactPhone,
+            email: this.form.email,
+          },
+        };
+        const response = await axios.post(
+          `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`,
+          body,
+          config
+        );
+        if (response.data) {
+          this.saveLoading = false;
+          this.showRadicationButton = true;
+        }
+        // console.log(response);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
+    async handleSubmitDocument() {
+      try {
+        this.submitLoading = true;
+        const config = {
+          headers: {
+            company: "BAQVERDE",
+            "Content-Type": "application/json", // Puedes ajustar el tipo de contenido según sea necesario
+          },
+        };
+
+        const body = {
+          typeRadicate: this.mode,
+        };
+
+        const response = await axios.post(
+          `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_GENERATE_RADICATE_V1?claimId=${this.documentID}`,
+          body,
+          config
+        );
+
+        if (response) {
+          this.submitLoading = false;
+          toast.success("Radicado emitido exitosamente!", {
+            position: toast.POSITION.TOP_RIGHT,
+            autoClose: 3000,
+          });
+          this.qrModal = true;
+        }
+
+        // console.log(response);
+      } catch (error) {
+        this.submitLoading = false;
+        console.log(error);
+      }
+    },
+
     async handleSubmitChange() {
       // let camposFaltantes = [];
       // if (!this.subject) camposFaltantes.push("Asunto");
@@ -264,75 +358,76 @@ export default {
       //   );
       //   return;
       // }
-      console.log("La fecha límite es: " + this.deadline);
+      // console.log("La fecha límite es: " + this.deadline);
       // Aquí continúa la lógica para manejar el envío de datos cuando todos los campos están llenos
-      const dataToSend = {
-        id: this.documentID || null,
-        assignedTo: this.claimData.assignedTo || null,
-        state: this.status || "ABIERTO",
-        priority: this.priority || "BAJA",
-        summary: this.editorData || null,
-        subject: this.subject || null,
-        destinationEntity: this.claimData.destinationEntity || null,
-        applicant: {
-          fullName: this.claimData.applicant.fullName || null,
-          id: this.claimData.applicant.identification || null,
-          identificationType: this.identificationType || null,
-          address: this.claimData.applicant.address || null,
-          sex: this.gender || null,
-          countryOfResidence: this.countryOfResidence || null,
-          cityOfResidence: this.cityOfResidence || null,
-        },
-        deadline: this.deadline || null,
-        typeDocumentClaim: this.typeOfApplicant || null,
-        claims: this.claimData.claims || null,
-        summaryMarkdown: this.claimData.summaryMarkdown || null,
-        updatedAt: new Date(),
-      };
-      if (!this.documentID) {
-        console.error("documentID es nulo o indefinido.");
-        toast.error("Error: documentID es requerido.", {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 3000,
-        });
-        return;
-      }
-
-      const dataToSendJSON = JSON.stringify(dataToSend, null, 2);
-      const url = `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_UPDATE_BY_ID_V1?claimId=${this.documentID}`;
-
-      try {
-        const response = await axios.post(url, dataToSendJSON, {
-          headers: {
-            "Content-Type": "application/json",
-            company: "BAQVERDE",
-          },
-        });
-        console.log(response);
-        toast.success("Documento cargado y añadido correctamente!", {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 3000,
-        });
-        this.$router.push("/apps/tickets-list");
-      } catch (error) {
-        console.error(error);
-        toast.error("Error al guardar cambios", {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 3000,
-        });
-      }
+      // const dataToSend = {
+      //   id: this.documentID || null,
+      //   assignedTo: this.claimData.assignedTo || null,
+      //   state: this.status || "ABIERTO",
+      //   priority: this.priority || "BAJA",
+      //   summary: this.editorData || null,
+      //   subject: this.subject || null,
+      //   destinationEntity: this.claimData.destinationEntity || null,
+      //   applicant: {
+      //     fullName: this.claimData.applicant.fullName || null,
+      //     id: this.claimData.applicant.identification || null,
+      //     identificationType: this.identificationType || null,
+      //     address: this.claimData.applicant.address || null,
+      //     sex: this.gender || null,
+      //     countryOfResidence: this.countryOfResidence || null,
+      //     cityOfResidence: this.cityOfResidence || null,
+      //   },
+      //   deadline: this.deadline || null,
+      //   typeDocumentClaim: this.typeOfApplicant || null,
+      //   claims: this.claimData.claims || null,
+      //   summaryMarkdown: this.claimData.summaryMarkdown || null,
+      //   updatedAt: new Date(),
+      // };
+      // console.log(dataToSend);
+      // if (!this.documentID) {
+      //   console.error("documentID es nulo o indefinido.");
+      //   toast.error("Error: documentID es requerido.", {
+      //     position: toast.POSITION.TOP_RIGHT,
+      //     autoClose: 3000,
+      //   });
+      //   return;
+      // }
+      // const dataToSendJSON = JSON.stringify(dataToSend, null, 2);
+      // const url = `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_UPDATE_BY_ID_V1?claimId=${this.documentID}`;
+      // try {
+      //   const response = await axios.post(url, dataToSendJSON, {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       company: "BAQVERDE",
+      //     },
+      //   });
+      //   console.log(response);
+      //   toast.success("Documento cargado y añadido correctamente!", {
+      //     position: toast.POSITION.TOP_RIGHT,
+      //     autoClose: 3000,
+      //   });
+      //   this.$router.push("/apps/tickets-list");
+      // } catch (error) {
+      //   console.error(error);
+      //   toast.error("Error al guardar cambios", {
+      //     position: toast.POSITION.TOP_RIGHT,
+      //     autoClose: 3000,
+      //   });
+      // }
     },
+
     async handleSaveInfo() {
       try {
         this.v$.$touch();
 
-        if (!this.v$.$invalid) {
+        if (this.v$.$invalid) {
           return;
         } else {
-          console.log(this.form);
-          await this.handleSubmitChange();
+          this.saveLoading = true;
+          await this.handleSaveChanges();
         }
       } catch (error) {
+        this.saveLoading = false;
         console.log(error);
       }
     },
@@ -348,43 +443,93 @@ export default {
     },
   },
   components: {
-    // DropZone,
     Layout,
     PageHeader,
     Multiselect,
     flatPickr,
     ValidateLabel,
+    Modal,
   },
 };
 </script>
 
 <template>
+  <!-- Modal -->
+  <Modal v-if="qrModal" title="" size="small" :hideIconClose="true" @close="qrModal = false">
+    <template #content>
+      <div class="d-flex flex-column justify-content-center align-items-center gap-3">
+        <div>
+          <h4 class="text-success">[Numero de radicado]</h4>
+        </div>
+        <div class="pb-4">
+          <a-qrcode
+            error-level="H"
+            value="http://portal.raudoc.com/r/BAQVERDE/EXT-20042-12009"
+          />
+        </div>
+      </div>
+    </template>
+  </Modal>
+
   <Layout>
     <PageHeader
       :title="`RADICAR DOCUMENTO`"
       subTitle="Crear"
       pageTitle="Proyectos"
     />
+
+    <!-- page header ( buttons ) -->
     <BRow>
       <div class="col-6 col-sm-6">
         <a-radio-group v-model:value="mode" :style="{ marginBottom: '' }">
-          <a-radio-button value="entrada">Entrada</a-radio-button>
-          <a-radio-button value="salida">Salida</a-radio-button>
+          <a-radio-button value="Entry">Entrada</a-radio-button>
+          <a-radio-button value="Output">Salida</a-radio-button>
         </a-radio-group>
       </div>
       <div class="text-end mb-4 col-6 col-sm-6">
         <BButton
+          v-if="!showRadicationButton"
           type="submit"
           variant="success"
           class="w-sm"
           @click="handleSaveInfo"
+          :disabled="saveLoading"
         >
-          Guardar Cambios</BButton
+          <div class="button-content">
+            <span
+              v-if="saveLoading"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <span>Guardar Cambios</span>
+          </div>
+        </BButton>
+        <BButton
+          v-else
+          type="submit"
+          variant="success"
+          class="w-sm"
+          @click="handleSubmitDocument"
+          :disabled="submitLoading"
         >
+          <div class="button-content">
+            <span
+              v-if="submitLoading"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <span>Radicar Documento</span>
+          </div>
+        </BButton>
       </div>
     </BRow>
+
+    <!-- columns of page data ( document section ) - ( form section ) -->
     <BRow>
-      <BCol lg="4">
+      <!-- Document section column -->
+      <BCol lg="4" md="12" sm="12">
         <!-- {{ claimData }} -->
         <BCard no-body>
           <BCardHeader>
@@ -472,7 +617,9 @@ export default {
           </BCardBody>
         </BCard>
       </BCol>
-      <BCol lg="8">
+
+      <!-- Form section column -->
+      <BCol lg="8" md="12" sm="12">
         <BCard no-body>
           <BCardHeader>
             <h5 class="card-title mb-0 text-muted fw-light fst-italic">
@@ -677,14 +824,7 @@ export default {
                   id="folios"
                   placeholder="Ingrese folios"
                 />
-                <div
-                  v-if="submitted && v$.user.username.$error"
-                  class="invalid-feedback"
-                >
-                  <span v-if="v$.user.username.required.$message">{{
-                    v$.user.username.required.$message
-                  }}</span>
-                </div>
+
                 <ValidateLabel v-bind="{ v$ }" attribute="folios" />
               </BCol>
               <BCol lg="3" class="mb-3">
@@ -701,15 +841,22 @@ export default {
                   id="RadicadoExterno"
                   placeholder="# Radicado externo"
                 />
-                <div
-                  v-if="submitted && v$.user.username.$error"
-                  class="invalid-feedback"
-                >
-                  <span v-if="v$.user.username.required.$message">{{
-                    v$.user.username.required.$message
-                  }}</span>
-                </div>
+
                 <ValidateLabel v-bind="{ v$ }" attribute="externalFiling" />
+              </BCol>
+              <BCol lg="3" class="mb-3">
+                <label for="username" class="form-label fw-bold">
+                  Asignado a <span class="text-danger">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.assignedTo"
+                  id="RadicadoExterno"
+                  placeholder="Persona asignada"
+                />
+
+                <ValidateLabel v-bind="{ v$ }" attribute="assignedTo" />
               </BCol>
             </BRow>
           </BCardBody>
@@ -946,5 +1093,12 @@ export default {
 
 .is-danger {
   color: red;
+}
+
+.button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 </style>
