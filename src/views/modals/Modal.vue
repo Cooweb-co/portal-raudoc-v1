@@ -61,18 +61,14 @@ onUnmounted(() => {
             <slot name="title">
               <span class="text-wrap fs-5 fw-bold">{{ title }}</span>
             </slot>
-
+            
             <button
-              v-if="!hideIconClose"
-              class="v-modal-close ml-auto"
+              v-if="hideIconClose"
+              class="v-modal-close"
               aria-label="close"
               @click="emit('close')"
             >
-              <i
-                aria-hidden="true"
-                class="iconify"
-                data-icon="feather:x"
-              />
+            <img src="../../../public/close.svg" alt="" style="width: 15px; height: 15px;">
             </button>
           </header>
 
@@ -204,7 +200,8 @@ onUnmounted(() => {
       .modal-card-head {
         display: flex;
         align-items: center;
-        padding: 15px 20px;
+        justify-content: space-between;
+        padding: 15px 5px;
         background: var(--modal-bg-color);
         border-bottom-color: var(--modal-border-color);
         border-top-left-radius: 1rem;
@@ -216,7 +213,7 @@ onUnmounted(() => {
 
         .v-modal-close {
           display: flex;
-          justify-content: center;
+          justify-content: flex-end;
           align-items: center;
           background: none;
           border-color: transparent;

@@ -18,9 +18,9 @@ import {
   // Share2Icon,
   // SearchIcon,
   SettingsIcon,
-  ListIcon,
+  // ListIcon,
   // HelpCircleIcon,
-LifeBuoyIcon,
+// LifeBuoyIcon,
 // GitMergeIcon
 } from "@zhuowenli/vue-feather-icons";
 
@@ -41,9 +41,9 @@ export default {
     // Share2Icon,
     // SearchIcon,
     SettingsIcon,
-    ListIcon,
+    // ListIcon,
     // HelpCircleIcon,
-    LifeBuoyIcon,
+    // LifeBuoyIcon,
     // GitMergeIcon
   },
   data() {
@@ -426,10 +426,10 @@ export default {
 
     -->
        
-        <li class="menu-title">
+        <!-- <li class="menu-title">
           <i class="ri-more-fill"></i>
           <span data-key="t-components">Ayuda</span>
-        </li>
+        </li> -->
 
         <!-- <li class="nav-item">
           <router-link class="nav-link menu-link" to="/pages/privacy-policy">
@@ -437,12 +437,12 @@ export default {
             <span data-key="t-dashboard">Manual de usuario</span>
           </router-link>
         </li>  -->
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <router-link class="nav-link menu-link" to="/pages/faqs">
             <LifeBuoyIcon width="24" height="24" />
             <span data-key="t-dashboard">Preguntas frecuentes</span>
           </router-link>
-        </li> 
+        </li>  -->
         <!-- <li class="nav-item">
           <router-link class="nav-link menu-link" to="/jobs/candidate-lists">
             <SettingsIcon width="24" height="24" />
@@ -450,7 +450,7 @@ export default {
           </router-link>
         </li>  -->
 
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <a class="nav-link menu-link" href="#sidebarApps" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarApps">
             <GridIcon width="24" height="24" />
             <span data-key="t-apps"> {{ $t("t-apps") }}</span>
@@ -884,12 +884,12 @@ export default {
               </li>
             </ul>
           </div>
-        </li>
+        </li> -->
 
 
 
 
-        <li class="menu-title">
+        <!-- <li class="menu-title">
           <i class="ri-more-fill"></i>
           <span data-key="t-components">{{ $t("t-components") }}</span>
         </li>
@@ -1428,7 +1428,7 @@ export default {
               </li>
             </ul>
           </div>
-        </li> 
+        </li>  -->
       </ul>
     </template>
   </BContainer>
