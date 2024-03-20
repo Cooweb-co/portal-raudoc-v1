@@ -4,6 +4,7 @@ export default {
     props: {
         data: Object,
         files: Array,
+        loading: Boolean,
     },
     components: {
         // simplebar,
@@ -15,7 +16,8 @@ export default {
     <BTab title="Resumen" active class="fw-semibold pt-2">
         <BRow>
             <BCol xl="9" lg="8">
-                <BCard no-body>
+                <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" active />
+                <BCard no-body v-else>
                     <BCardBody>
                         <div class="text-muted">
                             <h6 class="fw-semibold text-uppercase mb-3">
@@ -142,7 +144,12 @@ export default {
                                         :file="file"
                                     />
                                 </BRow>
-                                <h6 class="mb-3 fw-semibold text-uppercase" v-show="!files">No se adjuntaron archivos</h6>
+                                <h6
+                                    class="mb-3 fw-semibold text-uppercase"
+                                    v-show="!files"
+                                >
+                                    No se adjuntaron archivos
+                                </h6>
                             </div>
                         </div>
                     </BCardBody>
@@ -289,7 +296,8 @@ export default {
             </BCol>
 
             <BCol xl="3" lg="4">
-                <BCard no-body>
+                <a-skeleton v-if="loading" :paragraph="{ rows: 6 }" active />
+                <BCard no-body v-else>
                     <BCardHeader>
                         <h5 class="card-title mb-0">Detalle de Radicación</h5>
                     </BCardHeader>
@@ -313,7 +321,7 @@ export default {
                                         <td class="fw-medium">
                                             Método de entrada
                                         </td>
-                                        <td>Página web</td>
+                                        <td>{{ data.inputMethod }}</td>
                                     </tr>
                                     <tr>
                                         <td class="fw-medium">Serie</td>
@@ -322,12 +330,6 @@ export default {
                                     <tr>
                                         <td class="fw-medium">Subserie</td>
                                         <td>{{ data.subSerie }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">
-                                            Radicado Externo
-                                        </td>
-                                        <td>{{ data.externalRadicate }}</td>
                                     </tr>
                                     <tr>
                                         <td class="fw-medium">
@@ -454,8 +456,8 @@ export default {
                         </div>
                     </BCardBody>
                 </BCard>
-
-                <BCard no-body>
+                <a-skeleton v-if="loading" :paragraph="{ rows: 3 }" active />
+                <BCard no-body v-else>
                     <BCardHeader
                         class="align-items-center d-flex border-bottom-dashed"
                     >
@@ -477,7 +479,7 @@ export default {
                                     <td class="fw-medium">
                                         Tipo de Identificación
                                     </td>
-                                    <td>{{ data.IdentificationType }}</td>
+                                    <td>{{ data.identificationType }}</td>
                                 </tr>
                                 <tr>
                                     <td class="fw-medium">

@@ -272,6 +272,7 @@ export default {
           assignedTo: this.form.assignedTo,
           observations: "prueba",
           externalRadicate: this.form.externalFiling,
+          inputMethod: this.form.inputMethod,
           petitionerInformation: {
             personType: this.form.personType,
             identificationType: this.form.idType,
@@ -686,18 +687,22 @@ export default {
                   :create-option="true"
                   placeholder="Seleccione"
                   :options="[
-                    { value: 'Aporedado', label: 'Aporedado' },
+                    { value: 'Página web', label: 'Página web' },
                     {
-                      value: 'Nino, nina, adolescente',
-                      label: 'Nino, Nina, Adolescente',
+                      value: 'Presencial',
+                      label: 'Presencial',
                     },
                     {
-                      value: 'persona judirica',
-                      label: 'Persona Judirica',
+                      value: 'Mensajería Certificada',
+                      label: 'Mensajería Certificada',
                     },
                     {
-                      value: 'persona natural',
-                      label: 'Persona Natural',
+                      value: 'Correo Electrónico',
+                      label: 'Correo Electrónico',
+                    },
+                    {
+                      value: 'WhatsApp',
+                      label: 'WhatsApp',
                     },
                   ]"
                 />
@@ -873,7 +878,7 @@ export default {
                 <label
                   for="choices-privacy-status-input"
                   class="form-label fw-bold"
-                  >Tipo de personal</label
+                  >Tipo de persona</label
                 >
                 <Multiselect
                   v-model="form.personType"
@@ -883,18 +888,10 @@ export default {
                   :create-option="true"
                   placeholder="Seleccione"
                   :options="[
-                    { value: 'Aporedado', label: 'Aporedado' },
+                    { value: 'Natural', label: 'Natural' },
                     {
-                      value: 'Nino, nina, adolescente',
-                      label: 'Nino, Nina, Adolescente',
-                    },
-                    {
-                      value: 'persona judirica',
-                      label: 'Persona Judirica',
-                    },
-                    {
-                      value: 'persona natural',
-                      label: 'Persona Natural',
+                      value: 'Jurídica',
+                      label: 'Jurídica',
                     },
                   ]"
                 />
@@ -914,18 +911,18 @@ export default {
                   :create-option="true"
                   placeholder="Seleccione"
                   :options="[
-                    { value: 'Aporedado', label: 'Aporedado' },
+                    { value: 'Cédula', label: 'Cédula' },
                     {
-                      value: 'Nino, nina, adolescente',
-                      label: 'Nino, Nina, Adolescente',
+                      value: 'TI',
+                      label: 'TI',
                     },
                     {
-                      value: 'persona judirica',
-                      label: 'Persona Judirica',
+                      value: 'Pasaporte',
+                      label: 'Pasaporte',
                     },
                     {
-                      value: 'persona natural',
-                      label: 'Persona Natural',
+                      value: 'Cédula extranjería',
+                      label: 'Cédula extranjería',
                     },
                   ]"
                 />

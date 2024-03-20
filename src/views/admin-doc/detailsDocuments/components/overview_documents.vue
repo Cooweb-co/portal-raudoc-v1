@@ -4,7 +4,8 @@ import overview_documents_elementVue from "./overview_documents_element.vue";
 export default {
     props: {
         data: Object,
-        files: Array
+        files: Array,
+        loading: Boolean
     },
     components: {
         overview_documents_elementVue,
@@ -14,7 +15,8 @@ export default {
 
 <template>
     <BTab title="Documentos" class="fw-semibold pt-2">
-        <div class="card">
+        <a-skeleton v-if="loading" :paragraph="{ rows: 3 }" active x/>
+        <div v-else class="card">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-4">
                     <h5 class="card-title flex-grow-1">Documentos</h5>

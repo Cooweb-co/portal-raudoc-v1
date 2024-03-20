@@ -57,6 +57,7 @@ export default {
     methods: {
         SearchData() {
             this.$emit("filterDate", this.filterdate);
+            console.log(this.filterdate)
         },
         clearFilter() {
             this.clearFilterDate()

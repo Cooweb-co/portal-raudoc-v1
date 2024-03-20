@@ -12,6 +12,7 @@
             :scroll="{ x: 2000 }"
             :row-selection="rowSelection"
             @change="handleChangeSort"
+            :loading="loading"
         >
             <template
                 #customFilterDropdown="{
@@ -198,7 +199,7 @@
                 <template v-if="column.dataIndex === 'action'">
                     <a
                         class="fw-medium link-primary text-center actionButtonTableRadicates"
-                        :href="`/apps/projects-overview?id=${text}`"
+                        :href="`/gestion-documental/radicado/${text}`"
                     >
                         <EyeOutlined />
                     </a>
@@ -238,9 +239,11 @@ export default {
             dateStart: null,
             dateEnd: null,
             originDataSource: [],
+            loading: false
         };
     },
     async beforeMount() {
+        this.loading = true;
         const headers = {
             company: "BAQVERDE",
             "Content-Type": "application/json",
@@ -266,7 +269,7 @@ export default {
                             data?.expirationDate._seconds
                                 ? transform_date(data?.expirationDate._seconds)
                                 : "-",
-                        subject: data?.documentaryTypologyEntry || "-",
+                        subject: data?.subject || "-",
                         petitioner:
                             data?.petitionerInformation?.firstNames +
                                 " " +
@@ -277,8 +280,10 @@ export default {
                         action: data?.claimId,
                     });
                 });
+                this.loading = false;
             })
             .catch((error) => {
+                this.loading = false;
                 console.error("Error:", error);
             });
     },
@@ -331,6 +336,7 @@ export default {
                     title: "Titulo",
                     dataIndex: "subject",
                     key: "subject",
+                    width: "15%"
                 },
                 {
                     title: "Peticionario",
@@ -558,8 +564,8 @@ export default {
             if (!validateString) {
                 this.originDataSource = [...this.dataSource];
                 this.dataSource = this.dataSource.filter((data) => {
-                    const fechaMoment = moment(data.created);
-                    return fechaMoment.isAfter(dates);
+                    const fechaMoment = moment(data.entryDate);
+                    return fechaMoment.isSameOrAfter(dates);
                 });
             } else {
                 const datesArray = dates.split(" to ");
@@ -570,8 +576,8 @@ export default {
                 }
                 this.originDataSource = [...this.dataSource];
                 this.dataSource = this.dataSource.filter((data) => {
-                    const fechaMoment = moment(data.created);
-                    return fechaMoment.isBetween(this.dateStart, this.dateEnd);
+                    const fechaMoment = moment(data.entryDate);
+                    return fechaMoment.isBetween(this.dateStart, this.dateEnd, null, "[]");
                 });
             }
         },
