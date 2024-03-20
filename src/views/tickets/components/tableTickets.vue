@@ -199,7 +199,7 @@
                 <template v-if="column.dataIndex === 'action'">
                     <a
                         class="fw-medium link-primary text-center actionButtonTableRadicates"
-                        :href="`/apps/projects-overview?id=${text}`"
+                        :href="`/gestion-documental/radicado/${text}`"
                     >
                         <EyeOutlined />
                     </a>
@@ -564,8 +564,8 @@ export default {
             if (!validateString) {
                 this.originDataSource = [...this.dataSource];
                 this.dataSource = this.dataSource.filter((data) => {
-                    const fechaMoment = moment(data.created);
-                    return fechaMoment.isAfter(dates);
+                    const fechaMoment = moment(data.entryDate);
+                    return fechaMoment.isSameOrAfter(dates);
                 });
             } else {
                 const datesArray = dates.split(" to ");
@@ -576,8 +576,8 @@ export default {
                 }
                 this.originDataSource = [...this.dataSource];
                 this.dataSource = this.dataSource.filter((data) => {
-                    const fechaMoment = moment(data.created);
-                    return fechaMoment.isBetween(this.dateStart, this.dateEnd);
+                    const fechaMoment = moment(data.entryDate);
+                    return fechaMoment.isBetween(this.dateStart, this.dateEnd, null, "[]");
                 });
             }
         },

@@ -70,11 +70,18 @@ export default [
 
   {
     path: "/r/:company/:documentID",
-    name: "default",
+    name: "consulta-de-radicado",
     meta: {
       title: "Consulta de radicado",
     },
     component: () => import("../views/admin-doc/overview-without-sign"),
+  },
+
+  {
+    path: "/gestion-documental/radicado/:documentID",
+    name: "projects Overview",
+    meta: { title: "Projects Overview", authRequired: true },
+    component: () => import("../views/admin-doc/detailsDocuments/overview"),
   },
 
   {
@@ -284,12 +291,7 @@ export default [
     meta: { title: "Projects List", authRequired: true },
     component: () => import("../views/admin-doc/detailsDocuments/list"),
   },
-  {
-    path: "/apps/projects-overview",
-    name: "projects Overview",
-    meta: { title: "Projects Overview", authRequired: true },
-    component: () => import("../views/admin-doc/detailsDocuments/overview"),
-  },
+
   {
     path: "/apps/projects-create",
     name: "projects-create",
