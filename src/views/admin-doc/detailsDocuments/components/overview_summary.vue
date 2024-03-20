@@ -321,7 +321,7 @@ export default {
                                         <td class="fw-medium">
                                             Método de entrada
                                         </td>
-                                        <td>Página web</td>
+                                        <td>{{ data.inputMethod }}</td>
                                     </tr>
                                     <tr>
                                         <td class="fw-medium">Serie</td>

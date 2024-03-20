@@ -82,6 +82,7 @@ export default {
                 assignedTo: docData?.assignedTo,
                 folios: docData?.folios,
                 observations: docData?.observations,
+                inputMethod: docData?.inputMethod,
                 summary:
                     docData?.summary?.replace("<p>", "").replace("</p>", "") ||
                     "No definido",
@@ -93,7 +94,7 @@ export default {
                 fullName:
                     docData?.petitionerInformation?.firstNames +
                         " " +
-                        docData?.petitionerInformation?.firstNames ||
+                        docData?.petitionerInformation?.lastNames ||
                     "No definido",
                 email: docData?.petitionerInformation?.email || "No definido",
                 phoneNumber:
