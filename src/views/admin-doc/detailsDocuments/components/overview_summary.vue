@@ -110,18 +110,18 @@ export default {
                                                 tag="div"
                                                 :variant="
                                                     data?.status?.toLowerCase() ==
-                                                    'completado'
-                                                        ? 'success'
+                                                    'vencido'
+                                                        ? 'danger'
                                                         : data?.status?.toLowerCase() ==
-                                                          'en progreso'
-                                                        ? 'info'
-                                                        : data?.status?.toLowerCase() ==
-                                                          'pendiente'
+                                                          'por vencer'
                                                         ? 'warning'
                                                         : data?.status?.toLowerCase() ==
-                                                          'creado'
+                                                          'en termino'
+                                                        ? 'success'
+                                                        : data?.status?.toLowerCase() ==
+                                                          'respondido'
                                                         ? 'primary'
-                                                        : 'danger'
+                                                        : 'secondary'
                                                 "
                                                 >{{ data.status }}</BBadge
                                             >
@@ -134,7 +134,7 @@ export default {
                                 <h6 class="mb-3 fw-semibold text-uppercase">
                                     Adjuntos
                                 </h6>
-                                <BRow class="g-3">
+                                <BRow class="g-3" v-show="files">
                                     <overview_summary_element
                                         v-for="file in files"
                                         :key="file.name"
@@ -142,6 +142,7 @@ export default {
                                         :file="file"
                                     />
                                 </BRow>
+                                <h6 class="mb-3 fw-semibold text-uppercase" v-show="!files">No se adjuntaron archivos</h6>
                             </div>
                         </div>
                     </BCardBody>

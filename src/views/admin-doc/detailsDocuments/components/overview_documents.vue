@@ -34,7 +34,10 @@ export default {
                                 </tr>
                             </thead>
                             <tbody>
-                                <overview_documents_elementVue v-for="file in files" :file="file" :id="data.id" :key="file.name" />
+                                <overview_documents_elementVue v-for="file in files" :file="file" :id="data.id" :key="file.name" v-show="files"/>
+                                <tr v-show="!files" class="w-100">
+                                    <td colspan="5"><h6 class="w-100 text-center">No hay archivos</h6></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>

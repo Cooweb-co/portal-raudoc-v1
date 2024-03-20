@@ -31,12 +31,13 @@ export default {
             files: [],
             entryDate: "",
             expirationDate: "",
+            loading: false  ,
         };
     },
 
-    async mounted() {
-        console.log(this.$route.query.id);
+    async beforeMount() {
         this.id = this.$route.query.id;
+        this.loading = true;
         const docData = await getDocument("BAQVERDE", this.id);
         if (docData?.entryDate && docData?.entryDate.seconds) {
             const formattedDate = transform_date(docData?.entryDate.seconds); // Formatear fecha
@@ -54,18 +55,18 @@ export default {
             id: this.id,
             numberEntryClaim: docData?.numberEntryClaim || "No definido",
             area: docData?.area || "No definido",
-            documentaryTypologyOut:
-                docData?.documentaryTypologyOut || "No definido",
+            documentaryTypologyEntry:
+                docData?.documentaryTypologyEntry || "No definido",
             entryDate: this.entryDate || "No definido",
             status:
-                docData?.status?.toUpperCase() == "COMPLETED"
-                    ? "COMPLETADO"
-                    : docData?.status?.toUpperCase() == "INPROGRESS"
-                    ? "EN PROGRESO"
-                    : docData?.status?.toUpperCase() == "PENDING"
-                    ? "PENDIENTE"
-                    : docData?.status?.toUpperCase() == "CREATED"
-                    ? "CREADO"
+                docData?.status?.toUpperCase() == "EXPIRE"
+                    ? "Vencido"
+                    : docData?.status?.toUpperCase() == "ABOUT_TO_EXPIRE"
+                    ? "aboutToExpire"
+                    : docData?.status?.toUpperCase() == "IN_TERM"
+                    ? "En Termino"
+                    : docData?.status?.toUpperCase() == "ANSWERED"
+                    ? "Respondido"
                     : docData?.status?.toUpperCase() || "No definido",
             expirationDate: this.expirationDate || "No definido",
             priority: docData?.priority || "BAJA",
@@ -93,9 +94,9 @@ export default {
             address: docData?.petitionerInformation?.address || "No definido",
         };
         await getDocumentFilesUploads("BAQVERDE", this.id).then((data) => {
-            console.log(data);
             this.files = data;
         });
+        this.loading = false;
     },
 
     components: {
@@ -115,146 +116,149 @@ export default {
 
 <template>
     <Layout>
-        <BRow>
-            <BCol lg="12">
-                <BCard no-body class="mt-n4 mx-n4 border-0">
-                    <div class="bg-primary-subtle">
-                        <BCardBody class="pb-0 px-4">
-                            <BRow class="mb-3">
-                                <BCol md>
-                                    <BRow class="align-items-center g-3">
-                                        <!-- <BCol md="auto">
+        <div v-show="!loading">
+            <BRow>
+                <BCol lg="12">
+                    <BCard no-body class="mt-n4 mx-n4 border-0">
+                        <div class="bg-primary-subtle">
+                            <BCardBody class="pb-0 px-4">
+                                <BRow class="mb-3">
+                                    <BCol md>
+                                        <BRow class="align-items-center g-3">
+                                            <!-- <BCol md="auto">
                                             <div class="avatar-md">
                                                 <div class="avatar-title bg-white rounded-circle">
                                                     <img src="@/assets/images/brands/slack.png" alt="" class="avatar-xs">
                                                 </div>
                                             </div>
                                         </BCol> -->
-                                        <BCol md>
-                                            <div>
-                                                <h4 class="fw-bold">
-                                                    {{ data.numberEntryClaim }}
-                                                    -
-                                                    {{
-                                                        data.documentaryTypologyOut
-                                                    }}
-                                                </h4>
-                                                <div
-                                                    class="hstack gap-3 flex-wrap"
-                                                >
-                                                    <div>
-                                                        <i
-                                                            class="ri-building-line align-bottom me-1"
-                                                        ></i>
-                                                        {{ data.area }}
-                                                    </div>
-                                                    <div class="vr"></div>
-                                                    <div>
-                                                        Fecha de creación :
-                                                        <span
-                                                            class="fw-medium"
+                                            <BCol md>
+                                                <div>
+                                                    <h4 class="fw-bold">
+                                                        {{
+                                                            data.numberEntryClaim
+                                                        }}
+                                                        -
+                                                        {{
+                                                            data.documentaryTypologyEntry
+                                                        }}
+                                                    </h4>
+                                                    <div
+                                                        class="hstack gap-3 flex-wrap"
+                                                    >
+                                                        <div>
+                                                            <i
+                                                                class="ri-building-line align-bottom me-1"
+                                                            ></i>
+                                                            {{ data.area }}
+                                                        </div>
+                                                        <div class="vr"></div>
+                                                        <div>
+                                                            Fecha de creación :
+                                                            <span
+                                                                class="fw-medium"
+                                                                >{{
+                                                                    data.entryDate
+                                                                }}</span
+                                                            >
+                                                        </div>
+                                                        <div class="vr"></div>
+                                                        <div>
+                                                            Fecha limite :
+                                                            <span
+                                                                class="fw-medium"
+                                                                >{{
+                                                                    data.expirationDate
+                                                                }}</span
+                                                            >
+                                                        </div>
+                                                        <div class="vr"></div>
+                                                        <BBadge
+                                                            pill
+                                                            :variant="
+                                                                data?.status?.toLowerCase() ==
+                                                                'vencido'
+                                                                    ? 'danger'
+                                                                    : data?.status?.toLowerCase() ==
+                                                                      'por vencer'
+                                                                    ? 'warning'
+                                                                    : data?.status?.toLowerCase() ==
+                                                                      'en termino'
+                                                                    ? 'success'
+                                                                    : data?.status?.toLowerCase() ==
+                                                                      'respondido'
+                                                                    ? 'primary'
+                                                                    : 'secondary'
+                                                            "
                                                             >{{
-                                                                data.entryDate
-                                                            }}</span
+                                                                data.status
+                                                            }}</BBadge
+                                                        >
+                                                        <BBadge
+                                                            pill
+                                                            :variant="
+                                                                data?.priority?.toLowerCase() ==
+                                                                'alta'
+                                                                    ? 'danger'
+                                                                    : data?.priority?.toLowerCase() ==
+                                                                          'media' ||
+                                                                      data?.priority?.toLowerCase() ==
+                                                                          'no definido'
+                                                                    ? 'warning'
+                                                                    : 'info'
+                                                            "
+                                                            >{{
+                                                                data.priority
+                                                            }}</BBadge
                                                         >
                                                     </div>
-                                                    <div class="vr"></div>
-                                                    <div>
-                                                        Fecha limite :
-                                                        <span
-                                                            class="fw-medium"
-                                                            >{{
-                                                                data.expirationDate
-                                                            }}</span
-                                                        >
-                                                    </div>
-                                                    <div class="vr"></div>
-                                                    <BBadge
-                                                        pill
-                                                        :variant="
-                                                            data?.status?.toLowerCase() ==
-                                                            'completado'
-                                                                ? 'success'
-                                                                : data?.status?.toLowerCase() ==
-                                                                  'en progreso'
-                                                                ? 'info'
-                                                                : data?.status?.toLowerCase() ==
-                                                                  'pendiente'
-                                                                ? 'warning'
-                                                                : data?.status?.toLowerCase() ==
-                                                                  'creado'
-                                                                ? 'primary'
-                                                                : 'danger'
-                                                        "
-                                                        >{{
-                                                            data.status
-                                                        }}</BBadge
-                                                    >
-                                                    <BBadge
-                                                        pill
-                                                        :variant="
-                                                            data?.priority?.toLowerCase() ==
-                                                            'alta'
-                                                                ? 'danger'
-                                                                : data?.priority?.toLowerCase() ==
-                                                                      'media' ||
-                                                                  data?.priority?.toLowerCase() ==
-                                                                      'no definido'
-                                                                ? 'warning'
-                                                                : 'info'
-                                                        "
-                                                        >{{
-                                                            data.priority
-                                                        }}</BBadge
-                                                    >
                                                 </div>
-                                            </div>
-                                        </BCol>
-                                    </BRow>
-                                </BCol>
-                                <BCol md="auto">
-                                    <div class="hstack gap-1 flex-wrap">
-                                        <button
-                                            type="button"
-                                            class="btn py-0 fs-16 favourite-btn active"
-                                        >
-                                            <i
-                                                class="ri-star-fill"
-                                                @click="toggleFavourite"
-                                            ></i>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn py-0 fs-16 text-body"
-                                        >
-                                            <i class="ri-share-line"></i>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn py-0 fs-16 text-body"
-                                        >
-                                            <i class="ri-flag-line"></i>
-                                        </button>
-                                    </div>
-                                </BCol>
-                            </BRow>
-                        </BCardBody>
-                    </div>
-                </BCard>
-            </BCol>
-        </BRow>
+                                            </BCol>
+                                        </BRow>
+                                    </BCol>
+                                    <BCol md="auto">
+                                        <div class="hstack gap-1 flex-wrap">
+                                            <button
+                                                type="button"
+                                                class="btn py-0 fs-16 favourite-btn active"
+                                            >
+                                                <i
+                                                    class="ri-star-fill"
+                                                    @click="toggleFavourite"
+                                                ></i>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="btn py-0 fs-16 text-body"
+                                            >
+                                                <i class="ri-share-line"></i>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="btn py-0 fs-16 text-body"
+                                            >
+                                                <i class="ri-flag-line"></i>
+                                            </button>
+                                        </div>
+                                    </BCol>
+                                </BRow>
+                            </BCardBody>
+                        </div>
+                    </BCard>
+                </BCol>
+            </BRow>
 
-        <BRow>
-            <BCol lg="12">
-                <BTabs
-                    variant="link"
-                    nav-class="nav-tabs-custom border-bottom-0"
-                >
-                    <!-- Resumen -->
-                    <overview_summaryVue :data="data" :files="files" />
+            <BRow>
+                <BCol lg="12">
+                    <BTabs
+                        variant="link"
+                        nav-class="nav-tabs-custom border-bottom-0"
+                    >
+                        <!-- Resumen -->
+                        <overview_summaryVue :data="data" :files="files" />
 
-                    <overview_documentsVue :data="data" :files="files" />
-                    <!-- <BTab title="Actividad" class="fw-semibold pt-2">
+                        <overview_documentsVue :data="data" :files="files" />
+                        <!-- <BTab title="Actividad" class="fw-semibold pt-2">
                         <BCard no-body>
                             <BCardBody>
                                 <h5 class="card-title">Activities</h5>
@@ -431,9 +435,27 @@ export default {
                             </BCardBody>
                         </BCard>
                     </BTab> -->
-                    <overview_responseVue />
-                </BTabs>
-            </BCol>
-        </BRow>
+                        <overview_responseVue />
+                    </BTabs>
+                </BCol>
+            </BRow>
+        </div>
+        <div class="spinner-container" v-show="loading">
+            <b-spinner variant="primary" type="grow" label="Spinning"></b-spinner>
+        </div>
     </Layout>
 </template>
+
+<style>
+.spinner-container {
+    width: auto;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 58%;
+    transform: translate(-58%, -50%);
+}
+</style>

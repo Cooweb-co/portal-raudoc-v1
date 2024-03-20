@@ -74,13 +74,13 @@
             </template>
 
             <template #bodyCell="{ column, text }">
+                <!-- Search -->
+
                 <span
                     v-if="
                         state.searchText &&
-                        state.searchedColumn === column.dataIndex &&
-                        column.dataIndex === 'id'
+                        state.searchedColumn === column.dataIndex && column.dataIndex === 'numberEntryClaim'
                     "
-                    class="fw-medium link-primary"
                 >
                     <template
                         v-for="(fragment, i) in text
@@ -92,50 +92,20 @@
                                 )
                             )"
                     >
-                        <a
+                        <mark
                             v-if="
                                 fragment.toLowerCase() ===
                                 state.searchText.toLowerCase()
                             "
                             :key="i"
-                            class="highlight-id fw-medium link-primary"
+                            class="highlight-numberEntryClaim fw-medium link-primary"
                         >
                             {{ fragment }}
-                        </a>
-                        <template v-else>{{ fragment }}</template>
+                        </mark>
+                        <template v-else> <span :key="i" class="fw-medium link-primary"> {{ fragment }}</span></template>
                     </template>
                 </span>
-                <span
-                    v-if="
-                        state.searchText &&
-                        state.searchedColumn === column.dataIndex &&
-                        column.dataIndex === 'id'
-                    "
-                    class="fw-medium link-primary"
-                >
-                    <template
-                        v-for="(fragment, i) in text
-                            .toString()
-                            .split(
-                                new RegExp(
-                                    `(?<=${state.searchText})|(?=${state.searchText})`,
-                                    'i'
-                                )
-                            )"
-                    >
-                        <a
-                            v-if="
-                                fragment.toLowerCase() ===
-                                state.searchText.toLowerCase()
-                            "
-                            :key="i"
-                            class="highlight-id fw-medium link-primary"
-                        >
-                            {{ fragment }}
-                        </a>
-                        <template v-else>{{ fragment }}</template>
-                    </template>
-                </span>
+
                 <span
                     v-else-if="
                         state.searchText &&
@@ -165,9 +135,10 @@
                         <template v-else>{{ fragment }}</template>
                     </template>
                 </span>
+
                 <template
                     v-if="
-                        column.dataIndex === 'id' &&
+                        column.dataIndex === 'numberEntryClaim' &&
                         !state.searchText &&
                         state.searchedColumn !== column.dataIndex
                     "
@@ -176,19 +147,20 @@
                         {{ text }}
                     </a>
                 </template>
+
                 <template v-if="column.dataIndex === 'status'">
                     <div class="centerContentTableRadicates">
                         <span
                             :class="
-                                text?.toLowerCase() == 'completed'
-                                    ? 'badge text-uppercase bg-success-subtle text-success'
-                                    : text?.toLowerCase() == 'inprogress'
-                                    ? 'badge text-uppercase bg-info-subtle text-info'
-                                    : text?.toLowerCase() == 'pending'
+                                text?.toLowerCase() == 'vencido'
+                                    ? 'badge text-uppercase bg-danger-subtle text-danger'
+                                    : text?.toLowerCase() == 'por vencer'
                                     ? 'badge text-uppercase bg-warning-subtle text-warning'
-                                    : text?.toLowerCase() == 'created'
+                                    : text?.toLowerCase() == 'en termino'
+                                    ? 'badge text-uppercase bg-success-subtle text-success'
+                                    : text?.toLowerCase() == 'respondido'
                                     ? 'badge text-uppercase bg-primary-subtle text-primary'
-                                    : 'badge text-uppercase bg-danger-subtle text-danger'
+                                    : 'badge text-uppercase bg-secondary-subtle text-secondary'
                             "
                         >
                             {{
@@ -205,6 +177,7 @@
                         </span>
                     </div>
                 </template>
+
                 <template v-if="column.dataIndex === 'priority'">
                     <div class="centerContentTableRadicates">
                         <span
@@ -221,6 +194,7 @@
                         </span>
                     </div>
                 </template>
+
                 <template v-if="column.dataIndex === 'action'">
                     <a
                         class="fw-medium link-primary text-center actionButtonTableRadicates"
@@ -278,7 +252,6 @@ export default {
             )
             .then((response) => {
                 response.data.map((data) => {
-                    console.log(data)
                     this.dataSource.push({
                         id: data?.claimId,
                         key: data?.claimId,
@@ -291,7 +264,7 @@ export default {
                         expirationDate:
                             data?.expirationDate &&
                             data?.expirationDate._seconds
-                                ? transform_date(data?.entryDate._seconds)
+                                ? transform_date(data?.expirationDate._seconds)
                                 : "-",
                         subject: data?.documentaryTypologyEntry || "-",
                         petitioner:
@@ -299,7 +272,7 @@ export default {
                                 " " +
                                 data?.petitionerInformation?.lastNames || "-",
                         assignedTo: data?.assignedTo || "-",
-                        status: data?.status || "Pending",
+                        status: data?.status || "EXPIRE",
                         priority: data?.priority || "BAJA",
                         action: data?.claimId,
                     });
@@ -337,11 +310,12 @@ export default {
             return [
                 {
                     title: "ID",
-                    dataIndex: "id",
-                    key: "id",
+                    dataIndex: "numberEntryClaim",
+                    key: "numberEntryClaim",
+                    width: "10%",
                     customFilterDropdown: true,
                     onFilter: (value, record) =>
-                        record.id
+                        record.numberEntryClaim
                             .toString()
                             .toLowerCase()
                             .includes(value.toLowerCase()),
@@ -363,6 +337,8 @@ export default {
                     dataIndex: "petitioner",
                     key: "petitioner",
                     customFilterDropdown: true,
+                    width: "10%",
+                    className: "text-center",
                     onFilter: (value, record) =>
                         record.petitioner
                             .toString()
@@ -380,6 +356,8 @@ export default {
                     title: "Asignado a",
                     dataIndex: "assignedTo",
                     key: "assignedTo",
+                    width: "10%",
+                    className: "text-center",
                     customFilterDropdown: true,
                     onFilter: (value, record) =>
                         record.assignedTo
@@ -398,6 +376,7 @@ export default {
                     title: "Radicado de salida",
                     dataIndex: "outputDocument",
                     key: "outputDocument",
+                    width: "10%",
                     className: "text-center",
                     customFilterDropdown: true,
                     onFilter: (value, record) =>
@@ -418,8 +397,17 @@ export default {
                     dataIndex: "entryDate",
                     key: "entryDate",
                     className: "text-center",
-                    sorter: (a, b) =>
-                        new Date(a.entryDate) - new Date(b.entryDate),
+                    width: "10%",
+                    sorter: (a, b) => {
+                        const firstDate = moment(a.entryDate, "DD MMM, YYYY")
+                            .startOf("day")
+                            .toISOString();
+                        const secondDate = moment(b.entryDate, "DD MMM, YYYY")
+                            .startOf("day")
+                            .toISOString();
+                        return new Date(firstDate) - new Date(secondDate);
+                    },
+
                     sortOrder: sorted.columnKey === "entryDate" && sorted.order,
                     ellipsis: true,
                 },
@@ -428,6 +416,7 @@ export default {
                     dataIndex: "expirationDate",
                     key: "expirationDate",
                     className: "text-center",
+                    width: "10%",
                     sorter: (a, b) => {
                         const firstDate = moment(
                             a.expirationDate,
@@ -455,20 +444,20 @@ export default {
                     width: "6%",
                     filters: [
                         {
-                            text: "Completado",
-                            value: "COMPLETED",
+                            text: "Vencido", //Rojo
+                            value: "EXPIRE",
                         },
                         {
-                            text: "En proceso",
-                            value: "INPROGRESS",
+                            text: "Por vencer", //Amarillo
+                            value: "ABOUT_TO_EXPIRE",
                         },
                         {
-                            text: "Creadas",
-                            value: "CREATED",
+                            text: "En Termino", // Verde
+                            value: "IN_TERM",
                         },
                         {
-                            text: "Pendientes",
-                            value: "PENDING",
+                            text: "Respondido", // Azul
+                            value: "ANSWERED",
                         },
                     ],
                     onFilter: (value, record) =>
@@ -572,8 +561,6 @@ export default {
                     const fechaMoment = moment(data.created);
                     return fechaMoment.isAfter(dates);
                 });
-                console.log("Start", this.originDataSource.length);
-                console.log("End", this.dataSource.length);
             } else {
                 const datesArray = dates.split(" to ");
                 for (let i = 0; i < datesArray.length; i++) {
@@ -586,8 +573,6 @@ export default {
                     const fechaMoment = moment(data.created);
                     return fechaMoment.isBetween(this.dateStart, this.dateEnd);
                 });
-                console.log("Start", this.originDataSource.length);
-                console.log("End", this.dataSource.length);
             }
         },
         clearFilterDate() {
@@ -620,7 +605,7 @@ export default {
     padding: 0px;
 }
 
-.highlight-id {
+.highlight-numberEntryClaim {
     background-color: rgb(214, 214, 214);
     padding: 0px;
     color: RGBA(var(--vz-primary-rgb), var(--vz-link-opacity, 1)) !important;
