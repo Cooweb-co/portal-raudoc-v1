@@ -55,7 +55,6 @@ export default {
                 ); // Formatear fecha
                 this.expirationDate = formattedDate; // Guardar la fecha formateada
             }
-            console.log(docData);
             this.data = {
                 id: this.id,
                 numberEntryClaim: docData?.numberEntryClaim || "No definido",
@@ -106,12 +105,15 @@ export default {
             await getDocumentFilesUploads("BAQVERDE", this.id).then((data) => {
                 this.files = data;
             });
+
+
         } catch (error) {
             console.log("Error viste de documentos: ", error);
         } finally {
             this.loading = false;
         }
     },
+
 
     components: {
         overview_summaryVue,
