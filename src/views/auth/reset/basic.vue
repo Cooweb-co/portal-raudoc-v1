@@ -52,7 +52,7 @@ export default {
               <BCardBody class="p-4">
                 <div class="text-center mt-2">
                   <h5 class="text-primary">Forgot Password?</h5>
-                  <p class="text-muted">Reset password with velzon</p>
+                  <p class="text-muted">Reset password with raudoc</p>
 
                   <lottie class="avatar-xl some-class" colors="primary:#0ab39c" :options="defaultOptions" :height="120"
                     :width="120" />

@@ -748,7 +748,7 @@ export default {
                         </tr>
                         <tr>
                           <th scope="row">Share Path :</th>
-                          <td class="share-path">velzon:\Documents\</td>
+                          <td class="share-path">raudoc:\Documents\</td>
                         </tr>
                       </tbody>
                     </table>

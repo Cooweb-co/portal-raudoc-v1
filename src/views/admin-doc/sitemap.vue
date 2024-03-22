@@ -391,7 +391,7 @@ export default {
                                 <div class="verti-sitemap">
                                     <ul class="list-unstyled mb-0">
                                         <li class="p-0 parent-title">
-                                            <BLink href="javascript: void(0);" class="fw-medium fs-14">Velzon</BLink>
+                                            <BLink href="javascript: void(0);" class="fw-medium fs-14">raudoc</BLink>
                                         </li>
                                         <li>
                                             <div class="first-list">

@@ -236,7 +236,7 @@ export default {
                                 <div style="text-align: center; margin: 28px auto 0px auto;">
                                     <p
                                         style="font-family: 'Roboto', sans-serif; font-size: 14px;color: #98a6ad; margin: 0px;">
-                                        2022 Velzon. Design & Develop by CooWeb</p>
+                                        2022 raudoc. Design & Develop by CooWeb</p>
                                 </div>
                             </div>
                         </td>
@@ -317,8 +317,8 @@ export default {
                                                             style="font-family: 'Roboto', sans-serif; margin-bottom: 8px; color: #878a99;line-height: 1.5;">
                                                             Feel free to get in touch with us anytime via support from
                                                             the link below. <BLink
-                                                                href="https://themeforest.net/item/velzon-aspnet-core-admin-dashboard-template/36077495/support"
-                                                                target="_blank">https://themeforest.net/item/velzon-aspnet-core-admin-dashboard-template/36077495/support</BLink>
+                                                                href="https://themeforest.net/item/raudoc-aspnet-core-admin-dashboard-template/36077495/support"
+                                                                target="_blank">https://themeforest.net/item/raudoc-aspnet-core-admin-dashboard-template/36077495/support</BLink>
                                                         </p>
                                                         <h6
                                                             style="font-family: 'Roboto', sans-serif; font-size: 14px; margin-bottom: 0px; text-align: end;">
@@ -332,7 +332,7 @@ export default {
                                 <div style="text-align: center; margin: 28px auto 0px auto;">
                                     <p
                                         style="font-family: 'Roboto', sans-serif; font-size: 14px;color: #98a6ad; margin: 0px;">
-                                        2022 Velzon. Design & Develop by CooWeb</p>
+                                        2022 raudoc. Design & Develop by CooWeb</p>
                                 </div>
                             </div>
                         </td>
@@ -474,7 +474,7 @@ export default {
                                 <div style="text-align: center; margin: 28px auto 0px auto;">
                                     <p
                                         style="font-family: 'Roboto', sans-serif; font-size: 14px;color: #98a6ad; margin: 0px;">
-                                        2022 Velzon. Design & Develop by CooWeb</p>
+                                        2022 raudoc. Design & Develop by CooWeb</p>
                                 </div>
                             </div>
                         </td>

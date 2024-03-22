@@ -77,7 +77,7 @@ export default {
                                             </h5>
                                         </div>
                                     </BCol>
-                                    <BCol lg="3" sm="6">
+                                    <!-- <BCol lg="3" sm="6">
                                         <div>
                                             <p
                                                 class="mb-2 text-uppercase fw-medium"
@@ -100,7 +100,7 @@ export default {
                                                 >{{ data.priority }}</BBadge
                                             >
                                         </div>
-                                    </BCol>
+                                    </BCol> -->
                                     <BCol lg="3" sm="6">
                                         <div>
                                             <p
@@ -121,7 +121,9 @@ export default {
                                                           'en termino'
                                                         ? 'success'
                                                         : data?.status?.toLowerCase() ==
-                                                          'respondido'
+                                                              'respondido' ||
+                                                          data?.status?.toLowerCase() ==
+                                                              'no requiere respuesta'
                                                         ? 'primary'
                                                         : 'secondary'
                                                 "
@@ -396,7 +398,7 @@ export default {
                                         </td>
                                     </tr>
 
-                                    <tr>
+                                    <!-- <tr>
                                         <td class="fw-medium">Prioridad</td>
                                         <td>
                                             <BBadge
@@ -414,7 +416,7 @@ export default {
                                                 >{{ data.priority }}</BBadge
                                             >
                                         </td>
-                                    </tr>
+                                    </tr> -->
                                     <tr>
                                         <td class="fw-medium">
                                             Fecha de Creación

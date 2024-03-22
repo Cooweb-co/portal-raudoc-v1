@@ -17,7 +17,7 @@ export default {
             country: "Brazil",
             date: "2021-04-06T16:28:00.000Z",
             discount: "53.99",
-            email: "velzon@themesbrand.com",
+            email: "raudoc@themesbrand.com",
             estimated_tax: "44.99",
             img: "assets/images/users/avatar-2.jpg",
             invoiceId: "#VL25000351",
@@ -229,7 +229,7 @@ export default {
                                                         <td class="text-end">${{ estimated_tax }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <td>Discount <small class="text-muted">(VELZON15)</small></td>
+                                                        <td>Discount <small class="text-muted">(raudoc15)</small></td>
                                                         <td class="text-end">- ${{ discount }}</td>
                                                     </tr>
                                                     <tr>

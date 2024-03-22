@@ -170,7 +170,7 @@ export default {
                                             <i class="ri-mail-send-line"></i>
                                         </div>
                                     </div>
-                                    <h5 class="fs-15 lh-base mb-0">Work Inquiry from velzon</h5>
+                                    <h5 class="fs-15 lh-base mb-0">Work Inquiry from raudoc</h5>
                                 </div>
                             </BCard>
 
@@ -280,7 +280,7 @@ export default {
                                 </h1>
 
                                 <h6 class="fs-17 mb-2">Find Job</h6>
-                                <p class="text-muted mb-0 fs-15">Search for your dream jobs from velzon.</p>
+                                <p class="text-muted mb-0 fs-15">Search for your dream jobs from raudoc.</p>
                             </BCardBody>
                         </BCard>
                     </BCol>
@@ -1281,7 +1281,7 @@ export default {
                             <div class="mt-4 fs-15">
                                 <p>Premium Multipurpose Admin & Dashboard Template</p>
                                 <p>You can build any type of web application like eCommerce, CRM, CMS, Project
-                                    management apps, Admin Panels, etc using Velzon.</p>
+                                    management apps, Admin Panels, etc using raudoc.</p>
                                 <ul class="list-inline mb-0 footer-social-link">
                                     <li class="list-inline-item">
                                         <BLink href="#" class="avatar-xs d-block">
@@ -1388,7 +1388,7 @@ export default {
                     <BCol sm="6">
                         <div>
                             <p class="copy-rights mb-0">
-                                {{ new Date().getFullYear() }} © Velzon - Themesbrand
+                                {{ new Date().getFullYear() }} © raudoc - Themesbrand
                             </p>
                         </div>
                     </BCol>

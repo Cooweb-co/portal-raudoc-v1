@@ -55,7 +55,7 @@ export default {
                 ); // Formatear fecha
                 this.expirationDate = formattedDate; // Guardar la fecha formateada
             }
-            console.log(docData);
+            console.log(docData)
             this.data = {
                 id: this.id,
                 numberEntryClaim: docData?.numberEntryClaim || "No definido",
@@ -68,11 +68,13 @@ export default {
                     docData?.status?.toUpperCase() == "EXPIRE"
                         ? "Vencido"
                         : docData?.status?.toUpperCase() == "ABOUT_TO_EXPIRE"
-                        ? "aboutToExpire"
+                        ? "Por vencer"
                         : docData?.status?.toUpperCase() == "IN_TERM"
                         ? "En Termino"
                         : docData?.status?.toUpperCase() == "ANSWERED"
                         ? "Respondido"
+                        : docData?.status?.toUpperCase() == "NO_RESPONSE"
+                        ? "No requiere respuesta"
                         : docData?.status?.toUpperCase() || "No definido",
                 expirationDate: this.expirationDate || "No definido",
                 priority: docData?.priority || "BAJA",
@@ -90,7 +92,7 @@ export default {
                 identificationNumber:
                     docData?.petitionerInformation?.identificationNumber,
                 identificationType:
-                    docData?.petitionerInformation?.address || "No definido",
+                    docData?.petitionerInformation?.identificationType || "No definido",
                 fullName:
                     docData?.petitionerInformation?.firstNames +
                         " " +
@@ -200,7 +202,9 @@ export default {
                                                                   'en termino'
                                                                 ? 'success'
                                                                 : data?.status?.toLowerCase() ==
-                                                                  'respondido'
+                                                                      'respondido' ||
+                                                                  data?.status?.toLowerCase() ==
+                                                                      'no requiere respuesta'
                                                                 ? 'primary'
                                                                 : 'secondary'
                                                         "
@@ -208,7 +212,7 @@ export default {
                                                             data.status
                                                         }}</BBadge
                                                     >
-                                                    <BBadge
+                                                    <!-- <BBadge
                                                         pill
                                                         :variant="
                                                             data?.priority?.toLowerCase() ==
@@ -224,14 +228,14 @@ export default {
                                                         >{{
                                                             data.priority
                                                         }}</BBadge
-                                                    >
+                                                    > -->
                                                 </div>
                                             </div>
                                         </BCol>
                                     </BRow>
                                 </BCol>
                                 <BCol md="auto">
-                                    <div class="hstack gap-1 flex-wrap">
+                                    <!-- <div class="hstack gap-1 flex-wrap">
                                         <button
                                             type="button"
                                             class="btn py-0 fs-16 favourite-btn active"
@@ -253,7 +257,7 @@ export default {
                                         >
                                             <i class="ri-flag-line"></i>
                                         </button>
-                                    </div>
+                                    </div> -->
                                 </BCol>
                             </BRow>
                         </BCardBody>
@@ -385,7 +389,7 @@ export default {
                                         </div>
                                         <div class="flex-grow-1 ms-3">
                                             <h6 class="mb-1">Bethany Johnson</h6>
-                                            <p class="text-muted mb-2">added a new member to velzon dashboard</p>
+                                            <p class="text-muted mb-2">added a new member to raudoc dashboard</p>
                                             <small class="mb-0 text-muted">19 Nov</small>
                                         </div>
                                     </div>

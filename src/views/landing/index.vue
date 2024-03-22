@@ -105,7 +105,7 @@ export default {
             }
         });
 
-        document.querySelector('.currentyear').innerHTML = new Date().getFullYear() + " © Velzon - Themesbrand";
+        document.querySelector('.currentyear').innerHTML = new Date().getFullYear() + " © raudoc - Themesbrand";
     },
 };
 </script>
@@ -165,9 +165,9 @@ export default {
                     <BCol lg="8" sm="10">
                         <div class="text-center mt-lg-5 pt-5">
                             <h1 class="display-6 fw-semibold mb-3 lh-base">The better way to manage your website with
-                                <span class="text-success">Velzon </span>
+                                <span class="text-success">Raudoc </span>
                             </h1>
-                            <p class="lead text-muted lh-base">Velzon is a fully responsive, multipurpose and premium
+                            <p class="lead text-muted lh-base">Raudoc is a fully responsive, multipurpose and premium
                                 Bootstrap 5 Admin & Dashboard Template built in multiple frameworks.</p>
 
                             <div class="d-flex gap-2 justify-content-center mt-4">
@@ -189,8 +189,8 @@ export default {
                                 <BCarouselSlide active :img-src="Img1" />
                                 <BCarouselSlide :img-src="Img2" />
                                 <BCarouselSlide :img-src="Img3" />
-                              </BCarousel>
-                           </div>
+                            </BCarousel>
+                        </div>
                     </BCol>
                 </BRow>
             </BContainer>
@@ -534,12 +534,12 @@ export default {
                 <BRow class="align-items-center gy-4">
                     <BCol sm>
                         <div>
-                            <h4 class="text-white mb-0 fw-semibold">Build your web App/SaaS with Velzon dashboard</h4>
+                            <h4 class="text-white mb-0 fw-semibold">Build your web App/SaaS with raudoc dashboard</h4>
                         </div>
                     </BCol>
                     <BCol sm="auto">
                         <div>
-                            <router-link to="https://1.envato.market/velzon-admin" target="_blank"
+                            <router-link to="https://1.envato.market/raudoc-admin" target="_blank"
                                 class="btn bg-gradient btn-danger"><i class="ri-shopping-cart-2-line align-middle me-1"></i>
                                 Buy Now</router-link>
                         </div>
@@ -1648,12 +1648,12 @@ export default {
                 <BRow class="align-items-center gy-4">
                     <BCol sm>
                         <div>
-                            <h4 class="text-white mb-0 fw-semibold">Build your web App/SaaS with Velzon dashboard</h4>
+                            <h4 class="text-white mb-0 fw-semibold">Build your web App/SaaS with raudoc dashboard</h4>
                         </div>
                     </BCol>
                     <BCol sm="auto">
                         <div>
-                            <router-link to="https://1.envato.market/velzon-admin" target="_blank"
+                            <router-link to="https://1.envato.market/raudoc-admin" target="_blank"
                                 class="btn bg-gradient btn-danger"><i class="ri-shopping-cart-2-line align-middle me-1"></i>
                                 Buy Now</router-link>
                         </div>
@@ -1674,7 +1674,7 @@ export default {
                                 <p>Premium Multipurpose Admin & Dashboard Template</p>
                                 <p class="ff-secondary">You can build any type of web application like eCommerce, CRM,
                                     CMS, Project
-                                    management apps, Admin Panels, etc using Velzon.</p>
+                                    management apps, Admin Panels, etc using raudoc.</p>
                             </div>
                         </div>
                     </BCol>
@@ -1743,7 +1743,7 @@ export default {
                     <BCol sm="6">
 
                         <div>
-                            <p class="copy-rights mb-0 currentyear">{{ new Date().getFullYear() }} © Velzon -
+                            <p class="copy-rights mb-0 currentyear">{{ new Date().getFullYear() }} © raudoc -
                                 Themesbrand
                             </p>
                         </div>

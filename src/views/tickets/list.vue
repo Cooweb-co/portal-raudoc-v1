@@ -4,6 +4,8 @@ import PageHeader from "@/components/page-header";
 import animationData from "@/components/widgets/msoeawqm.json";
 import animationData1 from "@/components/widgets/gsqxdxog.json";
 import tableTickets from "./components/tableTickets.vue";
+import { CountTo } from "vue3-count-to";
+import axios from "axios";
 
 export default {
     data() {
@@ -40,72 +42,31 @@ export default {
         };
     },
 
+    async mounted() {
+        try {
+            // this.loading = true;
+        const headers = {
+            company: "BAQVERDE",
+            // "Content-Type": "application/json",
+        };
+        await axios
+            .get(
+                "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/getCountClims'",
+                { headers }
+            )
+            .then((response) => {
+                console.log(response);
+            });
+        } catch (error) {
+            console.log(error)
+        }
+    },
+
     components: {
         Layout,
         PageHeader,
         tableTickets,
-    },
-
-    mounted() {
-        var checkAll = document.getElementById("checkAll");
-        if (checkAll) {
-            checkAll.onclick = function () {
-                var checkboxes = document.querySelectorAll(
-                    '.form-check-all input[type="checkbox"]'
-                );
-
-                if (checkAll.checked == true) {
-                    checkboxes.forEach(function (checkbox) {
-                        checkbox.checked = true;
-                        checkbox.closest("tr").classList.add("table-active");
-                        document.getElementById(
-                            "remove-actions"
-                        ).style.display = "block";
-                    });
-                } else {
-                    checkboxes.forEach(function (checkbox) {
-                        checkbox.checked = false;
-                        checkbox.closest("tr").classList.remove("table-active");
-                        document.getElementById(
-                            "remove-actions"
-                        ).style.display = "none";
-                    });
-                }
-            };
-        }
-
-        var checkboxes = document.querySelectorAll(
-            "#ticketsList .form-check-input"
-        );
-        Array.from(checkboxes).forEach(function (element) {
-            element.addEventListener("change", function (event) {
-                var checkedCount = document.querySelectorAll(
-                    "#ticketsList .form-check-input:checked"
-                ).length;
-
-                if (
-                    event.target
-                        .closest("tr")
-                        .classList.contains("table-active")
-                ) {
-                    checkedCount > 0
-                        ? (document.getElementById(
-                              "remove-actions"
-                          ).style.display = "block")
-                        : (document.getElementById(
-                              "remove-actions"
-                          ).style.display = "none");
-                } else {
-                    checkedCount > 0
-                        ? (document.getElementById(
-                              "remove-actions"
-                          ).style.display = "block")
-                        : (document.getElementById(
-                              "remove-actions"
-                          ).style.display = "none");
-                }
-            });
-        });
+        CountTo,
     },
 };
 </script>
@@ -130,7 +91,7 @@ export default {
                                             :endVal="item.quantity"
                                         ></count-to>
                                     </h2>
-                                    <p class="mb-0 text-muted">
+                                    <!-- <p class="mb-0 text-muted">
                                         <BBadge
                                             class="bg-light text-success mb-0"
                                         >
@@ -140,7 +101,7 @@ export default {
                                             {{ item.percent }}
                                         </BBadge>
                                         vs. mes anterior
-                                    </p>
+                                    </p> -->
                                 </div>
                                 <div>
                                     <div class="avatar-sm flex-shrink-0">
