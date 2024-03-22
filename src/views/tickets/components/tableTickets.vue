@@ -262,10 +262,7 @@ export default {
                         key: data?.claimId,
                         numberEntryClaim: data?.numberEntryClaim || "-",
                         outputDocument: data?.externalRadicate || "-",
-                        entryDate:
-                            data?.entryDate && data?.entryDate._seconds
-                                ? transform_date(data?.entryDate._seconds)
-                                : "-",
+                        entryDate: data?.entryDate,
                         expirationDate:
                             data?.expirationDate &&
                             data?.expirationDate._seconds
@@ -406,18 +403,18 @@ export default {
                     key: "entryDate",
                     className: "text-center",
                     width: "10%",
-                    sorter: (a, b) => {
-                        const firstDate = moment(a.entryDate, "DD MMM, YYYY")
-                            .startOf("day")
-                            .toISOString();
-                        const secondDate = moment(b.entryDate, "DD MMM, YYYY")
-                            .startOf("day")
-                            .toISOString();
-                        return new Date(firstDate) - new Date(secondDate);
-                    },
+                    // sorter: (a, b) => {
+                    //     const firstDate = moment(a.entryDate, "DD MMM, YYYY")
+                    //         .startOf("day")
+                    //         .toISOString();
+                    //     const secondDate = moment(b.entryDate, "DD MMM, YYYY")
+                    //         .startOf("day")
+                    //         .toISOString();
+                    //     return new Date(firstDate) - new Date(secondDate);
+                    // },
 
-                    sortOrder: sorted.columnKey === "entryDate" && sorted.order,
-                    ellipsis: true,
+                    // sortOrder: sorted.columnKey === "entryDate" && sorted.order,
+                    // ellipsis: true,
                 },
                 {
                     title: "Fecha de vencimiento",
