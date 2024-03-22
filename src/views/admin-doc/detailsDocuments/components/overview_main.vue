@@ -55,6 +55,7 @@ export default {
                 ); // Formatear fecha
                 this.expirationDate = formattedDate; // Guardar la fecha formateada
             }
+            console.log(docData)
             this.data = {
                 id: this.id,
                 numberEntryClaim: docData?.numberEntryClaim || "No definido",
@@ -67,11 +68,13 @@ export default {
                     docData?.status?.toUpperCase() == "EXPIRE"
                         ? "Vencido"
                         : docData?.status?.toUpperCase() == "ABOUT_TO_EXPIRE"
-                        ? "aboutToExpire"
+                        ? "Por vencer"
                         : docData?.status?.toUpperCase() == "IN_TERM"
                         ? "En Termino"
                         : docData?.status?.toUpperCase() == "ANSWERED"
                         ? "Respondido"
+                        : docData?.status?.toUpperCase() == "NO_RESPONSE"
+                        ? "No requiere respuesta"
                         : docData?.status?.toUpperCase() || "No definido",
                 expirationDate: this.expirationDate || "No definido",
                 priority: docData?.priority || "BAJA",
@@ -105,15 +108,12 @@ export default {
             await getDocumentFilesUploads("BAQVERDE", this.id).then((data) => {
                 this.files = data;
             });
-
-
         } catch (error) {
             console.log("Error viste de documentos: ", error);
         } finally {
             this.loading = false;
         }
     },
-
 
     components: {
         overview_summaryVue,
@@ -202,7 +202,9 @@ export default {
                                                                   'en termino'
                                                                 ? 'success'
                                                                 : data?.status?.toLowerCase() ==
-                                                                  'respondido'
+                                                                      'respondido' ||
+                                                                  data?.status?.toLowerCase() ==
+                                                                      'no requiere respuesta'
                                                                 ? 'primary'
                                                                 : 'secondary'
                                                         "
@@ -210,7 +212,7 @@ export default {
                                                             data.status
                                                         }}</BBadge
                                                     >
-                                                    <BBadge
+                                                    <!-- <BBadge
                                                         pill
                                                         :variant="
                                                             data?.priority?.toLowerCase() ==
@@ -226,7 +228,7 @@ export default {
                                                         >{{
                                                             data.priority
                                                         }}</BBadge
-                                                    >
+                                                    > -->
                                                 </div>
                                             </div>
                                         </BCol>

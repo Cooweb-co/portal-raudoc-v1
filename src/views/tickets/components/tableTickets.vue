@@ -153,27 +153,29 @@
                     <div class="centerContentTableRadicates">
                         <span
                             :class="
-                                text?.toLowerCase() == 'vencido'
+                                text == 'EXPIRE'
                                     ? 'badge text-uppercase bg-danger-subtle text-danger'
-                                    : text?.toLowerCase() == 'por vencer'
+                                    : text == 'ABOUT_TO_EXPIRE'
                                     ? 'badge text-uppercase bg-warning-subtle text-warning'
-                                    : text?.toLowerCase() == 'en termino'
+                                    : text == 'IN_TERM'
                                     ? 'badge text-uppercase bg-success-subtle text-success'
-                                    : text?.toLowerCase() == 'respondido'
+                                    : text == 'ANSWERED'
                                     ? 'badge text-uppercase bg-primary-subtle text-primary'
-                                    : 'badge text-uppercase bg-secondary-subtle text-secondary'
+                                    :  text == 'NO_RESPONSE'
+                                    ? 'badge text-uppercase bg-primary-subtle text-primary':'badge text-uppercase bg-secondary-subtle text-secondary'
                             "
                         >
                             {{
-                                text?.toUpperCase() == "COMPLETED"
-                                    ? "COMPLETADO"
-                                    : text?.toUpperCase() == "INPROGRESS"
-                                    ? "EN PROGRESO"
-                                    : text?.toUpperCase() == "PENDING"
-                                    ? "PENDIENTE"
-                                    : text?.toUpperCase() == "CREATED"
-                                    ? "CREADO"
-                                    : text?.toUpperCase()
+                                text == 'EXPIRE'
+                                    ? 'VENCIDO'
+                                    : text == 'ABOUT_TO_EXPIRE'
+                                    ? 'POR VENCER'
+                                    : text == 'IN_TERM'
+                                    ? 'EN TERMINO'
+                                    : text == 'ANSWERED'
+                                    ? 'RESPONDIDO'
+                                    :  text == 'NO_RESPONSE'
+                                    ? 'NO REQUIERE RESPUESTA': text
                             }}
                         </span>
                     </div>
@@ -465,32 +467,36 @@ export default {
                             text: "Respondido", // Azul
                             value: "ANSWERED",
                         },
+                        {
+                            text: "No requiere respuesta", // Azul
+                            value: "NO_RESPONSE",
+                        },
                     ],
                     onFilter: (value, record) =>
                         record.status.indexOf(value) === 0,
                 },
-                {
-                    title: "Prioridad",
-                    dataIndex: "priority",
-                    key: "priority",
-                    width: "7%",
-                    filters: [
-                        {
-                            text: "Alta",
-                            value: "ALTA",
-                        },
-                        {
-                            text: "Media",
-                            value: "MEDIA",
-                        },
-                        {
-                            text: "Baja",
-                            value: "BAJA",
-                        },
-                    ],
-                    onFilter: (value, record) =>
-                        record.priority.indexOf(value) === 0,
-                },
+                // {
+                //     title: "Prioridad",
+                //     dataIndex: "priority",
+                //     key: "priority",
+                //     width: "7%",
+                //     filters: [
+                //         {
+                //             text: "Alta",
+                //             value: "ALTA",
+                //         },
+                //         {
+                //             text: "Media",
+                //             value: "MEDIA",
+                //         },
+                //         {
+                //             text: "Baja",
+                //             value: "BAJA",
+                //         },
+                //     ],
+                //     onFilter: (value, record) =>
+                //         record.priority.indexOf(value) === 0,
+                // },
                 {
                     title: "Acción",
                     dataIndex: "action",
