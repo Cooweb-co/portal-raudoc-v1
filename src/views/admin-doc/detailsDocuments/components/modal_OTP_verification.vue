@@ -94,12 +94,31 @@
                 ¿No recibiste el código?
                 <button
                     @click="handleSendLink"
-                    class="border-0 bg-transparent "
-                    :class="errorForm ? 'link-danger text-danger' : 'link-primary text-primary'"
+                    class="border-0 bg-transparent"
+                    :class="
+                        errorForm
+                            ? 'link-danger text-danger'
+                            : 'link-primary text-primary'
+                    "
                 >
                     Click acá para reenviar el código.
                 </button>
             </p>
+
+            <vueRecaptcha
+                sitekey="6Lflb6EpAAAAAOwAmPQFdNTSBVN-cVwdH7ekJdFT"
+                class="d-flex justify-content-center align-items-center pt-3"
+                size="normal"
+                theme="light"
+                hl="tr"
+                :loading-timeout="loadingTimeout"
+                @verify="recaptchaVerified"
+                @expire="recaptchaExpired"
+                @fail="recaptchaFailed"
+                @error="recaptchaError"
+                ref="vueRecaptcha"
+            >
+            </vueRecaptcha>
 
             <div class="row pt-5">
                 <div class="col-6">
@@ -126,6 +145,7 @@
 
 <script>
 import { toast } from "vue3-toastify";
+import vueRecaptcha from "vue3-recaptcha2";
 export default {
     data() {
         return {
@@ -141,6 +161,8 @@ export default {
             intervalId: null,
             errorForm: false,
             counter: 0,
+            loadingTimeout: 30000,
+            reCaptcha: false
         };
     },
     async mounted() {
@@ -148,6 +170,22 @@ export default {
         this.getEmail();
     },
     methods: {
+        recaptchaVerified(response) {
+            response
+            this.reCaptcha = true;
+        },
+        recaptchaExpired() {
+            this.$refs.vueRecaptcha.reset();
+            this.reCaptcha = false;
+
+        },
+        recaptchaFailed() {
+            this.reCaptcha = false;
+        },
+        recaptchaError(reason) {
+            console.log("Error Captcha", reason);
+            this.reCaptcha = false;
+        },
         async handleSendLink() {
             this.sendCodeToEmail();
             this.showCounter = true;
@@ -165,8 +203,9 @@ export default {
             }, 1000);
         },
         async validOTP(code) {
-            console.log(code);
-            if (code === "334455") {
+
+            if(this.reCaptcha) {
+                if (code === "334455") {
                 this.clearAllInputs();
                 this.$emit("handleShowModal", false);
             } else {
@@ -179,6 +218,16 @@ export default {
                     this.errorForm = false;
                 }, 4000);
                 this.clearAllInputs();
+            }
+            } else {
+                toast.error(`Has clic en la casilla no soy un robot.`, {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 3000,
+                });
+                this.errorForm = true;
+                setTimeout(() => {
+                    this.errorForm = false;
+                }, 4000);
             }
         },
         getInputElement(index) {
@@ -247,6 +296,9 @@ export default {
                 });
             }
         },
+    },
+    components: {
+        vueRecaptcha,
     },
 };
 </script>
