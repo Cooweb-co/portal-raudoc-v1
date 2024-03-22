@@ -1,6 +1,7 @@
 <script>
-import { ref, watch, getCurrentInstance, onUnmounted } from "vue";
+import { ref, watch, getCurrentInstance, onUnmounted, computed } from "vue";
 import Multiselect from "@vueform/multiselect";
+import dayjs from "dayjs";
 import "@vueform/multiselect/themes/default.css";
 import useVuelidate from "@vuelidate/core";
 import Layout from "@/layouts/main.vue";
@@ -23,6 +24,7 @@ import axios from "axios";
 export default {
   setup() {
     const instance = getCurrentInstance();
+    const storage = getFirebaseBackend().storage;
     const files = ref([]);
     const dropzoneFile = ref("");
     const loadingBtnAI = ref(false);
@@ -36,11 +38,37 @@ export default {
     const qrModal = ref(false);
     let unsubscribe;
     let idProccessAI;
-    const loadingAI = ref(false)
+    const loadingAI = ref(false);
+    const newDate = ref(dayjs().format("DD/MM/YYYY HH:mm"));
+    const trds = ref([]);
+    const series = ref([]);
+    const subseries = ref([]);
+    const isDocs = ref([]);
+    const radicate = ref("");
+    // const peopleList = ref([]);
 
+    let config = {
+      method: "get",
+      maxBodyLength: Infinity,
+      url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/TDRS_LIST_V1",
+      headers: {
+        company: "BAQVERDE",
+      },
+    };
+
+    // let configGetPeople = {
+    //   method: "get",
+    //   maxBodyLength: Infinity,
+    //   url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/USERS_LIST_V1'",
+    //   headers: {
+    //     company: "BAQVERDE",
+    //   },
+    // };
+
+    // controlador de variables para el formulario de radicacion
     const form = ref({
       area: "",
-      date: "",
+      date: newDate.value,
       inputMethod: "",
       serie: "",
       subSerie: "",
@@ -57,9 +85,9 @@ export default {
       email: "",
       address: "",
       assignedTo: "",
-      
     });
 
+    // reglas de validacion
     const rules = {
       area: { required: MESSAGE_REQUIRED },
       date: { required: MESSAGE_REQUIRED },
@@ -67,9 +95,9 @@ export default {
       serie: { required: MESSAGE_REQUIRED },
       subSerie: { required: MESSAGE_REQUIRED },
       documentType: { required: MESSAGE_REQUIRED },
-      untilDate: { required: MESSAGE_REQUIRED },
+      untilDate: {},
       folios: { required: MESSAGE_REQUIRED },
-      externalFiling: { required: MESSAGE_REQUIRED },
+      externalFiling: {},
       personType: { required: MESSAGE_REQUIRED },
       idType: { required: MESSAGE_REQUIRED },
       idNumber: { required: MESSAGE_REQUIRED },
@@ -100,7 +128,7 @@ export default {
           // console.log("onListenClaimData >>", data);
           claimData.value = data;
           if (data.status == "DRAFT" && data.summary == null) {
-            loadingAI.value = true
+            loadingAI.value = true;
             setTimeout(() => {
               toast.update(idProccessAI, {
                 render: "Extrayendo información relevante...",
@@ -117,20 +145,19 @@ export default {
               isLoading: false,
               autoClose: 3000,
             });
-            loadingAI.value = false
+            loadingAI.value = false;
           }
 
-          if (data.status == "ERROR"){
+          if (data.status == "ERROR") {
             toast.update(idProccessAI, {
-              render: "Complete la información de asunto y resumen manualmente. Documento no valido para este proceso.",
+              render:
+                "Complete la información de asunto y resumen manualmente. Documento no valido para este proceso.",
               type: toast.TYPE.WARNING,
               isLoading: false,
               autoClose: 1000,
             });
-            loadingAI.value = false
+            loadingAI.value = false;
           }
-          
-          
 
           instance.proxy.subject = data.subject ? data.subject : "";
           instance.proxy.editorData = data.summary ? data.summary : "";
@@ -140,18 +167,10 @@ export default {
       return unsubscribe;
     };
 
-    onUnmounted(() => {
-      if (unsubscribe) {
-        unsubscribe;
-      }
-    });
-
     const drop = (e) => {
       dropzoneFile.value = e.dataTransfer.files[0];
       files.value.push(dropzoneFile.value);
     };
-
-    const storage = getFirebaseBackend().storage;
 
     const selectedFile = async () => {
       dropzoneFile.value = document.getElementById("formFile").files[0];
@@ -194,6 +213,97 @@ export default {
       }
     };
 
+    // obtener listado trds
+    async function getTrds() {
+      await axios
+        .request(config)
+        .then((response) => {
+          response.data.forEach((element) => {
+            trds.value.push({
+              label: element.name,
+              value: element.name,
+              series: element.series,
+            });
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    // obtener listado de usuarios activos por areas
+    // async function getPeople() {
+    //   await axios
+    //     .request(configGetPeople)
+    //     .then((response) => {
+    //       peopleList.value = response.data;
+    //     })
+    //     .catch((error) => {
+    //       console.log(error);
+    //     });
+
+    //   console.log(peopleList.value);
+    // }
+
+    // computadas para la dependencia de los campos
+    // eslint-disable-next-line vue/return-in-computed-property
+    const auxSerie = computed(() => {
+      if (form.value.area) {
+        trds.value.forEach((i) => {
+          if (i.label == form.value.area) {
+            i.series.forEach((j) => {
+              series.value.push({
+                label: j.name,
+                value: j.name,
+                subseries: j.subseries,
+              });
+            });
+          }
+        });
+      }
+    });
+
+    // eslint-disable-next-line vue/return-in-computed-property
+    const auxSubSerie = computed(() => {
+      if (form.value.serie) {
+        series.value.forEach((i) => {
+          if (i.label == form.value.serie) {
+            subseries.value = [];
+            i.subseries.forEach((j) => {
+              subseries.value.push({
+                label: j.name,
+                value: j.name,
+                documents: j.docs,
+              });
+            });
+          }
+        });
+      }
+    });
+
+    //eslint-disable-next-line vue/return-in-computed-property
+    const auxDocTypes = computed(() => {
+      if (form.value.subSerie) {
+        subseries.value.forEach((i) => {
+          if (i.label == form.value.subSerie) {
+            i.documents.forEach((j) => {
+              isDocs.value.push({
+                label: j.name,
+                value: j.name,
+                days: j.days,
+              });
+            });
+          }
+        });
+      }
+    });
+
+    onUnmounted(() => {
+      if (unsubscribe) {
+        unsubscribe;
+      }
+    });
+
     watch(
       () => [...files.value],
       (currentValue) => {
@@ -215,7 +325,17 @@ export default {
       saveLoading,
       submitLoading,
       qrModal,
-      loadingAI
+      loadingAI,
+      newDate,
+      getTrds,
+      trds,
+      series,
+      subseries,
+      auxSerie,
+      auxSubSerie,
+      auxDocTypes,
+      isDocs,
+      radicate,
     };
   },
   data() {
@@ -237,9 +357,9 @@ export default {
       deadline: "",
       rangeDateconfig: {
         wrap: true,
-        altFormat: "M j, Y",
+        altFormat: "d/m/Y H:i",
         altInput: true,
-        dateFormat: "d M, Y",
+        dateFormat: "d/m/Y H:i",
       },
       showRadicationButton: false,
     };
@@ -342,6 +462,8 @@ export default {
             position: toast.POSITION.TOP_RIGHT,
             autoClose: 3000,
           });
+          this.radicate = response.data;
+          console.log(response);
           this.qrModal = true;
         }
 
@@ -454,6 +576,8 @@ export default {
     setTimeout(() => {
       this.isDisabledAI = false;
     }, 1000);
+    this.getTrds();
+    // this.getPeople();
   },
   computed: {
     user() {
@@ -473,16 +597,24 @@ export default {
 
 <template>
   <!-- Modal -->
-  <Modal v-if="qrModal" title="" size="small" :hideIconClose="true" @close="qrModal = false">
+  <Modal
+    v-if="qrModal"
+    title=""
+    size="small"
+    :hideIconClose="true"
+    @close="qrModal = false"
+  >
     <template #content>
-      <div class="d-flex flex-column justify-content-center align-items-center gap-3">
+      <div
+        class="d-flex flex-column justify-content-center align-items-center gap-3"
+      >
         <div>
-          <h4 class="text-success">[EXT-123-2024]</h4>
+          <h4 class="text-success fw-bold fs-4">{{ radicate?.idRadicate }}</h4>
         </div>
         <div class="pb-4">
           <a-qrcode
             error-level="H"
-            :value="'http://portal.raudoc.com/r/BAQVERDE/'+documentID"
+            :value="'http://portal.raudoc.com/r/BAQVERDE/' + documentID"
           />
         </div>
       </div>
@@ -503,6 +635,9 @@ export default {
           <a-radio-button value="Entry">Entrada</a-radio-button>
           <a-radio-button value="Output">Salida</a-radio-button>
         </a-radio-group>
+        <div>{{ auxSerie }}</div>
+        <div>{{ auxSubSerie }}</div>
+        <div>{{ auxDocTypes }}</div>
       </div>
       <div class="text-end mb-4 col-6 col-sm-6">
         <BButton
@@ -539,7 +674,6 @@ export default {
               aria-hidden="true"
             ></span>
             <span>Radicar Documento</span>
-            
           </div>
         </BButton>
       </div>
@@ -613,9 +747,15 @@ export default {
               <label class="form-label fw-bold" for="project-title-input"
                 >Asunto</label
               >
-              <BSpinner v-if="loadingAI" class="float-end" small  v-b-tooltip.hover.top title="Extrayendo asunto con IA" type="grow" />
+              <BSpinner
+                v-if="loadingAI"
+                class="float-end"
+                small
+                v-b-tooltip.hover.top
+                title="Extrayendo asunto con IA"
+                type="grow"
+              />
 
-              
               <input
                 type="text"
                 v-model="subject"
@@ -629,7 +769,14 @@ export default {
 
             <div class="mb-3">
               <label class="form-label fw-bold">Resumen de radicado</label>
-              <BSpinner v-if="loadingAI" class="float-end" small  v-b-tooltip.hover.top title="Extrayendo resumen con IA"  type="grow" />
+              <BSpinner
+                v-if="loadingAI"
+                class="float-end"
+                small
+                v-b-tooltip.hover.top
+                title="Extrayendo resumen con IA"
+                type="grow"
+              />
               <!-- <ckeditor v-model="editorData" :editor="editor"></ckeditor> -->
               <textarea
                 class="form-control"
@@ -664,21 +811,7 @@ export default {
                   :searchable="true"
                   :create-option="true"
                   placeholder="Seleccione"
-                  :options="[
-                    { value: 'Aporedado', label: 'Aporedado' },
-                    {
-                      value: 'Nino, nina, adolescente',
-                      label: 'Nino, Nina, Adolescente',
-                    },
-                    {
-                      value: 'persona judirica',
-                      label: 'Persona Judirica',
-                    },
-                    {
-                      value: 'persona natural',
-                      label: 'Persona Natural',
-                    },
-                  ]"
+                  :options="trds"
                 />
                 <ValidateLabel v-bind="{ v$ }" attribute="area" />
               </BCol>
@@ -743,21 +876,7 @@ export default {
                   :searchable="true"
                   :create-option="true"
                   placeholder="Seleccione"
-                  :options="[
-                    { value: 'Aporedado', label: 'Aporedado' },
-                    {
-                      value: 'Nino, nina, adolescente',
-                      label: 'Nino, Nina, Adolescente',
-                    },
-                    {
-                      value: 'persona judirica',
-                      label: 'Persona Judirica',
-                    },
-                    {
-                      value: 'persona natural',
-                      label: 'Persona Natural',
-                    },
-                  ]"
+                  :options="series"
                 />
                 <ValidateLabel v-bind="{ v$ }" attribute="serie" />
               </BCol>
@@ -774,21 +893,7 @@ export default {
                   :searchable="true"
                   :create-option="true"
                   placeholder="Seleccione"
-                  :options="[
-                    { value: 'Aporedado', label: 'Aporedado' },
-                    {
-                      value: 'Nino, nina, adolescente',
-                      label: 'Nino, Nina, Adolescente',
-                    },
-                    {
-                      value: 'persona judirica',
-                      label: 'Persona Judirica',
-                    },
-                    {
-                      value: 'persona natural',
-                      label: 'Persona Natural',
-                    },
-                  ]"
+                  :options="subseries"
                 />
                 <ValidateLabel v-bind="{ v$ }" attribute="subSerie" />
               </BCol>
@@ -805,21 +910,7 @@ export default {
                   :searchable="true"
                   :create-option="true"
                   placeholder="Seleccione"
-                  :options="[
-                    { value: 'Aporedado', label: 'Aporedado' },
-                    {
-                      value: 'Nino, nina, adolescente',
-                      label: 'Nino, Nina, Adolescente',
-                    },
-                    {
-                      value: 'persona judirica',
-                      label: 'Persona Judirica',
-                    },
-                    {
-                      value: 'persona natural',
-                      label: 'Persona Natural',
-                    },
-                  ]"
+                  :options="isDocs"
                 />
                 <ValidateLabel v-bind="{ v$ }" attribute="documentType" />
               </BCol>
@@ -838,7 +929,7 @@ export default {
                 <ValidateLabel v-bind="{ v$ }" attribute="untilDate" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="username" class="form-label"
+                <label for="username" class="form-label fw-bold"
                   >Folios <span class="text-danger fw-bold">*</span></label
                 >
                 <input
@@ -856,7 +947,7 @@ export default {
               </BCol>
               <BCol lg="3" class="mb-3">
                 <label for="username" class="form-label fw-bold"
-                  >Radicado Externo <span class="text-danger">*</span></label
+                  >Radicado Externo</label
                 >
                 <input
                   type="text"
@@ -868,8 +959,6 @@ export default {
                   id="RadicadoExterno"
                   placeholder="# Radicado externo"
                 />
-
-                <ValidateLabel v-bind="{ v$ }" attribute="externalFiling" />
               </BCol>
               <BCol lg="3" class="mb-3">
                 <label for="username" class="form-label fw-bold">
@@ -882,7 +971,18 @@ export default {
                   id="RadicadoExterno"
                   placeholder="Persona asignada"
                 />
-
+                <!-- <label for="username" class="form-label fw-bold">
+                  Asignado a <span class="text-danger">*</span></label
+                >
+                <Multiselect
+                  v-model="form.assignedTo"
+                  :required="true"
+                  :close-on-select="true"
+                  :create-option="true"
+                  placeholder="Seleccione"
+                  :options="[]"
+                  :disabled="true"
+                /> -->
                 <ValidateLabel v-bind="{ v$ }" attribute="assignedTo" />
               </BCol>
             </BRow>
@@ -951,7 +1051,7 @@ export default {
                 <ValidateLabel v-bind="{ v$ }" attribute="idType" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="username" class="form-label"
+                <label for="username" class="form-label fw-bold"
                   >Número de documento
                   <span class="text-danger fw-bold">*</span></label
                 >
@@ -959,24 +1059,14 @@ export default {
                   type="text"
                   class="form-control"
                   v-model="form.idNumber"
-                  :class="{
-                    'is-invalid': submitted && v$.user.username.$error,
-                  }"
                   id="username"
                   placeholder="Ingrese numero de documento"
                 />
-                <div
-                  v-if="submitted && v$.user.username.$error"
-                  class="invalid-feedback"
-                >
-                  <span v-if="v$.user.username.required.$message">{{
-                    v$.user.username.required.$message
-                  }}</span>
-                </div>
+
                 <ValidateLabel v-bind="{ v$ }" attribute="idNumber" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="username" class="form-label"
+                <label for="username" class="form-label fw-bold"
                   >Teléfono de contacto
                   <span class="text-danger fw-bold">*</span></label
                 >
@@ -984,72 +1074,39 @@ export default {
                   type="text"
                   class="form-control"
                   v-model="form.contactPhone"
-                  :class="{
-                    'is-invalid': submitted && v$.user.username.$error,
-                  }"
-                  id="username"
                   placeholder="Ingrese telefono de contacto"
                 />
-                <div
-                  v-if="submitted && v$.user.username.$error"
-                  class="invalid-feedback"
-                >
-                  <span v-if="v$.user.username.required.$message">{{
-                    v$.user.username.required.$message
-                  }}</span>
-                </div>
                 <ValidateLabel v-bind="{ v$ }" attribute="contactPhone" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="username" class="form-label"
+                <label for="username" class="form-label fw-bold"
                   >Nombres <span class="text-danger fw-bold">*</span></label
                 >
                 <input
                   type="text"
                   class="form-control"
                   v-model="form.names"
-                  :class="{
-                    'is-invalid': submitted && v$.user.username.$error,
-                  }"
                   id="username"
                   placeholder="Ingrese nombres"
                 />
-                <div
-                  v-if="submitted && v$.user.username.$error"
-                  class="invalid-feedback"
-                >
-                  <span v-if="v$.user.username.required.$message">{{
-                    v$.user.username.required.$message
-                  }}</span>
-                </div>
+
                 <ValidateLabel v-bind="{ v$ }" attribute="names" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="username" class="form-label"
+                <label for="username" class="form-label fw-bold"
                   >Apellidos <span class="text-danger fw-bold">*</span></label
                 >
                 <input
                   type="text"
                   class="form-control"
                   v-model="form.lastNames"
-                  :class="{
-                    'is-invalid': submitted && v$.user.username.$error,
-                  }"
-                  id="username"
                   placeholder="Ingrese apellidos"
                 />
-                <div
-                  v-if="submitted && v$.user.username.$error"
-                  class="invalid-feedback"
-                >
-                  <span v-if="v$.user.username.required.$message">{{
-                    v$.user.username.required.$message
-                  }}</span>
-                </div>
+
                 <ValidateLabel v-bind="{ v$ }" attribute="lastNames" />
               </BCol>
               <BCol lg="6" class="mb-3">
-                <label for="username" class="form-label"
+                <label for="username" class="form-label fw-bold"
                   >Correo electrónico
                   <span class="text-danger fw-bold">*</span></label
                 >
@@ -1057,44 +1114,24 @@ export default {
                   type="text"
                   class="form-control"
                   v-model="form.email"
-                  :class="{
-                    'is-invalid': submitted && v$.user.username.$error,
-                  }"
                   id="username"
                   placeholder="Ingrese email"
                 />
-                <div
-                  v-if="submitted && v$.user.username.$error"
-                  class="invalid-feedback"
-                >
-                  <span v-if="v$.user.username.required.$message">{{
-                    v$.user.username.required.$message
-                  }}</span>
-                </div>
+
                 <ValidateLabel v-bind="{ v$ }" attribute="email" />
               </BCol>
               <BCol lg="12" class="mb-3">
-                <label for="username" class="form-label"
+                <label for="username" class="form-label fw-bold"
                   >Dirección <span class="text-danger fw-bold">*</span></label
                 >
                 <input
                   type="text"
                   class="form-control"
                   v-model="form.address"
-                  :class="{
-                    'is-invalid': submitted && v$.user.username.$error,
-                  }"
                   id="username"
                   placeholder="Ingrese una dirección"
                 />
-                <div
-                  v-if="submitted && v$.user.username.$error"
-                  class="invalid-feedback"
-                >
-                  <span v-if="v$.user.username.required.$message">{{
-                    v$.user.username.required.$message
-                  }}</span>
-                </div>
+
                 <ValidateLabel v-bind="{ v$ }" attribute="address" />
               </BCol>
             </BRow>
