@@ -92,7 +92,7 @@ export default {
                 identificationNumber:
                     docData?.petitionerInformation?.identificationNumber,
                 identificationType:
-                    docData?.petitionerInformation?.address || "No definido",
+                    docData?.petitionerInformation?.identificationType || "No definido",
                 fullName:
                     docData?.petitionerInformation?.firstNames +
                         " " +
@@ -235,7 +235,7 @@ export default {
                                     </BRow>
                                 </BCol>
                                 <BCol md="auto">
-                                    <div class="hstack gap-1 flex-wrap">
+                                    <!-- <div class="hstack gap-1 flex-wrap">
                                         <button
                                             type="button"
                                             class="btn py-0 fs-16 favourite-btn active"
@@ -257,7 +257,7 @@ export default {
                                         >
                                             <i class="ri-flag-line"></i>
                                         </button>
-                                    </div>
+                                    </div> -->
                                 </BCol>
                             </BRow>
                         </BCardBody>
