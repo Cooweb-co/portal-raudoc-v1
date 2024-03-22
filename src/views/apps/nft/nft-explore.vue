@@ -114,7 +114,7 @@ export default {
             <BCol>
                 <BCard no-body class="explore-box card-animate">
                     <div class="explore-place-bid-img">
-                        <img src="https://img.themesbrand.com/velzon/images/img-3.gif" alt=""
+                        <img src="https://img.themesbrand.com/raudoc/images/img-3.gif" alt=""
                             class="card-img-top explore-img" />
                         <div class="bg-overlay"></div>
                         <div class="place-bid-btn">
@@ -217,7 +217,7 @@ export default {
             <BCol>
                 <BCard no-body class="explore-box card-animate">
                     <div class="explore-place-bid-img">
-                        <img src="https://img.themesbrand.com/velzon/images/img-4.gif" alt=""
+                        <img src="https://img.themesbrand.com/raudoc/images/img-4.gif" alt=""
                             class="card-img-top explore-img" />
                         <div class="bg-overlay"></div>
                         <div class="place-bid-btn">
@@ -354,7 +354,7 @@ export default {
             <BCol>
                 <BCard no-body class="explore-box card-animate">
                     <div class="explore-place-bid-img">
-                        <img src="https://img.themesbrand.com/velzon/images/img-2.gif" alt=""
+                        <img src="https://img.themesbrand.com/raudoc/images/img-2.gif" alt=""
                             class="card-img-top explore-img" />
                         <div class="bg-overlay"></div>
                         <div class="place-bid-btn">
@@ -423,7 +423,7 @@ export default {
             <BCol>
                 <BCard no-body class="explore-box card-animate">
                     <div class="explore-place-bid-img">
-                        <img src="https://img.themesbrand.com/velzon/images/img-1.gif" alt=""
+                        <img src="https://img.themesbrand.com/raudoc/images/img-1.gif" alt=""
                             class="card-img-top explore-img" />
                         <div class="bg-overlay"></div>
                         <div class="place-bid-btn">

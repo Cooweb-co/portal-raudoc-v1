@@ -95,7 +95,7 @@ export default {
                                         <div class="mt-4 pt-2">
                                             <h5>You are Logged Out</h5>
                                             <p class="text-muted">Thank you for using <span
-                                                    class="fw-semibold">velzon</span> admin template</p>
+                                                    class="fw-semibold">raudoc</span> admin template</p>
                                             <div class="mt-4">
                                                 <router-link to="/auth/signin-basic" class="btn btn-success w-100">Sign
                                                     In</router-link>

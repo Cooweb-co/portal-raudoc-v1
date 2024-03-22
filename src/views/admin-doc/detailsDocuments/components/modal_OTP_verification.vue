@@ -105,7 +105,7 @@
                 </button>
             </p>
 
-            <vueRecaptcha
+            <!-- <vueRecaptcha
                 sitekey="6Lflb6EpAAAAAOwAmPQFdNTSBVN-cVwdH7ekJdFT"
                 class="d-flex justify-content-center align-items-center pt-3"
                 size="normal"
@@ -118,7 +118,7 @@
                 @error="recaptchaError"
                 ref="vueRecaptcha"
             >
-            </vueRecaptcha>
+            </vueRecaptcha> -->
 
             <div class="row pt-5">
                 <div class="col-6">
@@ -145,7 +145,7 @@
 
 <script>
 import { toast } from "vue3-toastify";
-import vueRecaptcha from "vue3-recaptcha2";
+// import vueRecaptcha from "vue3-recaptcha2";
 export default {
     data() {
         return {
@@ -161,8 +161,8 @@ export default {
             intervalId: null,
             errorForm: false,
             counter: 0,
-            loadingTimeout: 30000,
-            reCaptcha: false
+            // loadingTimeout: 30000,
+            // reCaptcha: false,
         };
     },
     async mounted() {
@@ -170,22 +170,22 @@ export default {
         this.getEmail();
     },
     methods: {
-        recaptchaVerified(response) {
-            response
-            this.reCaptcha = true;
-        },
-        recaptchaExpired() {
-            this.$refs.vueRecaptcha.reset();
-            this.reCaptcha = false;
+        // recaptchaVerified(response) {
+        //     response
+        //     this.reCaptcha = true;
+        // },
+        // recaptchaExpired() {
+        //     this.$refs.vueRecaptcha.reset();
+        //     this.reCaptcha = false;
 
-        },
-        recaptchaFailed() {
-            this.reCaptcha = false;
-        },
-        recaptchaError(reason) {
-            console.log("Error Captcha", reason);
-            this.reCaptcha = false;
-        },
+        // },
+        // recaptchaFailed() {
+        //     this.reCaptcha = false;
+        // },
+        // recaptchaError(reason) {
+        //     console.log("Error Captcha", reason);
+        //     this.reCaptcha = false;
+        // },
         async handleSendLink() {
             this.sendCodeToEmail();
             this.showCounter = true;
@@ -203,9 +203,7 @@ export default {
             }, 1000);
         },
         async validOTP(code) {
-
-            if(this.reCaptcha) {
-                if (code === "334455") {
+            if (code === "334455") {
                 this.clearAllInputs();
                 this.$emit("handleShowModal", false);
             } else {
@@ -219,16 +217,18 @@ export default {
                 }, 4000);
                 this.clearAllInputs();
             }
-            } else {
-                toast.error(`Has clic en la casilla no soy un robot.`, {
-                    position: toast.POSITION.TOP_RIGHT,
-                    autoClose: 3000,
-                });
-                this.errorForm = true;
-                setTimeout(() => {
-                    this.errorForm = false;
-                }, 4000);
-            }
+            // if(this.reCaptcha) {
+
+            // } else {
+            //     toast.error(`Has clic en la casilla no soy un robot.`, {
+            //         position: toast.POSITION.TOP_RIGHT,
+            //         autoClose: 3000,
+            //     });
+            //     this.errorForm = true;
+            //     setTimeout(() => {
+            //         this.errorForm = false;
+            //     }, 4000);
+            // }
         },
         getInputElement(index) {
             return document.getElementById("digit-" + index + "-input");
@@ -298,7 +298,7 @@ export default {
         },
     },
     components: {
-        vueRecaptcha,
+        // vueRecaptcha,
     },
 };
 </script>

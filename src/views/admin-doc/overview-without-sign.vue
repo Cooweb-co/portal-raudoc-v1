@@ -5,7 +5,7 @@ import modal_OTP_verification from "./detailsDocuments/components/modal_OTP_veri
 export default {
     data() {
         return {
-            showModal: true,
+            showModal: false,
         };
     },
     components: {

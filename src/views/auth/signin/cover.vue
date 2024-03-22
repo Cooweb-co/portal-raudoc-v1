@@ -88,7 +88,7 @@ export default {
                                     <div class="p-lg-5 p-4">
                                         <div>
                                             <h5 class="text-primary">Welcome Back !</h5>
-                                            <p class="text-muted">Sign in to continue to Velzon.</p>
+                                            <p class="text-muted">Sign in to continue to raudoc.</p>
                                         </div>
 
                                         <div class="mt-4">

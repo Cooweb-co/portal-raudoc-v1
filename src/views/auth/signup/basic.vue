@@ -120,7 +120,7 @@ export default {
                             <BCardBody class="p-4">
                                 <div class="text-center mt-2">
                                     <h5 class="text-primary">Create New Account</h5>
-                                    <p class="text-muted">Get your free velzon account now</p>
+                                    <p class="text-muted">Get your free raudoc account now</p>
                                 </div>
                                 <div class="p-2 mt-4">
                                     <form class="needs-validation" novalidate>
@@ -163,7 +163,7 @@ export default {
 
                                         <div class="mb-4">
                                             <p class="mb-0 fs-12 text-muted fst-italic">By registering you agree to the
-                                                Velzon <BLink href="#"
+                                                raudoc <BLink href="#"
                                                     class="text-primary text-decoration-underline fst-normal fw-medium">
                                                     Terms
                                                     of Use</BLink>
