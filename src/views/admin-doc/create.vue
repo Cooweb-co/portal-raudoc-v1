@@ -36,6 +36,7 @@ export default {
     const qrModal = ref(false);
     let unsubscribe;
     let idProccessAI;
+    const loadingAI = ref(false)
 
     const form = ref({
       area: "",
@@ -56,6 +57,7 @@ export default {
       email: "",
       address: "",
       assignedTo: "",
+      
     });
 
     const rules = {
@@ -98,6 +100,7 @@ export default {
           // console.log("onListenClaimData >>", data);
           claimData.value = data;
           if (data.status == "DRAFT" && data.summary == null) {
+            loadingAI.value = true
             setTimeout(() => {
               toast.update(idProccessAI, {
                 render: "Extrayendo información relevante...",
@@ -114,7 +117,20 @@ export default {
               isLoading: false,
               autoClose: 3000,
             });
+            loadingAI.value = false
           }
+
+          if (data.status == "ERROR"){
+            toast.update(idProccessAI, {
+              render: "Complete la información de asunto y resumen manualmente. Documento no valido para este proceso.",
+              type: toast.TYPE.WARNING,
+              isLoading: false,
+              autoClose: 1000,
+            });
+            loadingAI.value = false
+          }
+          
+          
 
           instance.proxy.subject = data.subject ? data.subject : "";
           instance.proxy.editorData = data.summary ? data.summary : "";
@@ -199,6 +215,7 @@ export default {
       saveLoading,
       submitLoading,
       qrModal,
+      loadingAI
     };
   },
   data() {
@@ -460,12 +477,12 @@ export default {
     <template #content>
       <div class="d-flex flex-column justify-content-center align-items-center gap-3">
         <div>
-          <h4 class="text-success">[Numero de radicado]</h4>
+          <h4 class="text-success">[EXT-123-2024]</h4>
         </div>
         <div class="pb-4">
           <a-qrcode
             error-level="H"
-            value="http://portal.raudoc.com/r/BAQVERDE/EXT-20042-12009"
+            :value="'http://portal.raudoc.com/r/BAQVERDE/'+documentID"
           />
         </div>
       </div>
@@ -509,7 +526,7 @@ export default {
         <BButton
           v-else
           type="submit"
-          variant="success"
+          variant="danger"
           class="w-sm"
           @click="handleSubmitDocument"
           :disabled="submitLoading"
@@ -522,6 +539,7 @@ export default {
               aria-hidden="true"
             ></span>
             <span>Radicar Documento</span>
+            
           </div>
         </BButton>
       </div>
@@ -595,6 +613,9 @@ export default {
               <label class="form-label fw-bold" for="project-title-input"
                 >Asunto</label
               >
+              <BSpinner v-if="loadingAI" class="float-end" small  v-b-tooltip.hover.top title="Extrayendo asunto con IA" type="grow" />
+
+              
               <input
                 type="text"
                 v-model="subject"
@@ -608,6 +629,7 @@ export default {
 
             <div class="mb-3">
               <label class="form-label fw-bold">Resumen de radicado</label>
+              <BSpinner v-if="loadingAI" class="float-end" small  v-b-tooltip.hover.top title="Extrayendo resumen con IA"  type="grow" />
               <!-- <ckeditor v-model="editorData" :editor="editor"></ckeditor> -->
               <textarea
                 class="form-control"
