@@ -18,26 +18,26 @@ export default {
             },
 
             cardsData: [
-                {
-                    title: "Entradas Totales",
-                    quantity: 547,
-                    percent: "10.00%",
-                },
-                {
-                    title: "Salidas Totales",
-                    quantity: 124,
-                    percent: "10.00%",
-                },
-                {
-                    title: "Pendientes",
-                    quantity: 107,
-                    percent: "10.00%",
-                },
-                {
-                    title: "No requiere respuesta",
-                    quantity: 15,
-                    percent: "10.00%",
-                },
+                // {
+                //     title: "Entradas Totales",
+                //     quantity: 547,
+                //     percent: "10.00%",
+                // },
+                // {
+                //     title: "Salidas Totales",
+                //     quantity: 124,
+                //     percent: "10.00%",
+                // },
+                // {
+                //     title: "Pendientes",
+                //     quantity: 107,
+                //     percent: "10.00%",
+                // },
+                // {
+                //     title: "No requiere respuesta",
+                //     quantity: 15,
+                //     percent: "10.00%",
+                // },
             ],
         };
     },
