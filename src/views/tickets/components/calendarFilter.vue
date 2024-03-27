@@ -1,3 +1,44 @@
+<script>
+import flatPickr from "vue-flatpickr-component";
+import "flatpickr/dist/flatpickr.css";
+import { defineComponent } from "vue";
+
+export default defineComponent({
+    name: 'CalendarFilter',
+    data() {
+        return {
+            rangeDateconfig: {
+                wrap: true,
+                altFormat: "M j, Y",
+                altInput: true,
+                dateFormat: "d M, Y",
+                mode: "range",
+            },
+            filterdate: null,
+        };
+    },
+    components: {
+        flatPickr,
+    },
+    methods: {
+        SearchData() {
+            this.$emit("filterDate", this.filterdate);
+            console.log(this.filterdate);
+        },
+        clearFilter() {
+            this.clearFilterDate();
+            this.filterdate = null;
+        },
+    },
+    props: {
+        clearFilterDate: {
+            type: Function,
+            required: true,
+        },
+    },
+});
+</script>
+
 <template>
     <div class="containerCalendar">
         <flat-pickr
@@ -26,7 +67,7 @@
     </div>
 </template>
 
-<style>
+<style scoped>
 .containerCalendar {
     display: flex;
     justify-content: center;
@@ -34,41 +75,3 @@
     margin-bottom: 1em;
 }
 </style>
-
-<script>
-import flatPickr from "vue-flatpickr-component";
-import "flatpickr/dist/flatpickr.css";
-export default {
-    data() {
-        return {
-            rangeDateconfig: {
-                wrap: true,
-                altFormat: "M j, Y",
-                altInput: true,
-                dateFormat: "d M, Y",
-                mode: "range",
-            },
-            filterdate: null,
-        };
-    },
-    components: {
-        flatPickr,
-    },
-    methods: {
-        SearchData() {
-            this.$emit("filterDate", this.filterdate);
-            console.log(this.filterdate)
-        },
-        clearFilter() {
-            this.clearFilterDate()
-            this.filterdate = null
-        }
-    },
-    props: {
-        clearFilterDate: {
-            type: Function,
-            required: true,
-        },
-    },
-};
-</script>

@@ -1,16 +1,19 @@
-<template>
-    <Layout>
-        <overview_main/>
-    </Layout>
-</template>
 <script>
-import overview_main from './components/overview_main.vue';
+import OverviewMain from './components/OverviewMain.vue';
 import Layout from "@/layouts/main.vue";
+import { defineComponent } from "vue";
 
-export default {
+export default defineComponent({
+    name: 'Overview',
     components: {
-        overview_main,
+        OverviewMain,
         Layout
     }
-}
+})
 </script>
+
+<template>
+    <Layout>
+        <OverviewMain/>
+    </Layout>
+</template>

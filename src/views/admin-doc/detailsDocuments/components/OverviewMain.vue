@@ -1,28 +1,22 @@
 <script>
-import { reactive } from "vue";
 import {
     getDocument,
     getDocumentFilesUploads,
 } from "@/services/docservice/doc.service";
+import { defineComponent } from "vue";
 
-import overview_summaryVue from "./overview_summary.vue";
-import overview_documentsVue from "./overview_documents.vue";
-import overview_responseVue from "./overview_response.vue";
+import OverviewSummary from "./OverviewSummary.vue";
+import OverviewDocuments from "./OverviewDocuments.vue";
+import OverviewResponse from "./OverviewResponse.vue";
 
-import transform_date from "@/helpers/transform_date";
+import transformDate from "@/helpers/transformDate";
+import setVariantStateInfo from "@/helpers/setVariantStateInfo";
+import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo";
+import setState from "@/helpers/setState";
 
-export default {
-    setup() {
-        const state = reactive({
-            content:
-                "<h3><span class='ql-size-large;'>Hello World!</span></h3><p><br></p><h3>This is an simple editable area.</h3><p><br></p><ul><li>Select a text to reveal the toolbar.</li><li>Edit rich document on-the-fly, so elastic!</li></ul><p><br></p><p>End of simple area</p>",
-            _content: "",
-            disabled: false,
-        });
-        return {
-            state,
-        };
-    },
+export default defineComponent({
+    name: "OverviewMain",
+
     data() {
         return {
             data: "",
@@ -43,19 +37,17 @@ export default {
             this.loading = true;
             const docData = await getDocument(this.company, this.id);
             if (docData?.entryDate && docData?.entryDate.seconds) {
-                const formattedDate = transform_date(
-                    docData?.entryDate.seconds
-                ); // Formatear fecha
+                const formattedDate = transformDate(docData?.entryDate.seconds); // Formatear fecha
                 this.entryDate = formattedDate; // Guardar la fecha formateada
             }
 
             if (docData?.expirationDate && docData?.expirationDate.seconds) {
-                const formattedDate = transform_date(
+                const formattedDate = transformDate(
                     docData?.expirationDate.seconds
                 ); // Formatear fecha
                 this.expirationDate = formattedDate; // Guardar la fecha formateada
             }
-            console.log(docData)
+            console.log(docData);
             this.data = {
                 id: this.id,
                 numberEntryClaim: docData?.numberEntryClaim || "No definido",
@@ -64,18 +56,7 @@ export default {
                     docData?.documentaryTypologyEntry || "No definido",
                 subject: docData?.subject || "No definido",
                 entryDate: this.entryDate || "No definido",
-                status:
-                    docData?.status?.toUpperCase() == "EXPIRE"
-                        ? "Vencido"
-                        : docData?.status?.toUpperCase() == "ABOUT_TO_EXPIRE"
-                        ? "Por vencer"
-                        : docData?.status?.toUpperCase() == "IN_TERM"
-                        ? "En Termino"
-                        : docData?.status?.toUpperCase() == "ANSWERED"
-                        ? "Respondido"
-                        : docData?.status?.toUpperCase() == "NO_RESPONSE"
-                        ? "No requiere respuesta"
-                        : docData?.status?.toUpperCase() || "No definido",
+                status: setState(docData?.status),
                 expirationDate: this.expirationDate || "No definido",
                 priority: docData?.priority || "BAJA",
                 serie: docData?.serie,
@@ -92,7 +73,8 @@ export default {
                 identificationNumber:
                     docData?.petitionerInformation?.identificationNumber,
                 identificationType:
-                    docData?.petitionerInformation?.identificationType || "No definido",
+                    docData?.petitionerInformation?.identificationType ||
+                    "No definido",
                 fullName:
                     docData?.petitionerInformation?.firstNames +
                         " " +
@@ -115,18 +97,27 @@ export default {
         }
     },
 
-    components: {
-        overview_summaryVue,
-        overview_documentsVue,
-        overview_responseVue,
-    },
-
     methods: {
         toggleFavourite(ele) {
             ele.target.closest(".favourite-btn").classList.toggle("active");
         },
     },
-};
+
+    computed: {
+        setVariantState() {
+            return setVariantStateInfo(this.data.status);
+        },
+        setVariantPriority() {
+            return setVariantPriorityInfo(this.data.status);
+        },
+    },
+
+    components: {
+        OverviewSummary,
+        OverviewDocuments,
+        OverviewResponse,
+    },
+});
 </script>
 
 <template>
@@ -192,21 +183,7 @@ export default {
                                                     <BBadge
                                                         pill
                                                         :variant="
-                                                            data?.status?.toLowerCase() ==
-                                                            'vencido'
-                                                                ? 'danger'
-                                                                : data?.status?.toLowerCase() ==
-                                                                  'por vencer'
-                                                                ? 'warning'
-                                                                : data?.status?.toLowerCase() ==
-                                                                  'en termino'
-                                                                ? 'success'
-                                                                : data?.status?.toLowerCase() ==
-                                                                      'respondido' ||
-                                                                  data?.status?.toLowerCase() ==
-                                                                      'no requiere respuesta'
-                                                                ? 'primary'
-                                                                : 'secondary'
+                                                            setVariantState
                                                         "
                                                         >{{
                                                             data.status
@@ -214,17 +191,7 @@ export default {
                                                     >
                                                     <!-- <BBadge
                                                         pill
-                                                        :variant="
-                                                            data?.priority?.toLowerCase() ==
-                                                            'alta'
-                                                                ? 'danger'
-                                                                : data?.priority?.toLowerCase() ==
-                                                                      'media' ||
-                                                                  data?.priority?.toLowerCase() ==
-                                                                      'no definido'
-                                                                ? 'warning'
-                                                                : 'info'
-                                                        "
+                                                        :variant="setVariantPriority"
                                                         >{{
                                                             data.priority
                                                         }}</BBadge
@@ -273,13 +240,13 @@ export default {
                     nav-class="nav-tabs-custom border-bottom-0"
                 >
                     <!-- Resumen -->
-                    <overview_summaryVue
+                    <OverviewSummary
                         :data="data"
                         :files="files"
                         :loading="loading"
                     />
 
-                    <overview_documentsVue
+                    <OverviewDocuments
                         :data="data"
                         :files="files"
                         :loading="loading"
@@ -461,14 +428,14 @@ export default {
                             </BCardBody>
                         </BCard>
                     </BTab> -->
-                    <overview_responseVue :loading="loading" />
+                    <OverviewResponse :loading="loading" />
                 </BTabs>
             </BCol>
         </BRow>
     </div>
 </template>
 
-<style>
+<style scoped>
 .spinner-container {
     width: auto;
     height: auto;

@@ -1,16 +1,20 @@
 <script>
-import overview_documents_elementVue from "./overview_documents_element.vue";
+import OverviewDocumentsElement from "./OverviewDocumentsElement.vue";
 
-export default {
+import { defineComponent } from "vue";
+
+
+export default defineComponent({
+    name: 'OverviewDocuments',
     props: {
         data: Object,
         files: Array,
         loading: Boolean
     },
     components: {
-        overview_documents_elementVue,
+        OverviewDocumentsElement,
     },
-};
+});
 </script>
 
 <template>
@@ -36,7 +40,7 @@ export default {
                                 </tr>
                             </thead>
                             <tbody>
-                                <overview_documents_elementVue v-for="file in files" :file="file" :id="data.id" :key="file.name" v-show="files"/>
+                                <OverviewDocumentsElement v-for="file in files" :file="file" :id="data.id" :key="file.name" v-show="files"/>
                                 <tr v-show="!files" class="w-100">
                                     <td colspan="5"><h6 class="w-100 text-center">No hay archivos</h6></td>
                                 </tr>
@@ -57,8 +61,7 @@ export default {
     </BTab>
 </template>
 
-<style lang="scss" scoped>
-
+<style scoped>
 .table-responsive {
     margin: 0 !important;
 }

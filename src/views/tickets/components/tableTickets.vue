@@ -1,225 +1,17 @@
-<template>
-    <div>
-        <calendarFilter
-            @filterDate="filterDateReceived"
-            :clearFilterDate="clearFilterDate"
-        />
-    </div>
-    <div>
-        <a-table
-            :dataSource="dataSource"
-            :columns="columns"
-            :scroll="{ x: 2000 }"
-            :row-selection="rowSelection"
-            @change="handleChangeSort"
-            :loading="loading"
-        >
-            <template
-                #customFilterDropdown="{
-                    setSelectedKeys,
-                    selectedKeys,
-                    confirm,
-                    clearFilters,
-                    column,
-                }"
-            >
-                <div style="padding: 8px">
-                    <a-input
-                        ref="searchInput"
-                        :placeholder="`Search ${column.dataIndex}`"
-                        :value="selectedKeys[0]"
-                        style="width: 188px; margin-bottom: 8px; display: block"
-                        @change="
-                            (e) =>
-                                setSelectedKeys(
-                                    e.target.value ? [e.target.value] : []
-                                )
-                        "
-                        @pressEnter="
-                            handleSearch(
-                                selectedKeys,
-                                confirm,
-                                column.dataIndex
-                            )
-                        "
-                    />
-                    <a-button
-                        type="primary"
-                        size="small"
-                        style="width: 90px; margin-right: 8px"
-                        @click="
-                            handleSearch(
-                                selectedKeys,
-                                confirm,
-                                column.dataIndex
-                            )
-                        "
-                    >
-                        <template #icon><SearchOutlined /></template>
-                        Search
-                    </a-button>
-                    <a-button
-                        size="small"
-                        style="width: 90px"
-                        @click="handleReset(clearFilters)"
-                    >
-                        Reset
-                    </a-button>
-                </div>
-            </template>
-
-            <template #customFilterIcon="{ filtered }">
-                <search-outlined
-                    :style="{ color: filtered ? '#108ee9' : undefined }"
-                />
-            </template>
-
-            <template #bodyCell="{ column, text }">
-                <!-- Search -->
-
-                <span
-                    v-if="
-                        state.searchText &&
-                        state.searchedColumn === column.dataIndex && column.dataIndex === 'numberEntryClaim'
-                    "
-                >
-                    <template
-                        v-for="(fragment, i) in text
-                            .toString()
-                            .split(
-                                new RegExp(
-                                    `(?<=${state.searchText})|(?=${state.searchText})`,
-                                    'i'
-                                )
-                            )"
-                    >
-                        <mark
-                            v-if="
-                                fragment.toLowerCase() ===
-                                state.searchText.toLowerCase()
-                            "
-                            :key="i"
-                            class="highlight-numberEntryClaim fw-medium link-primary"
-                        >
-                            {{ fragment }}
-                        </mark>
-                        <template v-else> <span :key="i" class="fw-medium link-primary"> {{ fragment }}</span></template>
-                    </template>
-                </span>
-
-                <span
-                    v-else-if="
-                        state.searchText &&
-                        state.searchedColumn === column.dataIndex
-                    "
-                >
-                    <template
-                        v-for="(fragment, i) in text
-                            .toString()
-                            .split(
-                                new RegExp(
-                                    `(?<=${state.searchText})|(?=${state.searchText})`,
-                                    'i'
-                                )
-                            )"
-                    >
-                        <mark
-                            v-if="
-                                fragment.toLowerCase() ===
-                                state.searchText.toLowerCase()
-                            "
-                            :key="i"
-                            class="highlight"
-                        >
-                            {{ fragment }}
-                        </mark>
-                        <template v-else>{{ fragment }}</template>
-                    </template>
-                </span>
-
-                <template
-                    v-if="
-                        column.dataIndex === 'numberEntryClaim' &&
-                        !state.searchText &&
-                        state.searchedColumn !== column.dataIndex
-                    "
-                >
-                    <a class="fw-medium link-primary">
-                        {{ text }}
-                    </a>
-                </template>
-
-                <template v-if="column.dataIndex === 'status'">
-                    <div class="centerContentTableRadicates">
-                        <span
-                            :class="
-                                text == 'EXPIRE'
-                                    ? 'badge text-uppercase bg-danger-subtle text-danger'
-                                    : text == 'ABOUT_TO_EXPIRE'
-                                    ? 'badge text-uppercase bg-warning-subtle text-warning'
-                                    : text == 'IN_TERM'
-                                    ? 'badge text-uppercase bg-success-subtle text-success'
-                                    : text == 'ANSWERED'
-                                    ? 'badge text-uppercase bg-primary-subtle text-primary'
-                                    :  text == 'NO_RESPONSE'
-                                    ? 'badge text-uppercase bg-primary-subtle text-primary':'badge text-uppercase bg-secondary-subtle text-secondary'
-                            "
-                        >
-                            {{
-                                text == 'EXPIRE'
-                                    ? 'VENCIDO'
-                                    : text == 'ABOUT_TO_EXPIRE'
-                                    ? 'POR VENCER'
-                                    : text == 'IN_TERM'
-                                    ? 'EN TERMINO'
-                                    : text == 'ANSWERED'
-                                    ? 'RESPONDIDO'
-                                    :  text == 'NO_RESPONSE'
-                                    ? 'NO REQUIERE RESPUESTA': text
-                            }}
-                        </span>
-                    </div>
-                </template>
-
-                <template v-if="column.dataIndex === 'priority'">
-                    <div class="centerContentTableRadicates">
-                        <span
-                            :class="
-                                text.toLowerCase() == 'alta'
-                                    ? 'badge text-uppercase bg-danger'
-                                    : text.toLowerCase() == 'media'
-                                    ? 'badge text-uppercase bg-warning'
-                                    : 'badge text-uppercase bg-info'
-                            "
-                            class="span-table"
-                        >
-                            {{ text.toUpperCase() }}
-                        </span>
-                    </div>
-                </template>
-
-                <template v-if="column.dataIndex === 'action'">
-                    <a
-                        class="fw-medium link-primary text-center actionButtonTableRadicates"
-                        :href="`/gestion-documental/radicado/${text}`"
-                    >
-                        <EyeOutlined />
-                    </a>
-                </template>
-            </template>
-        </a-table>
-    </div>
-</template>
-
 <script>
-import axios from "axios";
 import { Table } from "ant-design-vue";
 import { SearchOutlined, EyeOutlined } from "@ant-design/icons-vue";
-import calendarFilter from "./calendarFilter.vue";
-import { ref, reactive } from "vue";
+import calendarFilter from "./CalendarFilter.vue";
+
+import { ref, reactive, defineComponent } from "vue";
+import axios from "axios";
 import moment from "moment";
-import transform_date from "@/helpers/transform_date";
-export default {
+import transformDate from "@/helpers/transformDate";
+import setState from "@/helpers/setState";
+import setVariantStateInfo from "@/helpers/setVariantStateInfo";
+
+export default defineComponent({
+    name: "TableTickets",
     data() {
         return {
             selectedRowKeys: [],
@@ -241,7 +33,7 @@ export default {
             dateStart: null,
             dateEnd: null,
             originDataSource: [],
-            loading: false
+            loading: false,
         };
     },
     async beforeMount() {
@@ -266,7 +58,7 @@ export default {
                         expirationDate:
                             data?.expirationDate &&
                             data?.expirationDate._seconds
-                                ? transform_date(data?.expirationDate._seconds)
+                                ? transformDate(data?.expirationDate._seconds)
                                 : "-",
                         subject: data?.subject || "-",
                         petitioner:
@@ -274,7 +66,7 @@ export default {
                                 " " +
                                 data?.petitionerInformation?.lastNames || "-",
                         assignedTo: data?.assignedTo || "-",
-                        status: data?.status || "EXPIRE",
+                        status: setState(data?.status) || "-",
                         priority: data?.priority || "BAJA",
                         action: data?.claimId,
                     });
@@ -335,7 +127,7 @@ export default {
                     title: "Titulo",
                     dataIndex: "subject",
                     key: "subject",
-                    width: "15%"
+                    width: "15%",
                 },
                 {
                     title: "Peticionario",
@@ -580,7 +372,12 @@ export default {
                 this.originDataSource = [...this.dataSource];
                 this.dataSource = this.dataSource.filter((data) => {
                     const fechaMoment = moment(data.entryDate);
-                    return fechaMoment.isBetween(this.dateStart, this.dateEnd, null, "[]");
+                    return fechaMoment.isBetween(
+                        this.dateStart,
+                        this.dateEnd,
+                        null,
+                        "[]"
+                    );
                 });
             }
         },
@@ -599,14 +396,211 @@ export default {
                 .format("D MMM, YYYY HH:mm:ss");
             return transformedDate;
         },
+        setVariantState(text) {
+            return setVariantStateInfo(text);
+        },
     },
     components: {
         SearchOutlined,
         EyeOutlined,
         calendarFilter,
     },
-};
+});
 </script>
+
+<template>
+    <div>
+        <calendarFilter
+            @filterDate="filterDateReceived"
+            :clearFilterDate="clearFilterDate"
+        />
+    </div>
+    <div>
+        <a-table
+            :dataSource="dataSource"
+            :columns="columns"
+            :scroll="{ x: 2000 }"
+            :row-selection="rowSelection"
+            @change="handleChangeSort"
+            :loading="loading"
+        >
+            <template
+                #customFilterDropdown="{
+                    setSelectedKeys,
+                    selectedKeys,
+                    confirm,
+                    clearFilters,
+                    column,
+                }"
+            >
+                <div style="padding: 8px">
+                    <a-input
+                        ref="searchInput"
+                        :placeholder="`Search ${column.dataIndex}`"
+                        :value="selectedKeys[0]"
+                        style="width: 188px; margin-bottom: 8px; display: block"
+                        @change="
+                            (e) =>
+                                setSelectedKeys(
+                                    e.target.value ? [e.target.value] : []
+                                )
+                        "
+                        @pressEnter="
+                            handleSearch(
+                                selectedKeys,
+                                confirm,
+                                column.dataIndex
+                            )
+                        "
+                    />
+                    <a-button
+                        type="primary"
+                        size="small"
+                        style="width: 90px; margin-right: 8px"
+                        @click="
+                            handleSearch(
+                                selectedKeys,
+                                confirm,
+                                column.dataIndex
+                            )
+                        "
+                    >
+                        <template #icon><SearchOutlined /></template>
+                        Search
+                    </a-button>
+                    <a-button
+                        size="small"
+                        style="width: 90px"
+                        @click="handleReset(clearFilters)"
+                    >
+                        Reset
+                    </a-button>
+                </div>
+            </template>
+
+            <template #customFilterIcon="{ filtered }">
+                <search-outlined
+                    :style="{ color: filtered ? '#108ee9' : undefined }"
+                />
+            </template>
+
+            <template #bodyCell="{ column, text }">
+                <!-- Search -->
+
+                <span
+                    v-if="
+                        state.searchText &&
+                        state.searchedColumn === column.dataIndex &&
+                        column.dataIndex === 'numberEntryClaim'
+                    "
+                >
+                    <template
+                        v-for="(fragment, i) in text
+                            .toString()
+                            .splitT(
+                                new RegExp(
+                                    `(?<=${state.searchText})|(?=${state.searchText})`,
+                                    'i'
+                                )
+                            )"
+                    >
+                        <mark
+                            v-if="
+                                fragment.toLowerCase() ===
+                                state.searchText.toLowerCase()
+                            "
+                            :key="i"
+                            class="highlight-numberEntryClaim fw-medium link-primary"
+                        >
+                            {{ fragment }}
+                        </mark>
+                        <template v-else>
+                            <span :key="i" class="fw-medium link-primary">
+                                {{ fragment }}</span
+                            ></template
+                        >
+                    </template>
+                </span>
+
+                <span
+                    v-else-if="
+                        state.searchText &&
+                        state.searchedColumn === column.dataIndex
+                    "
+                >
+                    <template
+                        v-for="(fragment, i) in text
+                            .toString()
+                            .split(
+                                new RegExp(
+                                    `(?<=${state.searchText})|(?=${state.searchText})`,
+                                    'i'
+                                )
+                            )"
+                    >
+                        <mark
+                            v-if="
+                                fragment.toLowerCase() ===
+                                state.searchText.toLowerCase()
+                            "
+                            :key="i"
+                            class="highlight"
+                        >
+                            {{ fragment }}
+                        </mark>
+                        <template v-else>{{ fragment }}</template>
+                    </template>
+                </span>
+
+                <template
+                    v-if="
+                        column.dataIndex === 'numberEntryClaim' &&
+                        !state.searchText &&
+                        state.searchedColumn !== column.dataIndex
+                    "
+                >
+                    <a class="fw-medium link-primary">
+                        {{ text }}
+                    </a>
+                </template>
+
+                <template v-if="column.dataIndex === 'status'">
+                    <div class="centerContentTableRadicates">
+                        <BBadge pill :variant="setVariantState(text)">{{
+                            text
+                        }}</BBadge>
+                    </div>
+                </template>
+
+                <template v-if="column.dataIndex === 'priority'">
+                    <div class="centerContentTableRadicates">
+                        <span
+                            :class="
+                                text.toLowerCase() == 'alta'
+                                    ? 'badge text-uppercase bg-danger'
+                                    : text.toLowerCase() == 'media'
+                                    ? 'badge text-uppercase bg-warning'
+                                    : 'badge text-uppercase bg-info'
+                            "
+                            class="span-table"
+                        >
+                            {{ text.toUpperCase() }}
+                        </span>
+                    </div>
+                </template>
+
+                <template v-if="column.dataIndex === 'action'">
+                    <a
+                        class="fw-medium link-primary text-center actionButtonTableRadicates"
+                        :href="`/gestion-documental/radicado/${text}`"
+                    >
+                        <EyeOutlined />
+                    </a>
+                </template>
+            </template>
+        </a-table>
+    </div>
+</template>
 
 <style scoped>
 .highlight {

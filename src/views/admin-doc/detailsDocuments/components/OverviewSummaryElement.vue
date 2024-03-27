@@ -1,10 +1,12 @@
 <script>
-import transform_date from "@/helpers/transform_date";
+import transformDate from "@/helpers/transformDate";
 import { EyeOutlined } from "@ant-design/icons-vue";
 import { openDocument } from "@/services/docservice/doc.service";
+import { defineComponent } from "vue";
 
 
-export default {
+export default defineComponent({
+    name: 'OverviewSummaryElement',
     props: {
         file: Object,
         id: String
@@ -14,7 +16,7 @@ export default {
             name: this.file?.name || "-",
             extension: this.file?.name.split(".").pop().toUpperCase() || "-",
             fullNameClient: this.file?.summary?.applicant?.fullName || "-",
-            startProccessAt: transform_date(this.file?.startProccessAt?.seconds),
+            startProccessAt: transformDate(this.file?.startProccessAt?.seconds),
         };
     },
     methods: {
@@ -27,7 +29,7 @@ export default {
     components: {
         EyeOutlined,
     },
-};
+});
 </script>
 
 <template>

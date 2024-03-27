@@ -2,12 +2,15 @@
 // import CKEditor from "@ckeditor/ckeditor5-vue";
 // import Multiselect from "@vueform/multiselect";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import "@vueform/multiselect/themes/default.css";
 import useVuelidate from "@vuelidate/core";
 import DropZone from "@/components/widgets/dropZone";
-import { ref, watch } from "vue";
 
-export default {
+import "@vueform/multiselect/themes/default.css";
+
+import { ref, watch, defineComponent } from "vue";
+
+export default defineComponent({
+    name: 'OverviewResponse',
     setup() {
         let files = ref([]);
         let dropzoneFile = ref("");
@@ -45,8 +48,9 @@ export default {
     props: {
         loading: Boolean,
     },
-};
+});
 </script>
+
 <template>
     <BTab title="Respuesta" class="fw-semibold pt-2">
         <template #title>
@@ -193,7 +197,7 @@ export default {
                                             data-dz-remove=""
                                             @click="deleteRecord"
                                         >
-                                            borrar
+                                            Borrar
                                         </BButton>
                                     </div>
                                 </div>

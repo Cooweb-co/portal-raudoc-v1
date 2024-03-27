@@ -1,23 +1,24 @@
 <script>
-import transform_date from "@/helpers/transform_date";
+import transformDate from "@/helpers/transformDate";
 import { EyeOutlined } from "@ant-design/icons-vue";
 import { openDocument } from "@/services/docservice/doc.service";
+import { defineComponent } from "vue";
 
-export default {
+export default defineComponent({
+    name: 'OverviewDocumentsElement',
     props: {
         file: Object,
-        id: String
+        id: String,
     },
     data() {
         return {
             name: this.file?.name || "-",
             extension: this.file?.name.split(".").pop().toUpperCase() || "-",
             fullNameClient: this.file?.summary?.applicant?.fullName || "-",
-            startProccessAt: transform_date(this.file?.startProccessAt?.seconds),
+            startProccessAt: transformDate(
+                this.file?.startProccessAt?.seconds
+            ),
         };
-    },
-    components: {
-        EyeOutlined,
     },
     methods: {
         goToDocument() {
@@ -25,9 +26,13 @@ export default {
             const path = `/Companies/BAQVERDE/${year}/Claims/${this.id}`;
             openDocument(this.file.name, path);
         },
+        components: {
+            EyeOutlined,
+        },
     },
-};
+});
 </script>
+
 <template>
     <tr>
         <td>
@@ -53,7 +58,12 @@ export default {
         <td>{{ startProccessAt }}</td>
         <td class="">
             <div class="d-flex justify-content-center">
-                <BButton variant="info" size="sm" class="btn-icon" @click="goToDocument">
+                <BButton
+                    variant="info"
+                    size="sm"
+                    class="btn-icon"
+                    @click="goToDocument"
+                >
                     <EyeOutlined />
                 </BButton>
             </div>
