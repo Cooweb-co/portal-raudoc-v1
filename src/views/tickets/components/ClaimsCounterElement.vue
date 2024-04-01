@@ -1,3 +1,11 @@
+<script setup>
+import { CountTo } from "vue3-count-to";
+import { defineProps, ref } from "vue";
+const props = defineProps(["cardsData"]);
+
+const cardsData = ref(props.cardsData);
+</script>
+
 <template>
     <BCol v-for="item in cardsData" :key="item" xxl="3" sm="6">
         <BCard no-body class="card-animate">
@@ -40,11 +48,3 @@
         </BCard>
     </BCol>
 </template>
-
-<script setup>
-import { CountTo } from "vue3-count-to";
-import { defineProps, ref } from "vue";
-const props = defineProps(["cardsData"]);
-
-const cardsData = ref(props.cardsData);
-</script>

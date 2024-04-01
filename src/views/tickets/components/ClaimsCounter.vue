@@ -1,8 +1,3 @@
-<template>
-    <BRow>
-          <ClaimsCounterElement :cardsData="cardsData"/>
-    </BRow>
-</template>
 
 <script setup>
 import axios from "axios";
@@ -19,14 +14,21 @@ onMounted(async () => {
         };
         await axios
             .get(
-                "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/getCountClims'",
+                "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_COUNT_CLAIMS",
                 { headers }
             )
             .then((response) => {
-                cardsData.value = response;
+                cardsData.value = response.data;
+                console.log(response)
             });
     } catch (error) {
         console.log(error);
     }
 });
 </script>
+
+<template>
+    <BRow>
+          <ClaimsCounterElement :cardsData="cardsData"/>
+    </BRow>
+</template>

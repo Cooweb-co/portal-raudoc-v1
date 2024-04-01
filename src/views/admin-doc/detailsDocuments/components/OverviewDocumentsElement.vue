@@ -1,36 +1,24 @@
-<script>
+<script setup>
 import transformDate from "@/helpers/transformDate";
 import { EyeOutlined } from "@ant-design/icons-vue";
 import { openDocument } from "@/services/docservice/doc.service";
-import { defineComponent } from "vue";
+import { ref, defineProps } from "vue";
 
-export default defineComponent({
-    name: 'OverviewDocumentsElement',
-    props: {
-        file: Object,
-        id: String,
-    },
-    data() {
-        return {
-            name: this.file?.name || "-",
-            extension: this.file?.name.split(".").pop().toUpperCase() || "-",
-            fullNameClient: this.file?.summary?.applicant?.fullName || "-",
-            startProccessAt: transformDate(
-                this.file?.startProccessAt?.seconds
-            ),
-        };
-    },
-    methods: {
-        goToDocument() {
-            const year = this.file.startProccessAt.toDate().getFullYear();
-            const path = `/Companies/BAQVERDE/${year}/Claims/${this.id}`;
-            openDocument(this.file.name, path);
-        },
-        components: {
-            EyeOutlined,
-        },
-    },
+const props = defineProps({
+    file: Object,
+    id: String,
 });
+
+const name = ref(props.file?.name || "-");
+const extension = ref(props.file?.name.split(".").pop().toUpperCase() || "-");
+const fullNameClient = ref(props.file?.summary?.applicant?.fullName || "-");
+const startProccessAt = ref(transformDate(props.file?.startProccessAt?.seconds));
+
+const goToDocument = () => {
+    const year = props.file.startProccessAt.toDate().getFullYear();
+    const path = `/Companies/BAQVERDE/${year}/Claims/${props.id}`;
+    openDocument(props.file.name, path);
+};
 </script>
 
 <template>

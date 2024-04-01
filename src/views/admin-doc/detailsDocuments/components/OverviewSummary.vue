@@ -1,30 +1,23 @@
-<script>
+<script setup>
 import OverviewSummaryElement from "./OverviewSummaryElement.vue";
-import { defineComponent } from "vue";
+import { computed, defineProps } from "vue";
 
 import setVariantStateInfo from "@/helpers/setVariantStateInfo.js";
-import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
+// import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
 
-export default defineComponent({
-    name: "OverviewSummary",
-    props: {
-        data: Object,
-        files: Array,
-        loading: Boolean,
-    },
-    computed: {
-        setVariant() {
-            return setVariantStateInfo(this.data?.status);
-        },
-        setVariantPriority() {
-            return setVariantPriorityInfo(this.data.status);
-        },
-    },
-    components: {
-        // simplebar,
-        OverviewSummaryElement,
-    },
+const props = defineProps({
+    data: Object,
+    files: Array,
+    loading: Boolean,
 });
+
+const setVariantState = computed(() => {
+    return setVariantStateInfo(props.data.status);
+});
+
+// const setVariantPriority = computed(() => {
+//     return setVariantPriorityInfo(data.value.status);
+// });
 </script>
 
 <template>
@@ -115,7 +108,7 @@ export default defineComponent({
                                             </p>
                                             <BBadge
                                                 tag="div"
-                                                :variant="setVariant"
+                                                :variant="setVariantState"
                                                 >{{ data.status }}</BBadge
                                             >
                                         </div>

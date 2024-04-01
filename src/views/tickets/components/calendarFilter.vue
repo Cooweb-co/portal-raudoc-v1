@@ -1,42 +1,37 @@
-<script>
+<script setup>
 import flatPickr from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
-import { defineComponent } from "vue";
+import { ref, defineProps, defineEmits } from "vue";
 
-export default defineComponent({
-    name: 'CalendarFilter',
-    data() {
-        return {
-            rangeDateconfig: {
-                wrap: true,
-                altFormat: "M j, Y",
-                altInput: true,
-                dateFormat: "d M, Y",
-                mode: "range",
-            },
-            filterdate: null,
-        };
-    },
-    components: {
-        flatPickr,
-    },
-    methods: {
-        SearchData() {
-            this.$emit("filterDate", this.filterdate);
-            console.log(this.filterdate);
-        },
-        clearFilter() {
-            this.clearFilterDate();
-            this.filterdate = null;
-        },
-    },
-    props: {
-        clearFilterDate: {
-            type: Function,
-            required: true,
-        },
+const emits = defineEmits(["filterDate"]);
+
+const rangeDateconfig = ref({
+    wrap: true,
+    altFormat: "M j, Y",
+    altInput: true,
+    dateFormat: "d M, Y",
+    mode: "range",
+});
+
+const filterdate = ref(null);
+
+const props = defineProps({
+    clearFilterDate: {
+        type: Function,
+        required: true,
     },
 });
+
+const SearchData = () => {
+    emits("filterDate", filterdate.value);
+    console.log(filterdate.value);
+};
+
+const clearFilter = () => {
+    props.clearFilterDate();
+    filterdate.value = null;
+};
+
 </script>
 
 <template>

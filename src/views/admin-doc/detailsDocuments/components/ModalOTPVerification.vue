@@ -1,169 +1,141 @@
-<script>
+<script setup>
 import { toast } from "vue3-toastify";
-import vueRecaptcha from "vue3-recaptcha2";
-import { defineComponent } from "vue";
-
-export default defineComponent({
-    name: "ModalOTPVerification",
-    data() {
-        return {
-            code1: "",
-            code2: "",
-            code3: "",
-            code4: "",
-            code5: "",
-            code6: "",
-            token: "",
-            email: "",
-            showCounter: false,
-            intervalId: null,
-            errorForm: false,
-            counter: 0,
-            loadingTimeout: 50000,
-            reCaptcha: false,
-        };
-    },
-    computed: {
-        styleInputForm() {
-            const styleInput = "otp-letter-input border-bottom text-center";
-            const styleError = this.errorForm ? "border-danger" : "border-info";
-            return `${styleInput} ${styleError}`;
-        },
-    },
-    async mounted() {
-        this.sendCodeToEmail();
-        this.getEmail();
-    },
-    methods: {
-        recaptchaVerified(response) {
-            response;
-            this.reCaptcha = true;
-        },
-        recaptchaExpired() {
-            this.$refs.vueRecaptcha.reset();
-            this.reCaptcha = false;
-        },
-        recaptchaFailed() {
-            this.reCaptcha = false;
-        },
-        recaptchaError(reason) {
-            console.log("Error Captcha", reason);
-            this.reCaptcha = false;
-        },
-        async handleSendLink() {
-            this.sendCodeToEmail();
-            this.showCounter = true;
-            this.startCounter();
-        },
-        startCounter() {
-            this.counter = 60;
-            this.intervalId = setInterval(() => {
-                if (this.counter > 0) {
-                    this.counter--;
-                } else {
-                    clearInterval(this.intervalId);
-                    this.showCounter = false;
-                }
-            }, 1000);
-        },
-        async validOTP(code) {
-            if (this.reCaptcha) {
-                if (code === "334455") {
-                    this.clearAllInputs();
-                    this.$emit("handleShowModal", false);
-                } else {
-                    toast.error(`Código inválido`, {
-                        position: toast.POSITION.TOP_RIGHT,
-                        autoClose: 3000,
-                    });
-                    this.errorForm = true;
-                    setTimeout(() => {
-                        this.errorForm = false;
-                    }, 4000);
-                    this.clearAllInputs();
-                }
-            } else {
-                toast.error(`Has clic en la casilla no soy un robot.`, {
-                    position: toast.POSITION.TOP_RIGHT,
-                    autoClose: 3000,
-                });
-                this.errorForm = true;
-                setTimeout(() => {
-                    this.errorForm = false;
-                }, 4000);
-            }
-        },
-        getInputElement(index) {
-            return document.getElementById("digit-" + index + "-input");
-        },
-        clearAllInputs() {
-            this.code1 = "";
-            this.code2 = "";
-            this.code3 = "";
-            this.code4 = "";
-            this.code5 = "";
-            this.code6 = "";
-        },
-        moveToNext(index) {
-            if (this.getInputElement(index).value.length === 1) {
-                if (index !== 6) {
-                    this.getInputElement(index + 1).focus();
-                } else {
-                    this.getInputElement(index).blur();
-
-                    this.token =
-                        this.code1 +
-                        this.code2 +
-                        this.code3 +
-                        this.code4 +
-                        this.code5 +
-                        this.code6;
-                    this.validOTP(this.token);
-                }
-            }
-        },
-        handleCancelButton() {
-            this.clearAllInputs();
-            clearInterval(this.intervalId);
-            this.$router.push({ path: "/login" });
-        },
-        async getEmail() {
-            try {
-                this.email = "cam*******.co";
-            } catch (error) {
-                this.errorForm = true;
-                setTimeout(() => {
-                    this.errorForm = false;
-                }, 4000);
-                toast.error(`Problemas para obtener el email`, {
-                    position: toast.POSITION.TOP_RIGHT,
-                    autoClose: 3000,
-                });
-            }
-        },
-        async sendCodeToEmail() {
-            try {
-                console.log("Email enviado");
-                toast.success(`Email enviado correctamente`, {
-                    position: toast.POSITION.TOP_RIGHT,
-                    autoClose: 3000,
-                });
-            } catch (error) {
-                this.errorForm = true;
-                setTimeout(() => {
-                    this.errorForm = false;
-                }, 4000);
-                toast.error(`Problemas al enviar el email, intente más tarde`, {
-                    position: toast.POSITION.TOP_RIGHT,
-                    autoClose: 3000,
-                });
-            }
-        },
-    },
-    components: {
-        vueRecaptcha,
-    },
+import { onMounted, ref, computed, defineEmits } from "vue";
+import Recaptcha from "./Recaptcha.vue";
+const emit = defineEmits(["handleShowModal"]);
+onMounted(async () => {
+    sendCodeToEmail();
+    getEmail();
 });
+const code1 = ref("");
+const code2 = ref("");
+const code3 = ref("");
+const code4 = ref("");
+const code5 = ref("");
+const code6 = ref("");
+const token = ref("");
+const email = ref("");
+const showCounter = ref(false);
+const intervalId = ref(null);
+const errorForm = ref(false);
+const counter = ref(0);
+const reCaptcha = ref(false);
+
+const styleInputForm = computed(() => {
+    const styleInput = "otp-letter-input border-bottom text-center";
+    const styleError = errorForm.value ? "border-danger" : "border-info";
+    return `${styleInput} ${styleError}`;
+});
+
+const handleSendLink = async () => {
+    sendCodeToEmail();
+    showCounter.value = true;
+    startCounter();
+};
+const startCounter = () => {
+    counter.value = 60;
+    intervalId.value = setInterval(() => {
+        if (counter.value > 0) {
+            counter.value--;
+        } else {
+            clearInterval(intervalId.value);
+            showCounter.value = false;
+        }
+    }, 1000);
+};
+const validOTP = async (code) => {
+    if (reCaptcha.value) {
+        if (code === "334455") {
+            clearAllInputs();
+            emit("handleShowModal", false);
+        } else {
+            toast.error(`Código inválido`, {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 3000,
+            });
+            errorForm.value = true;
+            setTimeout(() => {
+                errorForm.value = false;
+            }, 4000);
+            clearAllInputs();
+        }
+    } else {
+        toast.error(`Has clic en la casilla no soy un robot.`, {
+            position: toast.POSITION.TOP_RIGHT,
+            autoClose: 3000,
+        });
+        errorForm.value = true;
+        setTimeout(() => {
+            errorForm.value = false;
+        }, 4000);
+    }
+};
+const getInputElement = (index) => {
+    return document.getElementById("digit-" + index + "-input");
+};
+const clearAllInputs = () => {
+    code1.value = "";
+    code2.value = "";
+    code3.value = "";
+    code4.value = "";
+    code5.value = "";
+    code6.value = "";
+};
+const moveToNext = (index) => {
+    if (getInputElement(index).value.length === 1) {
+        if (index !== 6) {
+            getInputElement(index + 1).focus();
+        } else {
+            getInputElement(index).blur();
+
+            token.value =
+                code1.value +
+                code2.value +
+                code3.value +
+                code4.value +
+                code5.value +
+                code6.value;
+            validOTP(token.value);
+        }
+    }
+};
+const handleCancelButton = () => {
+    clearAllInputs();
+    clearInterval(intervalId.value);
+    this.$router.push({ path: "/login" });
+};
+const getEmail = async () => {
+    try {
+        email.value = "cam*******.co";
+    } catch (error) {
+        errorForm.value = true;
+        setTimeout(() => {
+            errorForm.value = false;
+        }, 4000);
+        toast.error(`Problemas para obtener el email`, {
+            position: toast.POSITION.TOP_RIGHT,
+            autoClose: 3000,
+        });
+    }
+};
+const sendCodeToEmail = async () => {
+    try {
+        console.log("Email enviado");
+        toast.success(`Email enviado correctamente`, {
+            position: toast.POSITION.TOP_RIGHT,
+            autoClose: 3000,
+        });
+    } catch (error) {
+        errorForm.value = true;
+        setTimeout(() => {
+            errorForm.value = false;
+        }, 4000);
+        toast.error(`Problemas al enviar el email, intente más tarde`, {
+            position: toast.POSITION.TOP_RIGHT,
+            autoClose: 3000,
+        });
+    }
+};
 </script>
 
 <template>
@@ -267,19 +239,13 @@ export default defineComponent({
                 </button>
             </p>
 
-            <vueRecaptcha
-                sitekey="6Lflb6EpAAAAAOwAmPQFdNTSBVN-cVwdH7ekJdFT"
-                class="d-flex justify-content-center align-items-center pt-3"
-                size="normal"
-                theme="light"
-                hl="sp"
-                @verify="recaptchaVerified"
-                @expire="recaptchaExpired"
-                @fail="recaptchaFailed"
-                @error="recaptchaError"
-                ref="vueRecaptcha"
-            >
-            </vueRecaptcha>
+            <Recaptcha
+                @verified="
+                    (value) => {
+                        reCaptcha = value;
+                    }
+                "
+            />
 
             <div class="row pt-5">
                 <div class="col-6">
@@ -294,7 +260,7 @@ export default defineComponent({
                     <button
                         class="btn w-100"
                         :class="errorForm ? 'btn-danger' : 'btn-primary'"
-                        @click="validOTP(this.token)"
+                        @click="validOTP(token)"
                     >
                         Verificar
                     </button>

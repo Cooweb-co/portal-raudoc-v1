@@ -1,411 +1,391 @@
-<script>
+<script setup>
 import { Table } from "ant-design-vue";
 import { SearchOutlined, EyeOutlined } from "@ant-design/icons-vue";
 import calendarFilter from "./CalendarFilter.vue";
 
-import { ref, reactive, defineComponent } from "vue";
+import { ref, reactive, onBeforeMount, computed } from "vue";
 import axios from "axios";
 import moment from "moment";
 import transformDate from "@/helpers/transformDate";
 import setState from "@/helpers/setState";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
 
-export default defineComponent({
-    name: "TableTickets",
-    data() {
-        return {
-            selectedRowKeys: [],
-            dataSource: [],
-            state: reactive({
-                searchText: "",
-                searchedColumn: "",
-            }),
-            searchInput: ref(),
-            sortedInfo: ref(null),
-            filteredInfo: ref(null),
-            rangeDateconfig: {
-                wrap: true, // set wrap to true only when using 'input-group'
-                altFormat: "M j, Y",
-                altInput: true,
-                dateFormat: "d M, Y",
-                mode: "range",
-            },
-            dateStart: null,
-            dateEnd: null,
-            originDataSource: [],
-            loading: false,
-        };
-    },
-    async beforeMount() {
-        this.loading = true;
-        const headers = {
-            company: "BAQVERDE",
-            "Content-Type": "application/json",
-        };
-        await axios
-            .get(
-                "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_LIST_V1",
-                { headers }
-            )
-            .then((response) => {
-                response.data.map((data) => {
-                    this.dataSource.push({
-                        id: data?.claimId,
-                        key: data?.claimId,
-                        numberEntryClaim: data?.numberEntryClaim || "-",
-                        outputDocument: data?.externalRadicate || "-",
-                        entryDate: data?.entryDate,
-                        expirationDate:
-                            data?.expirationDate &&
-                            data?.expirationDate._seconds
-                                ? transformDate(data?.expirationDate._seconds)
-                                : "-",
-                        subject: data?.subject || "-",
-                        petitioner:
-                            data?.petitionerInformation?.firstNames +
-                                " " +
-                                data?.petitionerInformation?.lastNames || "-",
-                        assignedTo: data?.assignedTo || "-",
-                        status: setState(data?.status) || "-",
-                        priority: data?.priority || "BAJA",
-                        action: data?.claimId,
-                    });
-                });
-                this.loading = false;
-            })
-            .catch((error) => {
-                this.loading = false;
-                console.error("Error:", error);
-            });
-    },
-    computed: {
-        rowSelection() {
-            return {
-                selectedRowKeys: this.selectedRowKeys,
-                onChange: this.onSelectChange,
-                hideDefaultSelections: true,
-                selections: [
-                    Table.SELECTION_ALL,
-                    Table.SELECTION_INVERT,
-                    Table.SELECTION_NONE,
-                    {
-                        key: "odd",
-                        text: "Select Odd Row",
-                        onSelect: this.onSelectOddRow,
-                    },
-                    {
-                        key: "even",
-                        text: "Select Even Row",
-                        onSelect: this.onSelectEvenRow,
-                    },
-                ],
-            };
-        },
-        columns() {
-            const sorted = this.sortedInfo || {};
-            return [
-                {
-                    title: "ID",
-                    dataIndex: "numberEntryClaim",
-                    key: "numberEntryClaim",
-                    width: "10%",
-                    customFilterDropdown: true,
-                    onFilter: (value, record) =>
-                        record.numberEntryClaim
-                            .toString()
-                            .toLowerCase()
-                            .includes(value.toLowerCase()),
-                    onFilterDropdownOpenChange: (visible) => {
-                        if (visible) {
-                            setTimeout(() => {
-                                this.searchInput?.focus();
-                            }, 100);
-                        }
-                    },
-                },
-                {
-                    title: "Titulo",
-                    dataIndex: "subject",
-                    key: "subject",
-                    width: "15%",
-                },
-                {
-                    title: "Peticionario",
-                    dataIndex: "petitioner",
-                    key: "petitioner",
-                    customFilterDropdown: true,
-                    width: "10%",
-                    className: "text-center",
-                    onFilter: (value, record) =>
-                        record.petitioner
-                            .toString()
-                            .toLowerCase()
-                            .includes(value.toLowerCase()),
-                    onFilterDropdownOpenChange: (visible) => {
-                        if (visible) {
-                            setTimeout(() => {
-                                this.searchInput?.focus();
-                            }, 100);
-                        }
-                    },
-                },
-                {
-                    title: "Asignado a",
-                    dataIndex: "assignedTo",
-                    key: "assignedTo",
-                    width: "10%",
-                    className: "text-center",
-                    customFilterDropdown: true,
-                    onFilter: (value, record) =>
-                        record.assignedTo
-                            .toString()
-                            .toLowerCase()
-                            .includes(value.toLowerCase()),
-                    onFilterDropdownOpenChange: (visible) => {
-                        if (visible) {
-                            setTimeout(() => {
-                                this.searchInput?.focus();
-                            }, 100);
-                        }
-                    },
-                },
-                {
-                    title: "Radicado de salida",
-                    dataIndex: "outputDocument",
-                    key: "outputDocument",
-                    width: "10%",
-                    className: "text-center",
-                    customFilterDropdown: true,
-                    onFilter: (value, record) =>
-                        record.outputDocument
-                            .toString()
-                            .toLowerCase()
-                            .includes(value.toLowerCase()),
-                    onFilterDropdownOpenChange: (visible) => {
-                        if (visible) {
-                            setTimeout(() => {
-                                this.searchInput?.focus();
-                            }, 100);
-                        }
-                    },
-                },
-                {
-                    title: "Fecha de entrada",
-                    dataIndex: "entryDate",
-                    key: "entryDate",
-                    className: "text-center",
-                    width: "10%",
-                    // sorter: (a, b) => {
-                    //     const firstDate = moment(a.entryDate, "DD MMM, YYYY")
-                    //         .startOf("day")
-                    //         .toISOString();
-                    //     const secondDate = moment(b.entryDate, "DD MMM, YYYY")
-                    //         .startOf("day")
-                    //         .toISOString();
-                    //     return new Date(firstDate) - new Date(secondDate);
-                    // },
-
-                    // sortOrder: sorted.columnKey === "entryDate" && sorted.order,
-                    // ellipsis: true,
-                },
-                {
-                    title: "Fecha de vencimiento",
-                    dataIndex: "expirationDate",
-                    key: "expirationDate",
-                    className: "text-center",
-                    width: "10%",
-                    sorter: (a, b) => {
-                        const firstDate = moment(
-                            a.expirationDate,
-                            "DD MMM, YYYY"
-                        )
-                            .startOf("day")
-                            .toISOString();
-                        const secondDate = moment(
-                            b.expirationDate,
-                            "DD MMM, YYYY"
-                        )
-                            .startOf("day")
-                            .toISOString();
-                        return new Date(firstDate) - new Date(secondDate);
-                    },
-
-                    sortOrder:
-                        sorted.columnKey === "expirationDate" && sorted.order,
-                    ellipsis: true,
-                },
-                {
-                    title: "Estado",
-                    dataIndex: "status",
-                    key: "status",
-                    width: "6%",
-                    filters: [
-                        {
-                            text: "Vencido", //Rojo
-                            value: "EXPIRE",
-                        },
-                        {
-                            text: "Por vencer", //Amarillo
-                            value: "ABOUT_TO_EXPIRE",
-                        },
-                        {
-                            text: "En Termino", // Verde
-                            value: "IN_TERM",
-                        },
-                        {
-                            text: "Respondido", // Azul
-                            value: "ANSWERED",
-                        },
-                        {
-                            text: "No requiere respuesta", // Azul
-                            value: "NO_RESPONSE",
-                        },
-                    ],
-                    onFilter: (value, record) =>
-                        record.status.indexOf(value) === 0,
-                },
-                // {
-                //     title: "Prioridad",
-                //     dataIndex: "priority",
-                //     key: "priority",
-                //     width: "7%",
-                //     filters: [
-                //         {
-                //             text: "Alta",
-                //             value: "ALTA",
-                //         },
-                //         {
-                //             text: "Media",
-                //             value: "MEDIA",
-                //         },
-                //         {
-                //             text: "Baja",
-                //             value: "BAJA",
-                //         },
-                //     ],
-                //     onFilter: (value, record) =>
-                //         record.priority.indexOf(value) === 0,
-                // },
-                {
-                    title: "Acción",
-                    dataIndex: "action",
-                    key: "action",
-                    width: "5%",
-                },
-            ];
-        },
-    },
-    methods: {
-        //Filtros de state y priority
-        onSelectChange(changableRowKeys) {
-            console.log("selectedRowKeys changed: ", changableRowKeys);
-            this.selectedRowKeys = changableRowKeys;
-        },
-        onSelectOddRow(changableRowKeys) {
-            this.selectedRowKeys = changableRowKeys.filter(
-                (_key, index) => index % 2 !== 0
-            );
-        },
-        onSelectEvenRow(changableRowKeys) {
-            this.selectedRowKeys = changableRowKeys.filter(
-                (_key, index) => index % 2 === 0
-            );
-        },
-
-        //Filtro de búsqueda
-        handleChange(selectedKeys, dataIndex) {
-            this.state.searchText = selectedKeys[0];
-            this.state.searchedColumn = dataIndex;
-        },
-        handleChangeSort(pagination, filters, sorter) {
-            console.log("Various parameters", pagination, filters, sorter);
-            this.filteredInfo = filters;
-            this.sortedInfo = sorter;
-        },
-        handleSearch(selectedKeys, confirm, dataIndex) {
-            confirm();
-            this.handleChange(selectedKeys, dataIndex);
-        },
-        handleReset(clearFilters) {
-            clearFilters({ confirm: true });
-            this.state.searchText = "";
-        },
-
-        //Filtro de fechas
-        convertToDateISO(dateString) {
-            // Analizar la cadena utilizando Moment.js
-            const dateMoment = moment(dateString, "DD MMM, YYYY");
-            // Convertir a objeto Date
-            const isoDate = dateMoment.toISOString();
-            return isoDate;
-        },
-        getYearNameMonthDay(dateString) {
-            const dateMoment = moment(dateString, "DD MMM, YYYY");
-            const year = dateMoment.format("YYYY");
-            const monthName = dateMoment.format("MMMM"); // 'MMMM' devuelve el nombre completo del mes
-            const day = dateMoment.format("DD");
-
-            return { year, monthName, day };
-        },
-        filterDateReceived(filterDate) {
-            this.filterForDate(filterDate);
-        },
-        filterForDate(dates) {
-            if (!dates) return "";
-            const validateString = dates.includes(" to ");
-
-            if (this.originDataSource.length > 0) this.clearFilterDate();
-
-            if (!validateString) {
-                this.originDataSource = [...this.dataSource];
-                this.dataSource = this.dataSource.filter((data) => {
-                    const fechaMoment = moment(data.entryDate);
-                    return fechaMoment.isSameOrAfter(dates);
-                });
-            } else {
-                const datesArray = dates.split(" to ");
-                for (let i = 0; i < datesArray.length; i++) {
-                    const dateObject = this.convertToDateISO(datesArray[i]);
-                    if (i == 0) this.dateStart = dateObject;
-                    else this.dateEnd = dateObject;
-                }
-                this.originDataSource = [...this.dataSource];
-                this.dataSource = this.dataSource.filter((data) => {
-                    const fechaMoment = moment(data.entryDate);
-                    return fechaMoment.isBetween(
-                        this.dateStart,
-                        this.dateEnd,
-                        null,
-                        "[]"
-                    );
-                });
-            }
-        },
-        clearFilterDate() {
-            if (this.originDataSource.length <= 0) return "";
-            this.dataSource = [...this.originDataSource];
-            this.originDataSource = [];
-        },
-
-        //Convertir fecha de created a UTC-5
-        convertToUTC5(date) {
-            // const dateMoment = moment(date);
-            // const dateUTC5 = dateMoment.subtract(5, 'hours').toISOString();
-            const transformedDate = moment(date)
-                .utcOffset(-5)
-                .format("D MMM, YYYY HH:mm:ss");
-            return transformedDate;
-        },
-        setVariantState(text) {
-            return setVariantStateInfo(text);
-        },
-    },
-    components: {
-        SearchOutlined,
-        EyeOutlined,
-        calendarFilter,
-    },
+const selectedRowKeys = ref([]);
+const dataSource = ref([]);
+const state = reactive({
+    searchText: "",
+    searchedColumn: "",
 });
+
+const searchInput = ref();
+const sortedInfo = ref(null);
+const filteredInfo = ref(null);
+
+let dateStart = ref(null);
+let dateEnd = ref(null);
+const originDataSource = ref([]);
+const loading = ref(false);
+
+onBeforeMount(async () => {
+    loading.value = true;
+    const headers = {
+        company: "BAQVERDE",
+        "Content-Type": "application/json",
+    };
+    await axios
+        .get(
+            "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_LIST_V1",
+            { headers }
+        )
+        .then((response) => {
+            response.data.map((data) => {
+                dataSource.value.push({
+                    id: data?.claimId,
+                    key: data?.claimId,
+                    numberEntryClaim: data?.numberEntryClaim || "-",
+                    outputDocument: data?.externalRadicate || "-",
+                    entryDate: data?.entryDate,
+                    expirationDate:
+                        data?.expirationDate && data?.expirationDate._seconds
+                            ? transformDate(data?.expirationDate._seconds)
+                            : "-",
+                    subject: data?.subject || "-",
+                    petitioner:
+                        data?.petitionerInformation?.firstNames +
+                            " " +
+                            data?.petitionerInformation?.lastNames || "-",
+                    assignedTo: data?.assignedTo || "-",
+                    status: setState(data?.status) || "-",
+                    priority: data?.priority || "BAJA",
+                    action: data?.claimId,
+                });
+            });
+            loading.value = false;
+        })
+        .catch((error) => {
+            loading.value = false;
+            console.error("Error:", error);
+        });
+});
+
+const rowSelection = computed(() => {
+    return {
+        selectedRowKeys: selectedRowKeys.value,
+        onChange: onSelectChange.value,
+        hideDefaultSelections: true,
+        selections: [
+            Table.SELECTION_ALL,
+            Table.SELECTION_INVERT,
+            Table.SELECTION_NONE,
+            {
+                key: "odd",
+                text: "Select Odd Row",
+                onSelect: onSelectOddRow.value,
+            },
+            {
+                key: "even",
+                text: "Select Even Row",
+                onSelect: onSelectEvenRow.value,
+            },
+        ],
+    };
+});
+
+const columns = computed(() => {
+    const sorted = sortedInfo.value || {};
+    return [
+        {
+            title: "ID",
+            dataIndex: "numberEntryClaim",
+            key: "numberEntryClaim",
+            width: "10%",
+            customFilterDropdown: true,
+            onFilter: (value, record) =>
+                record.numberEntryClaim
+                    .toString()
+                    .toLowerCase()
+                    .includes(value.toLowerCase()),
+            onFilterDropdownOpenChange: (visible) => {
+                if (visible) {
+                    setTimeout(() => {
+                        searchInput.value.focus();
+                    }, 100);
+                }
+            },
+        },
+        {
+            title: "Titulo",
+            dataIndex: "subject",
+            key: "subject",
+            width: "15%",
+        },
+        {
+            title: "Peticionario",
+            dataIndex: "petitioner",
+            key: "petitioner",
+            customFilterDropdown: true,
+            width: "10%",
+            className: "text-center",
+            onFilter: (value, record) =>
+                record.petitioner
+                    .toString()
+                    .toLowerCase()
+                    .includes(value.toLowerCase()),
+            onFilterDropdownOpenChange: (visible) => {
+                if (visible) {
+                    setTimeout(() => {
+                        searchInput.value?.focus();
+                    }, 100);
+                }
+            },
+        },
+        {
+            title: "Asignado a",
+            dataIndex: "assignedTo",
+            key: "assignedTo",
+            width: "10%",
+            className: "text-center",
+            customFilterDropdown: true,
+            onFilter: (value, record) =>
+                record.assignedTo
+                    .toString()
+                    .toLowerCase()
+                    .includes(value.toLowerCase()),
+            onFilterDropdownOpenChange: (visible) => {
+                if (visible) {
+                    setTimeout(() => {
+                        searchInput.value?.focus();
+                    }, 100);
+                }
+            },
+        },
+        {
+            title: "Radicado de salida",
+            dataIndex: "outputDocument",
+            key: "outputDocument",
+            width: "10%",
+            className: "text-center",
+            customFilterDropdown: true,
+            onFilter: (value, record) =>
+                record.outputDocument
+                    .toString()
+                    .toLowerCase()
+                    .includes(value.toLowerCase()),
+            onFilterDropdownOpenChange: (visible) => {
+                if (visible) {
+                    setTimeout(() => {
+                        searchInput.value?.focus();
+                    }, 100);
+                }
+            },
+        },
+        {
+            title: "Fecha de entrada",
+            dataIndex: "entryDate",
+            key: "entryDate",
+            className: "text-center",
+            width: "10%",
+            sorter: (a, b) => {
+                const firstDate = moment(a.entryDate, "DD MMM, YYYY")
+                    .startOf("day")
+                    .toISOString();
+                const secondDate = moment(b.entryDate, "DD MMM, YYYY")
+                    .startOf("day")
+                    .toISOString();
+                return new Date(firstDate) - new Date(secondDate);
+            },
+
+            sortOrder: sorted.columnKey === "entryDate" && sorted.order,
+            ellipsis: true,
+        },
+        {
+            title: "Fecha de vencimiento",
+            dataIndex: "expirationDate",
+            key: "expirationDate",
+            className: "text-center",
+            width: "10%",
+            sorter: (a, b) => {
+                const firstDate = moment(a.expirationDate, "DD MMM, YYYY")
+                    .startOf("day")
+                    .toISOString();
+                const secondDate = moment(b.expirationDate, "DD MMM, YYYY")
+                    .startOf("day")
+                    .toISOString();
+                return new Date(firstDate) - new Date(secondDate);
+            },
+
+            sortOrder: sorted.columnKey === "expirationDate" && sorted.order,
+            ellipsis: true,
+        },
+        {
+            title: "Estado",
+            dataIndex: "status",
+            key: "status",
+            width: "6%",
+            filters: [
+                {
+                    text: "Vencido", //Rojo
+                    value: "Vencido",
+                },
+                {
+                    text: "Por vencer", //Amarillo
+                    value: "Por vencer",
+                },
+                {
+                    text: "En Termino", // Verde
+                    value: "En termino",
+                },
+                {
+                    text: "Respondido", // Azul
+                    value: "Respondido",
+                },
+                {
+                    text: "No requiere respuesta", // Azul
+                    value: "No requiere respuesta",
+                },
+            ],
+            onFilter: (value, record) => record.status.indexOf(value) === 0,
+        },
+        // {
+        //     title: "Prioridad",
+        //     dataIndex: "priority",
+        //     key: "priority",
+        //     width: "7%",
+        //     filters: [
+        //         {
+        //             text: "Alta",
+        //             value: "ALTA",
+        //         },
+        //         {
+        //             text: "Media",
+        //             value: "MEDIA",
+        //         },
+        //         {
+        //             text: "Baja",
+        //             value: "BAJA",
+        //         },
+        //     ],
+        //     onFilter: (value, record) =>
+        //         record.priority.indexOf(value) === 0,
+        // },
+        {
+            title: "Acción",
+            dataIndex: "action",
+            key: "action",
+            width: "5%",
+        },
+    ];
+});
+
+//Filtros de state y priority
+const onSelectChange = (changableRowKeys) => {
+    console.log("selectedRowKeys changed: ", changableRowKeys);
+    selectedRowKeys.value = changableRowKeys;
+};
+
+const onSelectOddRow = (changableRowKeys) => {
+    selectedRowKeys.value = changableRowKeys.filter(
+        (_key, index) => index % 2 !== 0
+    );
+};
+
+const onSelectEvenRow = (changableRowKeys) => {
+    selectedRowKeys.value = changableRowKeys.filter(
+        (_key, index) => index % 2 === 0
+    );
+};
+
+//Filtro de búsqueda
+const handleChange = (selectedKeys, dataIndex) => {
+    state.searchText = selectedKeys[0];
+    state.searchedColumn = dataIndex;
+};
+const handleChangeSort = (pagination, filters, sorter) => {
+    console.log("Various parameters", pagination, filters, sorter);
+    filteredInfo.value = filters;
+    sortedInfo.value = sorter;
+};
+const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    handleChange(selectedKeys, dataIndex);
+};
+const handleReset = (clearFilters) => {
+    clearFilters({ confirm: true });
+    state.searchText = "";
+};
+
+//Filtro de fechas
+const convertToDateISO = (dateString) => {
+    // Analizar la cadena utilizando Moment.js
+    const dateMoment = moment(dateString, "DD MMM, YYYY");
+    // Convertir a objeto Date
+    const isoDate = dateMoment.toISOString();
+    return isoDate;
+};
+
+const filterDateReceived = (filterDate) => {
+    filterForDate(filterDate);
+};
+
+const filterForDate = (dates) => {
+    if (!dates) return "";
+    const validateString = dates.includes(" to ");
+
+    if (originDataSource.value.length > 0) clearFilterDate();
+
+    if (!validateString) {
+        originDataSource.value = [...dataSource.value];
+        dataSource.value = dataSource.value.filter((data) => {
+            const fechaMoment = moment(data.entryDate);
+            return fechaMoment.isSameOrAfter(dates);
+        });
+    } else {
+        const datesArray = dates?.split(" to ");
+        for (let i = 0; i < datesArray.length; i++) {
+            const dateObject = convertToDateISO(datesArray[i]);
+            if (i == 0) dateStart.value = dateObject;
+            else dateEnd.value = dateObject;
+        }
+        originDataSource.value = [...dataSource.value];
+        dataSource.value = dataSource.value.filter((data) => {
+            const fechaMoment = moment(data.entryDate);
+            return fechaMoment.isBetween(
+                dateStart.value,
+                dateEnd.value,
+                null,
+                "[]"
+            );
+        });
+    }
+};
+
+const clearFilterDate = () => {
+    if (originDataSource.value.length <= 0) return "";
+    dataSource.value = [...originDataSource.value];
+    originDataSource.value = [];
+};
+
+const setVariantState = (text) => {
+    return setVariantStateInfo(text);
+};
+
+// const getYearNameMonthDay = (dateString) => {
+//     const dateMoment = moment(dateString, "DD MMM, YYYY");
+//     const year = dateMoment.format("YYYY");
+//     const monthName = dateMoment.format("MMMM"); // 'MMMM' devuelve el nombre completo del mes
+//     const day = dateMoment.format("DD");
+
+//     return { year, monthName, day };
+// };
+// //Convertir fecha de created a UTC-5
+// const convertToUTC5 = (date) => {
+//     // const dateMoment = moment(date);
+//     // const dateUTC5 = dateMoment.subtract(5, 'hours').toISOString();
+//     const transformedDate = moment(date)
+//         .utcOffset(-5)
+//         .format("D MMM, YYYY HH:mm:ss");
+//     return transformedDate;
+// };
 </script>
 
 <template>
@@ -496,8 +476,8 @@ export default defineComponent({
                 >
                     <template
                         v-for="(fragment, i) in text
-                            .toString()
-                            .splitT(
+                            ?.toString()
+                            ?.split(
                                 new RegExp(
                                     `(?<=${state.searchText})|(?=${state.searchText})`,
                                     'i'
@@ -530,8 +510,8 @@ export default defineComponent({
                 >
                     <template
                         v-for="(fragment, i) in text
-                            .toString()
-                            .split(
+                            ?.toString()
+                            ?.split(
                                 new RegExp(
                                     `(?<=${state.searchText})|(?=${state.searchText})`,
                                     'i'

@@ -1,28 +1,18 @@
-<script>
+<script setup>
 import OverviewMain from "@/views/admin-doc/detailsDocuments/components/OverviewMain.vue";
 import ModalOTPVerification from "./detailsDocuments/components/ModalOTPVerification.vue";
-import { defineComponent } from "vue";
-export default defineComponent({
-    name: 'OverviewWithoutSign',
-    data() {
-        return {
-            showModal: true,
-        };
-    },
-    components: {
-        OverviewMain,
-        ModalOTPVerification,
-    },
-    methods: {
-        handleShowModal(newValue) {
-            this.showModal = newValue
-        },
-    },
-});
+import { ref } from "vue";
+const showModal = ref(true);
+const handleShowModal = (newValue) => {
+    showModal.value = newValue;
+};
 </script>
 <template>
     <main :class="showModal ? '' : 'p-4'">
-        <ModalOTPVerification v-if="showModal" @handleShowModal="handleShowModal"/>
+        <ModalOTPVerification
+            v-if="showModal"
+            @handleShowModal="handleShowModal"
+        />
         <OverviewMain v-else />
     </main>
 </template>

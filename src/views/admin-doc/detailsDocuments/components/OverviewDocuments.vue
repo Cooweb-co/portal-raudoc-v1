@@ -1,25 +1,18 @@
-<script>
+<script setup>
 import OverviewDocumentsElement from "./OverviewDocumentsElement.vue";
 
-import { defineComponent } from "vue";
+import { defineProps } from "vue";
 
-
-export default defineComponent({
-    name: 'OverviewDocuments',
-    props: {
-        data: Object,
-        files: Array,
-        loading: Boolean
-    },
-    components: {
-        OverviewDocumentsElement,
-    },
+defineProps({
+    data: Object,
+    files: Array,
+    loading: Boolean,
 });
 </script>
 
 <template>
     <BTab title="Documentos" class="fw-semibold pt-2">
-        <a-skeleton v-if="loading" :paragraph="{ rows: 3 }" active x/>
+        <a-skeleton v-if="loading" :paragraph="{ rows: 3 }" active x />
         <div v-else class="card">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-4">
@@ -27,7 +20,10 @@ export default defineComponent({
                 </div>
                 <BRow>
                     <div class="table-responsive table-card p-0">
-                        <table class="table table-borderless align-middle mb-0 p-0" style="width: 100% !important;">
+                        <table
+                            class="table table-borderless align-middle mb-0 p-0"
+                            style="width: 100% !important"
+                        >
                             <thead class="table-light">
                                 <tr>
                                     <th scope="col">Nombre del Archivo</th>
@@ -40,9 +36,19 @@ export default defineComponent({
                                 </tr>
                             </thead>
                             <tbody>
-                                <OverviewDocumentsElement v-for="file in files" :file="file" :id="data.id" :key="file.name" v-show="files"/>
+                                <OverviewDocumentsElement
+                                    v-for="file in files"
+                                    :file="file"
+                                    :id="data.id"
+                                    :key="file.name"
+                                    v-show="files"
+                                />
                                 <tr v-show="!files" class="w-100">
-                                    <td colspan="5"><h6 class="w-100 text-center">No hay archivos</h6></td>
+                                    <td colspan="5">
+                                        <h6 class="w-100 text-center">
+                                            No hay archivos
+                                        </h6>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>

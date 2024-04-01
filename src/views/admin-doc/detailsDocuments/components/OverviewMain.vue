@@ -1,123 +1,104 @@
-<script>
+<script setup>
 import {
     getDocument,
     getDocumentFilesUploads,
 } from "@/services/docservice/doc.service";
-import { defineComponent } from "vue";
-
+import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
 import OverviewSummary from "./OverviewSummary.vue";
 import OverviewDocuments from "./OverviewDocuments.vue";
 import OverviewResponse from "./OverviewResponse.vue";
 
 import transformDate from "@/helpers/transformDate";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
-import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo";
+// import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo";
 import setState from "@/helpers/setState";
 
-export default defineComponent({
-    name: "OverviewMain",
+const data = ref({});
+const id = ref("");
+const company = ref("");
+const files = ref([]);
+const entryDate = ref("");
+const expirationDate = ref("");
+const loading = ref(false);
 
-    data() {
-        return {
-            data: "",
-            id: "",
-            company: "",
-            files: [],
-            entryDate: "",
-            expirationDate: "",
-            loading: false,
-        };
-    },
+const router = useRoute();
 
-    async mounted() {
-        try {
-            this.id = this.$route.params.documentID;
-            this.company = this.$route.params.company || "BAQVERDE";
+onMounted(async () => {
+    try {
+        id.value = router.params.documentID;
+        company.value = router.params.company || "BAQVERDE";
 
-            this.loading = true;
-            const docData = await getDocument(this.company, this.id);
-            if (docData?.entryDate && docData?.entryDate.seconds) {
-                const formattedDate = transformDate(docData?.entryDate.seconds); // Formatear fecha
-                this.entryDate = formattedDate; // Guardar la fecha formateada
-            }
-
-            if (docData?.expirationDate && docData?.expirationDate.seconds) {
-                const formattedDate = transformDate(
-                    docData?.expirationDate.seconds
-                ); // Formatear fecha
-                this.expirationDate = formattedDate; // Guardar la fecha formateada
-            }
-            console.log(docData);
-            this.data = {
-                id: this.id,
-                numberEntryClaim: docData?.numberEntryClaim || "No definido",
-                area: docData?.area || "No definido",
-                documentaryTypologyEntry:
-                    docData?.documentaryTypologyEntry || "No definido",
-                subject: docData?.subject || "No definido",
-                entryDate: this.entryDate || "No definido",
-                status: setState(docData?.status),
-                expirationDate: this.expirationDate || "No definido",
-                priority: docData?.priority || "BAJA",
-                serie: docData?.serie,
-                subSerie: docData?.subSerie,
-                externalRadicate: docData?.externalRadicate,
-                assignedTo: docData?.assignedTo,
-                folios: docData?.folios,
-                observations: docData?.observations,
-                inputMethod: docData?.inputMethod,
-                summary:
-                    docData?.summary?.replace("<p>", "").replace("</p>", "") ||
-                    "No definido",
-                personType: docData?.petitionerInformation?.personType,
-                identificationNumber:
-                    docData?.petitionerInformation?.identificationNumber,
-                identificationType:
-                    docData?.petitionerInformation?.identificationType ||
-                    "No definido",
-                fullName:
-                    docData?.petitionerInformation?.firstNames +
-                        " " +
-                        docData?.petitionerInformation?.lastNames ||
-                    "No definido",
-                email: docData?.petitionerInformation?.email || "No definido",
-                phoneNumber:
-                    docData?.petitionerInformation?.phoneNumber ||
-                    "No definido",
-                address:
-                    docData?.petitionerInformation?.address || "No definido",
-            };
-            await getDocumentFilesUploads("BAQVERDE", this.id).then((data) => {
-                this.files = data;
-            });
-        } catch (error) {
-            console.log("Error viste de documentos: ", error);
-        } finally {
-            this.loading = false;
+        loading.value = true;
+        const docData = await getDocument(company.value, id.value);
+        if (docData?.entryDate && docData?.entryDate.seconds) {
+            const formattedDate = transformDate(docData?.entryDate.seconds); // Formatear fecha
+            entryDate.value = formattedDate; // Guardar la fecha formateada
         }
-    },
 
-    methods: {
-        toggleFavourite(ele) {
-            ele.target.closest(".favourite-btn").classList.toggle("active");
-        },
-    },
-
-    computed: {
-        setVariantState() {
-            return setVariantStateInfo(this.data.status);
-        },
-        setVariantPriority() {
-            return setVariantPriorityInfo(this.data.status);
-        },
-    },
-
-    components: {
-        OverviewSummary,
-        OverviewDocuments,
-        OverviewResponse,
-    },
+        if (docData?.expirationDate && docData?.expirationDate.seconds) {
+            const formattedDate = transformDate(
+                docData?.expirationDate.seconds
+            ); // Formatear fecha
+            expirationDate.value = formattedDate; // Guardar la fecha formateada
+        }
+        data.value = {
+            id: id.value,
+            numberEntryClaim: docData?.numberEntryClaim || "No definido",
+            area: docData?.area || "No definido",
+            documentaryTypologyEntry:
+                docData?.documentaryTypologyEntry || "No definido",
+            subject: docData?.subject || "No definido",
+            entryDate: entryDate.value || "No definido",
+            status: setState(docData?.status),
+            expirationDate: expirationDate.value || "No definido",
+            priority: docData?.priority || "BAJA",
+            serie: docData?.serie,
+            subSerie: docData?.subSerie,
+            externalRadicate: docData?.externalRadicate,
+            assignedTo: docData?.assignedTo,
+            folios: docData?.folios,
+            observations: docData?.observations,
+            inputMethod: docData?.inputMethod,
+            summary:
+                docData?.summary?.replace("<p>", "").replace("</p>", "") ||
+                "No definido",
+            personType: docData?.petitionerInformation?.personType,
+            identificationNumber:
+                docData?.petitionerInformation?.identificationNumber,
+            identificationType:
+                docData?.petitionerInformation?.identificationType ||
+                "No definido",
+            fullName:
+                docData?.petitionerInformation?.firstNames +
+                    " " +
+                    docData?.petitionerInformation?.lastNames || "No definido",
+            email: docData?.petitionerInformation?.email || "No definido",
+            phoneNumber:
+                docData?.petitionerInformation?.phoneNumber || "No definido",
+            address: docData?.petitionerInformation?.address || "No definido",
+        };
+        await getDocumentFilesUploads("BAQVERDE", id.value).then((data) => {
+            files.value = data;
+        });
+    } catch (error) {
+        console.log("Error viste de documentos: ", error);
+    } finally {
+        loading.value = false;
+    }
 });
+
+const setVariantState = computed(() => {
+    return setVariantStateInfo(data.value.status);
+});
+
+// const setVariantPriority = computed(() => {
+//     return setVariantPriorityInfo(data.value.status);
+// });
+
+// const toggleFavourite = (ele) => {
+//             ele.target.closest(".favourite-btn").classList.toggle("active");
+// }
 </script>
 
 <template>
