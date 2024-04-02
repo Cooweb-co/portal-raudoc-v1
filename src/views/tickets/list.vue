@@ -1,7 +1,7 @@
 <script setup>
 import Layout from "@/layouts/main.vue";
 import PageHeader from "@/components/page-header";
-import TableTickets from "@/views/tickets/components/TableTickets";
+import TableDocuments from "@/views/tickets/components/TableDocuments";
 import ClaimsCounter from "@/views/tickets/components/ClaimsCounter";
 
 </script>
@@ -9,11 +9,11 @@ import ClaimsCounter from "@/views/tickets/components/ClaimsCounter";
 <template>
     <Layout>
         <div>
-            <PageHeader title="LISTA DE ENTRADAS" pageTitle="Tickets" />
+            <PageHeader title="LISTA DE ENTRADAS" pageTitle="Radicados" />
 
             <ClaimsCounter />
 
-            <TableTickets />
+            <TableDocuments />
         </div>
     </Layout>
 </template>

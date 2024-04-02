@@ -21,7 +21,6 @@ export default {
     name: "app",
     emits: {
       verified(value) {
-        console.log(value)
         return value
       },
     },

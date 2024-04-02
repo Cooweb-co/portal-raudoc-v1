@@ -134,10 +134,10 @@ export default defineComponent({
             </BButton>
             <!-- <BButton type="submit" variant="primary" class="w-sm me-1">
                 Borrador
-            </BButton>
+            </BButton>-->
             <BButton type="submit" variant="success" class="w-sm"
                 >Generar Radicado</BButton
-            > -->
+            >
             <!--
                         </div>
                     </div>

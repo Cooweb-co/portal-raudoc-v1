@@ -1,8 +1,6 @@
 <script setup>
-import { Table } from "ant-design-vue";
 import { SearchOutlined, EyeOutlined } from "@ant-design/icons-vue";
 import calendarFilter from "./CalendarFilter.vue";
-
 import { ref, reactive, onBeforeMount, computed } from "vue";
 import axios from "axios";
 import moment from "moment";
@@ -10,16 +8,14 @@ import transformDate from "@/helpers/transformDate";
 import setState from "@/helpers/setState";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
 
-const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const state = reactive({
     searchText: "",
     searchedColumn: "",
 });
-
 const searchInput = ref();
-const sortedInfo = ref(null);
 const filteredInfo = ref(null);
+const sortedInfo = ref(null);
 
 let dateStart = ref(null);
 let dateEnd = ref(null);
@@ -44,7 +40,10 @@ onBeforeMount(async () => {
                     key: data?.claimId,
                     numberEntryClaim: data?.numberEntryClaim || "-",
                     outputDocument: data?.externalRadicate || "-",
-                    entryDate: data?.entryDate,
+                    entryDate:
+                        data?.createdAt && data?.createdAt._seconds
+                            ? transformDate(data?.createdAt._seconds)
+                            : "-",
                     expirationDate:
                         data?.expirationDate && data?.expirationDate._seconds
                             ? transformDate(data?.expirationDate._seconds)
@@ -68,37 +67,21 @@ onBeforeMount(async () => {
         });
 });
 
-const rowSelection = computed(() => {
-    return {
-        selectedRowKeys: selectedRowKeys.value,
-        onChange: onSelectChange.value,
-        hideDefaultSelections: true,
-        selections: [
-            Table.SELECTION_ALL,
-            Table.SELECTION_INVERT,
-            Table.SELECTION_NONE,
-            {
-                key: "odd",
-                text: "Select Odd Row",
-                onSelect: onSelectOddRow.value,
-            },
-            {
-                key: "even",
-                text: "Select Even Row",
-                onSelect: onSelectEvenRow.value,
-            },
-        ],
-    };
-});
-
 const columns = computed(() => {
     const sorted = sortedInfo.value || {};
     return [
         {
+            title: "Acción",
+            dataIndex: "action",
+            key: "action",
+            width: "4%",
+            className: "text-center",
+        },
+        {
             title: "ID",
             dataIndex: "numberEntryClaim",
             key: "numberEntryClaim",
-            width: "10%",
+            width: "6%",
             customFilterDropdown: true,
             onFilter: (value, record) =>
                 record.numberEntryClaim
@@ -117,14 +100,14 @@ const columns = computed(() => {
             title: "Titulo",
             dataIndex: "subject",
             key: "subject",
-            width: "15%",
+            width: "6%",
         },
         {
             title: "Peticionario",
             dataIndex: "petitioner",
             key: "petitioner",
             customFilterDropdown: true,
-            width: "10%",
+            width: "3%",
             className: "text-center",
             onFilter: (value, record) =>
                 record.petitioner
@@ -143,7 +126,7 @@ const columns = computed(() => {
             title: "Asignado a",
             dataIndex: "assignedTo",
             key: "assignedTo",
-            width: "10%",
+            width: "3%",
             className: "text-center",
             customFilterDropdown: true,
             onFilter: (value, record) =>
@@ -163,7 +146,7 @@ const columns = computed(() => {
             title: "Radicado de salida",
             dataIndex: "outputDocument",
             key: "outputDocument",
-            width: "10%",
+            width: "5%",
             className: "text-center",
             customFilterDropdown: true,
             onFilter: (value, record) =>
@@ -184,7 +167,7 @@ const columns = computed(() => {
             dataIndex: "entryDate",
             key: "entryDate",
             className: "text-center",
-            width: "10%",
+            width: "5%",
             sorter: (a, b) => {
                 const firstDate = moment(a.entryDate, "DD MMM, YYYY")
                     .startOf("day")
@@ -203,7 +186,7 @@ const columns = computed(() => {
             dataIndex: "expirationDate",
             key: "expirationDate",
             className: "text-center",
-            width: "10%",
+            width: "5%",
             sorter: (a, b) => {
                 const firstDate = moment(a.expirationDate, "DD MMM, YYYY")
                     .startOf("day")
@@ -221,7 +204,7 @@ const columns = computed(() => {
             title: "Estado",
             dataIndex: "status",
             key: "status",
-            width: "6%",
+            width: "5%",
             filters: [
                 {
                     text: "Vencido", //Rojo
@@ -268,42 +251,13 @@ const columns = computed(() => {
         //     onFilter: (value, record) =>
         //         record.priority.indexOf(value) === 0,
         // },
-        {
-            title: "Acción",
-            dataIndex: "action",
-            key: "action",
-            width: "5%",
-        },
     ];
 });
-
-//Filtros de state y priority
-const onSelectChange = (changableRowKeys) => {
-    console.log("selectedRowKeys changed: ", changableRowKeys);
-    selectedRowKeys.value = changableRowKeys;
-};
-
-const onSelectOddRow = (changableRowKeys) => {
-    selectedRowKeys.value = changableRowKeys.filter(
-        (_key, index) => index % 2 !== 0
-    );
-};
-
-const onSelectEvenRow = (changableRowKeys) => {
-    selectedRowKeys.value = changableRowKeys.filter(
-        (_key, index) => index % 2 === 0
-    );
-};
 
 //Filtro de búsqueda
 const handleChange = (selectedKeys, dataIndex) => {
     state.searchText = selectedKeys[0];
     state.searchedColumn = dataIndex;
-};
-const handleChangeSort = (pagination, filters, sorter) => {
-    console.log("Various parameters", pagination, filters, sorter);
-    filteredInfo.value = filters;
-    sortedInfo.value = sorter;
 };
 const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -312,6 +266,11 @@ const handleSearch = (selectedKeys, confirm, dataIndex) => {
 const handleReset = (clearFilters) => {
     clearFilters({ confirm: true });
     state.searchText = "";
+};
+
+const handleChangeSort = (pagination, filters, sorter) => {
+    filteredInfo.value = filters;
+    sortedInfo.value = sorter;
 };
 
 //Filtro de fechas
@@ -400,9 +359,8 @@ const setVariantState = (text) => {
             :dataSource="dataSource"
             :columns="columns"
             :scroll="{ x: 2000 }"
-            :row-selection="rowSelection"
-            @change="handleChangeSort"
             :loading="loading"
+            @change="handleChangeSort"
         >
             <template
                 #customFilterDropdown="{
@@ -464,14 +422,17 @@ const setVariantState = (text) => {
                 />
             </template>
 
-            <template #bodyCell="{ column, text }">
+            <template #bodyCell="{ text, record, column }">
                 <!-- Search -->
 
                 <span
                     v-if="
-                        state.searchText &&
-                        state.searchedColumn === column.dataIndex &&
-                        column.dataIndex === 'numberEntryClaim'
+                        (state.searchText &&
+                            state.searchedColumn === column.dataIndex &&
+                            column.dataIndex === 'numberEntryClaim') ||
+                        (state.searchText &&
+                            state.searchedColumn === column.dataIndex &&
+                            column.dataIndex === 'outputDocument')
                     "
                 >
                     <template
@@ -532,14 +493,31 @@ const setVariantState = (text) => {
                     </template>
                 </span>
 
-                <template
-                    v-if="
-                        column.dataIndex === 'numberEntryClaim' &&
-                        !state.searchText &&
-                        state.searchedColumn !== column.dataIndex
-                    "
-                >
-                    <a class="fw-medium link-primary">
+                <!-- Columns -->
+
+                <template v-if="column.dataIndex === 'action'">
+                    <a
+                        class="fw-medium link-primary text-center actionButtonTableRadicates"
+                        :href="`/gestion-documental/radicado/${text}`"
+                    >
+                        <EyeOutlined />
+                    </a>
+                </template>
+
+                <template v-if="column.dataIndex == 'numberEntryClaim'">
+                    <a
+                        class="fw-medium link-primary"
+                        :href="`/gestion-documental/radicado/${record.id}`"
+                    >
+                        {{ text }}
+                    </a>
+                </template>
+
+                <template v-if="column.dataIndex == 'outputDocument'">
+                    <a
+                        class="fw-medium link-primary"
+                        :href="`/gestion-documental/radicado/${record.id}`"
+                    >
                         {{ text }}
                     </a>
                 </template>
@@ -567,15 +545,6 @@ const setVariantState = (text) => {
                             {{ text.toUpperCase() }}
                         </span>
                     </div>
-                </template>
-
-                <template v-if="column.dataIndex === 'action'">
-                    <a
-                        class="fw-medium link-primary text-center actionButtonTableRadicates"
-                        :href="`/gestion-documental/radicado/${text}`"
-                    >
-                        <EyeOutlined />
-                    </a>
                 </template>
             </template>
         </a-table>

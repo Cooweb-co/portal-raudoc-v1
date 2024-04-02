@@ -1,10 +1,15 @@
 <script setup>
 import { CountTo } from "vue3-count-to";
 import { defineProps, ref } from "vue";
-const props = defineProps(["cardsData"]);
+import {
+    ClockIcon,
+    CornerDownLeftIcon,
+    SendIcon,
+    BookmarkIcon
 
+} from "@zhuowenli/vue-feather-icons";
+const props = defineProps(["cardsData"]);
 const cardsData = ref(props.cardsData);
-console.log(cardsData.value)
 </script>
 
 <template>
@@ -40,7 +45,11 @@ console.log(cardsData.value)
                             <span
                                 class="avatar-title bg-primary-subtle text-primary rounded-circle fs-4"
                             >
-                                <i class="ri-ticket-2-line"></i>
+                                <!-- <i class="ri-ticket-2-line"></i> -->
+                                <ClockIcon width="24" height="24" v-if="cardData.value == 'Pendientes'"/>
+                                <SendIcon width="24" height="24" v-else-if="cardData.value == 'Respondidas'"/>
+                                <BookmarkIcon width="24" height="24" v-else-if="cardData.value == 'No respondidas'"/>
+                                <CornerDownLeftIcon width="24" height="24" v-else-if="cardData.value == 'Recibidas'"/>
                             </span>
                         </div>
                     </div>

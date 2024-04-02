@@ -31,8 +31,8 @@ onMounted(async () => {
 
         loading.value = true;
         const docData = await getDocument(company.value, id.value);
-        if (docData?.entryDate && docData?.entryDate.seconds) {
-            const formattedDate = transformDate(docData?.entryDate.seconds); // Formatear fecha
+        if (docData?.createdAt && docData?.createdAt.seconds) {
+            const formattedDate = transformDate(docData?.createdAt.seconds); // Formatear fecha
             entryDate.value = formattedDate; // Guardar la fecha formateada
         }
 
@@ -82,7 +82,7 @@ onMounted(async () => {
             files.value = data;
         });
     } catch (error) {
-        console.log("Error viste de documentos: ", error);
+        console.error("Error viste de documentos: ", error);
     } finally {
         loading.value = false;
     }

@@ -105,9 +105,9 @@ export default [
     component: () => import("../views/admin-doc/document-list"),
   },
   {
-    path: "/apps/tickets-list",
-    name: "tickets-list",
-    meta: { title: "Tickets List", authRequired: true },
+    path: "/gestion-documental/lista-radicados",
+    name: "Lista de Radicados",
+    meta: { title: "Lista de Radicados", authRequired: true },
     component: () => import("../views/tickets/List"),
   },
 
