@@ -1,26 +1,23 @@
-
 <script setup>
 import axios from "axios";
 import { onMounted, ref } from "vue";
-import ClaimsCounterElement from "./ClaimsCounterElement.vue"
+import ClaimsCounterElement from "./ClaimsCounterElement.vue";
 
-const cardsData = ref([]);
+const cardsData = ref(undefined);
+const loading = ref(false);
 onMounted(async () => {
     try {
-        // this.loading = true;
+        loading.value = true;
         const headers = {
             company: "BAQVERDE",
             "Content-Type": "application/json",
         };
-        await axios
-            .get(
-                "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_COUNT_CLAIMS",
-                { headers }
-            )
-            .then((response) => {
-                cardsData.value = response.data;
-                console.log(response)
-            });
+        const res = await axios.get(
+            "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_COUNT_CLAIMS",
+            { headers }
+        );
+        cardsData.value = res.data;
+        loading.value = false;
     } catch (error) {
         console.log(error);
     }
@@ -29,6 +26,7 @@ onMounted(async () => {
 
 <template>
     <BRow>
-          <ClaimsCounterElement :cardsData="cardsData"/>
+        <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" active />
+        <ClaimsCounterElement :cardsData="cardsData" v-else/>
     </BRow>
 </template>
