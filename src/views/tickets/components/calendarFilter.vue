@@ -24,7 +24,6 @@ const props = defineProps({
 
 const SearchData = () => {
     emits("filterDate", filterdate.value);
-    console.log(filterdate.value);
 };
 
 const clearFilter = () => {

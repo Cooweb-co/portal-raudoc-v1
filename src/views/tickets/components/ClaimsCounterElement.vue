@@ -47,9 +47,9 @@ const cardsData = ref(props.cardsData);
                             >
                                 <!-- <i class="ri-ticket-2-line"></i> -->
                                 <ClockIcon width="24" height="24" v-if="cardData.value == 'Pendientes'"/>
-                                <SendIcon width="24" height="24" v-else-if="cardData.value == 'Respondidas'"/>
-                                <BookmarkIcon width="24" height="24" v-else-if="cardData.value == 'No respondidas'"/>
-                                <CornerDownLeftIcon width="24" height="24" v-else-if="cardData.value == 'Recibidas'"/>
+                                <SendIcon width="24" height="24" v-else-if="cardData.value == 'Salidas totales'"/>
+                                <BookmarkIcon width="24" height="24" v-else-if="cardData.value == 'No requiere respuesta'"/>
+                                <CornerDownLeftIcon width="24" height="24" v-else-if="cardData.value == 'Entradas totales'"/>
                             </span>
                         </div>
                     </div>

@@ -120,7 +120,6 @@ const getEmail = async () => {
 };
 const sendCodeToEmail = async () => {
     try {
-        console.log("Email enviado");
         toast.success(`Email enviado correctamente`, {
             position: toast.POSITION.TOP_RIGHT,
             autoClose: 3000,

@@ -274,13 +274,6 @@ const handleChangeSort = (pagination, filters, sorter) => {
 };
 
 //Filtro de fechas
-const convertToDateISO = (dateString) => {
-    // Analizar la cadena utilizando Moment.js
-    const dateMoment = moment(dateString, "DD MMM, YYYY");
-    // Convertir a objeto Date
-    const isoDate = dateMoment.toISOString();
-    return isoDate;
-};
 
 const filterDateReceived = (filterDate) => {
     filterForDate(filterDate);
@@ -294,20 +287,25 @@ const filterForDate = (dates) => {
 
     if (!validateString) {
         originDataSource.value = [...dataSource.value];
+        console.log(dataSource.value)
         dataSource.value = dataSource.value.filter((data) => {
-            const fechaMoment = moment(data.entryDate);
+            const fechaMoment = moment(data.entryDate, "DD MMM, YYYY");
+            console.log(fechaMoment.isSameOrAfter(dates))
             return fechaMoment.isSameOrAfter(dates);
         });
-    } else {
+    }
+
+    else {
         const datesArray = dates?.split(" to ");
         for (let i = 0; i < datesArray.length; i++) {
-            const dateObject = convertToDateISO(datesArray[i]);
-            if (i == 0) dateStart.value = dateObject;
-            else dateEnd.value = dateObject;
+            // const dateObject = convertToDateISO(datesArray[i]);
+            if (i == 0) dateStart.value = datesArray[i];
+            else dateEnd.value = datesArray[i];
         }
         originDataSource.value = [...dataSource.value];
         dataSource.value = dataSource.value.filter((data) => {
-            const fechaMoment = moment(data.entryDate);
+            const fechaMoment = moment(data.entryDate, "DD MMM, YYYY");
+            console.log(dateStart.value, dateEnd.value)
             return fechaMoment.isBetween(
                 dateStart.value,
                 dateEnd.value,
