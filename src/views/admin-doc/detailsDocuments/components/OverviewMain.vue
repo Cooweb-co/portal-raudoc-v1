@@ -21,7 +21,7 @@ const files = ref([]);
 const entryDate = ref("");
 const expirationDate = ref("");
 const loading = ref(false);
-
+const numberOutClaimExist = ref(false)
 const router = useRoute();
 
 onMounted(async () => {
@@ -56,6 +56,7 @@ onMounted(async () => {
             serie: docData?.serie,
             subSerie: docData?.subSerie,
             externalRadicate: docData?.externalRadicate,
+            numberOutClaim: docData?.numberOutClaim || "-",
             assignedTo: docData?.assignedTo,
             folios: docData?.folios,
             observations: docData?.observations,
@@ -78,6 +79,7 @@ onMounted(async () => {
                 docData?.petitionerInformation?.phoneNumber || "No definido",
             address: docData?.petitionerInformation?.address || "No definido",
         };
+        numberOutClaimExist.value = data.value.numberOutClaim != "-" ? true: false
         await getDocumentFilesUploads("BAQVERDE", id.value).then((data) => {
             files.value = data;
         });
@@ -227,12 +229,22 @@ const setVariantState = computed(() => {
                         :loading="loading"
                     />
 
-                    <OverviewDocuments
-                        :data="data"
-                        :files="files"
-                        :loading="loading"
-                    />
-                    <!-- <BTab title="Actividad" class="fw-semibold pt-2">
+                    <BTab title="Documentos" class="fw-semibold pt-2">
+                        <OverviewDocuments
+                            :data="data"
+                            :files="files"
+                            :loading="loading"
+                            :title="'Documentos de entrada'"
+                            :typeOfPerson="'Nombre del cliente'"
+                        />
+                        <OverviewDocuments
+                            :data="data"
+                            :files="files"
+                            :loading="loading"
+                            :title="'Documentos de salida'"
+                            :typeOfPerson="'Nombre del Empleado'"
+                        />
+                        <!-- <BTab title="Actividad" class="fw-semibold pt-2">
                         <BCard no-body>
                             <BCardBody>
                                 <h5 class="card-title">Activities</h5>
@@ -409,7 +421,8 @@ const setVariantState = computed(() => {
                             </BCardBody>
                         </BCard>
                     </BTab> -->
-                    <OverviewResponse :loading="loading" />
+                    </BTab>
+                    <OverviewResponse :loading="loading" :numberOutClaimExist="numberOutClaimExist"/>
                 </BTabs>
             </BCol>
         </BRow>

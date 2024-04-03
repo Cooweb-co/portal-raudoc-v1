@@ -7,6 +7,7 @@ import { ref, defineProps } from "vue";
 const props = defineProps({
     file: Object,
     id: String,
+    typeDocument: String,
 });
 
 const name = ref(props.file?.name || "-");
@@ -27,7 +28,7 @@ const goToDocument = () => {
             <div class="d-flex align-items-center">
                 <div class="avatar-sm">
                     <div
-                        class="avatar-title bg-light text-primary rounded fs-24"
+                        :class="`avatar-title bg-light ${'text-' + typeDocument} rounded fs-24`"
                     >
                         <i class="ri-folder-zip-line"></i>
                     </div>
@@ -47,7 +48,7 @@ const goToDocument = () => {
         <td class="">
             <div class="d-flex justify-content-center">
                 <BButton
-                    variant="info"
+                    :variant="typeDocument"
                     size="sm"
                     class="btn-icon"
                     @click="goToDocument"

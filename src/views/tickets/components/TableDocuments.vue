@@ -39,7 +39,8 @@ onBeforeMount(async () => {
                     id: data?.claimId,
                     key: data?.claimId,
                     numberEntryClaim: data?.numberEntryClaim || "-",
-                    outputDocument: data?.externalRadicate || "-",
+                    externalRadicate: data?.externalRadicate || "-",
+                    numberOutClaim: data?.numberOutClaim || "-",
                     entryDate:
                         data?.createdAt && data?.createdAt._seconds
                             ? transformDate(data?.createdAt._seconds)
@@ -144,13 +145,13 @@ const columns = computed(() => {
         },
         {
             title: "Radicado de salida",
-            dataIndex: "outputDocument",
-            key: "outputDocument",
+            dataIndex: "numberOutClaim",
+            key: "numberOutClaim",
             width: "5%",
             className: "text-center",
             customFilterDropdown: true,
             onFilter: (value, record) =>
-                record.outputDocument
+                record.numberOutClaim
                     .toString()
                     .toLowerCase()
                     .includes(value.toLowerCase()),
@@ -430,7 +431,7 @@ const setVariantState = (text) => {
                             column.dataIndex === 'numberEntryClaim') ||
                         (state.searchText &&
                             state.searchedColumn === column.dataIndex &&
-                            column.dataIndex === 'outputDocument')
+                            column.dataIndex === 'numberOutClaim')
                     "
                 >
                     <template
@@ -449,13 +450,14 @@ const setVariantState = (text) => {
                                 state.searchText.toLowerCase()
                             "
                             :key="i"
-                            class="highlight-numberEntryClaim fw-medium link-primary"
+                            class="fw-medium "
+                            :class="column.dataIndex === 'numberEntryClaim' ? 'link-primary highlight-numberEntryClaim ': 'link-success highlight-numberOutClaim'"
                         >
                             {{ fragment }}
                         </mark>
                         <template v-else>
-                            <span :key="i" class="fw-medium link-primary">
-                                {{ fragment }}</span
+                            <a :key="i" class="fw-medium" :class="column.dataIndex === 'numberEntryClaim' ? 'link-primary': 'link-success'" :href="`/gestion-documental/radicado/${record.id}`">
+                                {{ fragment }}</a
                             ></template
                         >
                     </template>
@@ -502,7 +504,7 @@ const setVariantState = (text) => {
                     </a>
                 </template>
 
-                <template v-if="column.dataIndex == 'numberEntryClaim'">
+                <template v-if="column.dataIndex == 'numberEntryClaim' && !state.searchText">
                     <a
                         class="fw-medium link-primary"
                         :href="`/gestion-documental/radicado/${record.id}`"
@@ -511,9 +513,9 @@ const setVariantState = (text) => {
                     </a>
                 </template>
 
-                <template v-if="column.dataIndex == 'outputDocument'">
+                <template v-if="column.dataIndex == 'numberOutClaim' && !state.searchText">
                     <a
-                        class="fw-medium link-primary"
+                        class="fw-medium link-success"
                         :href="`/gestion-documental/radicado/${record.id}`"
                     >
                         {{ text }}
@@ -560,6 +562,13 @@ const setVariantState = (text) => {
     padding: 0px;
     color: RGBA(var(--vz-primary-rgb), var(--vz-link-opacity, 1)) !important;
 }
+
+.highlight-numberOutClaim {
+    background-color: rgb(214, 214, 214);
+    padding: 0px;
+    color: RGBA(var(--vz-success-rgb), var(--vz-link-opacity, 1)) !important;
+}
+
 .centerContentTableRadicates {
     width: 100% !important;
     display: flex;
