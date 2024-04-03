@@ -246,23 +246,27 @@ export default {
     // }
 
     // computadas para la dependencia de los campos
+    // manejador del input de serie
     // eslint-disable-next-line vue/return-in-computed-property
     const auxSerie = computed(() => {
+      const aux = []
       if (form.value.area) {
         trds.value.forEach((i) => {
           if (i.label == form.value.area) {
             i.series.forEach((j) => {
-              series.value.push({
+              aux.push({
                 label: j.name,
                 value: j.name,
                 subseries: j.subseries,
               });
             });
           }
+          series.value = aux
         });
       }
     });
 
+    // manejador del input de subserie
     // eslint-disable-next-line vue/return-in-computed-property
     const auxSubSerie = computed(() => {
       if (form.value.serie) {
@@ -281,7 +285,8 @@ export default {
       }
     });
 
-    //eslint-disable-next-line vue/return-in-computed-property
+    // manejador del inpur de tipologia documental
+    // eslint-disable-next-line vue/return-in-computed-property
     const auxDocTypes = computed(() => {
       if (form.value.subSerie) {
         subseries.value.forEach((i) => {
@@ -297,6 +302,14 @@ export default {
         });
       }
     });
+
+    function clearSelectInput() {
+      if (form.value.area) {
+        form.value.serie = ""
+        form.value.subSerie = ""
+        form.value.documentType = ""
+      }
+    }
 
     onUnmounted(() => {
       if (unsubscribe) {
@@ -336,6 +349,7 @@ export default {
       auxDocTypes,
       isDocs,
       radicate,
+      clearSelectInput
     };
   },
   data() {
@@ -621,6 +635,7 @@ export default {
     </template>
   </Modal>
 
+  <!-- page tempalte-->
   <Layout>
     <PageHeader
       :title="`RADICAR DOCUMENTO`"
@@ -812,6 +827,7 @@ export default {
                   :create-option="true"
                   placeholder="Seleccione"
                   :options="trds"
+                  @change="clearSelectInput"
                 />
                 <ValidateLabel v-bind="{ v$ }" attribute="area" />
               </BCol>
