@@ -61,6 +61,16 @@ onBeforeMount(async () => {
                 });
             });
             loading.value = false;
+            dataSource.value.sort((a, b) => {
+                const numA = parseInt(
+                    a.numberEntryClaim.replace(/^EXT-BV-2024-/, "")
+                );
+                const numB = parseInt(
+                    b.numberEntryClaim.replace(/^EXT-BV-2024-/, "")
+                );
+
+                return numB - numA;
+            });
         })
         .catch((error) => {
             loading.value = false;
@@ -288,15 +298,13 @@ const filterForDate = (dates) => {
 
     if (!validateString) {
         originDataSource.value = [...dataSource.value];
-        console.log(dataSource.value)
+        console.log(dataSource.value);
         dataSource.value = dataSource.value.filter((data) => {
             const fechaMoment = moment(data.entryDate, "DD MMM, YYYY");
-            console.log(fechaMoment.isSameOrAfter(dates))
+            console.log(fechaMoment.isSameOrAfter(dates));
             return fechaMoment.isSameOrAfter(dates);
         });
-    }
-
-    else {
+    } else {
         const datesArray = dates?.split(" to ");
         for (let i = 0; i < datesArray.length; i++) {
             // const dateObject = convertToDateISO(datesArray[i]);
@@ -306,7 +314,7 @@ const filterForDate = (dates) => {
         originDataSource.value = [...dataSource.value];
         dataSource.value = dataSource.value.filter((data) => {
             const fechaMoment = moment(data.entryDate, "DD MMM, YYYY");
-            console.log(dateStart.value, dateEnd.value)
+            console.log(dateStart.value, dateEnd.value);
             return fechaMoment.isBetween(
                 dateStart.value,
                 dateEnd.value,
@@ -450,13 +458,26 @@ const setVariantState = (text) => {
                                 state.searchText.toLowerCase()
                             "
                             :key="i"
-                            class="fw-medium "
-                            :class="column.dataIndex === 'numberEntryClaim' ? 'link-primary highlight-numberEntryClaim ': 'link-success highlight-numberOutClaim'"
+                            class="fw-medium"
+                            :class="
+                                column.dataIndex === 'numberEntryClaim'
+                                    ? 'link-primary highlight-numberEntryClaim '
+                                    : 'link-success highlight-numberOutClaim'
+                            "
                         >
                             {{ fragment }}
                         </mark>
                         <template v-else>
-                            <a :key="i" class="fw-medium" :class="column.dataIndex === 'numberEntryClaim' ? 'link-primary': 'link-success'" :href="`/gestion-documental/radicado/${record.id}`">
+                            <a
+                                :key="i"
+                                class="fw-medium"
+                                :class="
+                                    column.dataIndex === 'numberEntryClaim'
+                                        ? 'link-primary'
+                                        : 'link-success'
+                                "
+                                :href="`/gestion-documental/radicado/${record.id}`"
+                            >
                                 {{ fragment }}</a
                             ></template
                         >
@@ -504,7 +525,12 @@ const setVariantState = (text) => {
                     </a>
                 </template>
 
-                <template v-if="column.dataIndex == 'numberEntryClaim' && !state.searchText">
+                <template
+                    v-if="
+                        column.dataIndex == 'numberEntryClaim' &&
+                        !state.searchText
+                    "
+                >
                     <a
                         class="fw-medium link-primary"
                         :href="`/gestion-documental/radicado/${record.id}`"
@@ -513,7 +539,12 @@ const setVariantState = (text) => {
                     </a>
                 </template>
 
-                <template v-if="column.dataIndex == 'numberOutClaim' && !state.searchText">
+                <template
+                    v-if="
+                        column.dataIndex == 'numberOutClaim' &&
+                        !state.searchText
+                    "
+                >
                     <a
                         class="fw-medium link-success"
                         :href="`/gestion-documental/radicado/${record.id}`"
