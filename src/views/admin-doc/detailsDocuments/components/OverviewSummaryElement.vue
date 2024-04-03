@@ -1,32 +1,17 @@
-<script>
-import transform_date from "@/helpers/transform_date";
+<script setup>
 import { EyeOutlined } from "@ant-design/icons-vue";
 import { openDocument } from "@/services/docservice/doc.service";
+import { defineProps } from "vue";
 
+const props = defineProps({
+    file: Object,
+    id: String,
+});
 
-export default {
-    props: {
-        file: Object,
-        id: String
-    },
-    data() {
-        return {
-            name: this.file?.name || "-",
-            extension: this.file?.name.split(".").pop().toUpperCase() || "-",
-            fullNameClient: this.file?.summary?.applicant?.fullName || "-",
-            startProccessAt: transform_date(this.file?.startProccessAt?.seconds),
-        };
-    },
-    methods: {
-        goToDocument() {
-            const year = this.file.startProccessAt.toDate().getFullYear();
-            const path = `/Companies/BAQVERDE/${year}/Claims/${this.id}`;
-            openDocument(this.file.name, path);
-        },
-    },
-    components: {
-        EyeOutlined,
-    },
+const goToDocument = () => {
+    const year = props.file.startProccessAt.toDate().getFullYear();
+    const path = `/Companies/BAQVERDE/${year}/Claims/${props.id}`;
+    openDocument(props.file.name, path);
 };
 </script>
 
@@ -55,16 +40,16 @@ export default {
                 </div>
                 <div class="flex-shrink-0 ms-2">
                     <div class="d-flex gap-1">
-                            <div class="d-flex justify-content-center">
-                                <BButton
-                                    variant="info"
-                                    size="sm"
-                                    class="btn-icon"
-                                    @click="goToDocument"
-                                >
-                                    <EyeOutlined />
-                                </BButton>
-                            </div>
+                        <div class="d-flex justify-content-center">
+                            <BButton
+                                variant="info"
+                                size="sm"
+                                class="btn-icon"
+                                @click="goToDocument"
+                            >
+                                <EyeOutlined />
+                            </BButton>
+                        </div>
                     </div>
                 </div>
             </div>

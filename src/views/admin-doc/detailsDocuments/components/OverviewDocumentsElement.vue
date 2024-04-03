@@ -1,40 +1,34 @@
-<script>
-import transform_date from "@/helpers/transform_date";
+<script setup>
+import transformDate from "@/helpers/transformDate";
 import { EyeOutlined } from "@ant-design/icons-vue";
 import { openDocument } from "@/services/docservice/doc.service";
+import { ref, defineProps } from "vue";
 
-export default {
-    props: {
-        file: Object,
-        id: String
-    },
-    data() {
-        return {
-            name: this.file?.name || "-",
-            extension: this.file?.name.split(".").pop().toUpperCase() || "-",
-            fullNameClient: this.file?.summary?.applicant?.fullName || "-",
-            startProccessAt: transform_date(this.file?.startProccessAt?.seconds),
-        };
-    },
-    components: {
-        EyeOutlined,
-    },
-    methods: {
-        goToDocument() {
-            const year = this.file.startProccessAt.toDate().getFullYear();
-            const path = `/Companies/BAQVERDE/${year}/Claims/${this.id}`;
-            openDocument(this.file.name, path);
-        },
-    },
+const props = defineProps({
+    file: Object,
+    id: String,
+    typeDocument: String,
+});
+
+const name = ref(props.file?.name || "-");
+const extension = ref(props.file?.name.split(".").pop().toUpperCase() || "-");
+const fullNameClient = ref(props.file?.summary?.applicant?.fullName || "-");
+const startProccessAt = ref(transformDate(props.file?.startProccessAt?.seconds));
+
+const goToDocument = () => {
+    const year = props.file.startProccessAt.toDate().getFullYear();
+    const path = `/Companies/BAQVERDE/${year}/Claims/${props.id}`;
+    openDocument(props.file.name, path);
 };
 </script>
+
 <template>
     <tr>
         <td>
             <div class="d-flex align-items-center">
                 <div class="avatar-sm">
                     <div
-                        class="avatar-title bg-light text-primary rounded fs-24"
+                        :class="`avatar-title bg-light ${'text-' + typeDocument} rounded fs-24`"
                     >
                         <i class="ri-folder-zip-line"></i>
                     </div>
@@ -53,7 +47,12 @@ export default {
         <td>{{ startProccessAt }}</td>
         <td class="">
             <div class="d-flex justify-content-center">
-                <BButton variant="info" size="sm" class="btn-icon" @click="goToDocument">
+                <BButton
+                    :variant="typeDocument"
+                    size="sm"
+                    class="btn-icon"
+                    @click="goToDocument"
+                >
                     <EyeOutlined />
                 </BButton>
             </div>

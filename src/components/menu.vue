@@ -11,6 +11,7 @@ import {
   // LayersIcon,
   // CopyIcon,
   FileTextIcon,
+  FilePlusIcon,
   // DatabaseIcon,
   // PieChartIcon,
   // ArchiveIcon,
@@ -20,6 +21,7 @@ import {
   SettingsIcon,
   // ListIcon,
   // HelpCircleIcon,
+  // ListIcon
 // LifeBuoyIcon,
 // GitMergeIcon
 } from "@zhuowenli/vue-feather-icons";
@@ -45,6 +47,8 @@ export default {
     // HelpCircleIcon,
     // LifeBuoyIcon,
     // GitMergeIcon
+    // ListIcon,
+    FilePlusIcon,
   },
   data() {
     return {
@@ -313,14 +317,14 @@ export default {
 
         <li class="nav-item">
           <router-link class="nav-link menu-link" to="/radicacion/radicar-documento">
-            <FileTextIcon width="24" height="24" />
+            <FilePlusIcon width="24" height="24" />
             <span data-key="t-dashboard">Radicar Documento</span>
           </router-link>
         </li>
 
         <li class="nav-item">
-          <router-link class="nav-link menu-link" to="/apps/tickets-list">
-            <ListIcon width="24" height="24" />
+          <router-link class="nav-link menu-link" to="/gestion-documental/lista-radicados">
+            <FileTextIcon width="24" height="24" />
             <span data-key="t-dashboard">Gestión de Radicados</span>
           </router-link>
         </li>

@@ -74,14 +74,14 @@ export default [
     meta: {
       title: "Consulta de radicado",
     },
-    component: () => import("../views/admin-doc/overview-without-sign"),
+    component: () => import("../views/admin-doc/OverviewWithoutSign"),
   },
 
   {
     path: "/gestion-documental/radicado/:documentID",
     name: "projects Overview",
     meta: { title: "Projects Overview", authRequired: true },
-    component: () => import("../views/admin-doc/detailsDocuments/overview"),
+    component: () => import("../views/admin-doc/detailsDocuments/Overview"),
   },
 
   {
@@ -104,7 +104,12 @@ export default [
     meta: { title: "Document - List", authRequired: true },
     component: () => import("../views/admin-doc/document-list"),
   },
-
+  {
+    path: "/gestion-documental/lista-radicados",
+    name: "Lista de Radicados",
+    meta: { title: "Lista de Radicados", authRequired: true },
+    component: () => import("../views/tickets/List"),
+  },
 
 
 
@@ -327,12 +332,6 @@ export default [
     name: "tickets-details",
     meta: { title: "Ticket Details", authRequired: true },
     component: () => import("../views/tickets/details"),
-  },
-  {
-    path: "/apps/tickets-list",
-    name: "tickets-list",
-    meta: { title: "Tickets List", authRequired: true },
-    component: () => import("../views/tickets/list"),
   },
   {
     path: "/apps/crm-contacts",

@@ -1,17 +1,25 @@
-<script>
-import overview_summary_element from "./overview_summary_element.vue";
-export default {
-    props: {
-        data: Object,
-        files: Array,
-        loading: Boolean,
-    },
-    components: {
-        // simplebar,
-        overview_summary_element,
-    },
-};
+<script setup>
+import OverviewSummaryElement from "./OverviewSummaryElement.vue";
+import { computed, defineProps } from "vue";
+
+import setVariantStateInfo from "@/helpers/setVariantStateInfo.js";
+// import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
+
+const props = defineProps({
+    data: Object,
+    files: Array,
+    loading: Boolean,
+});
+
+const setVariantState = computed(() => {
+    return setVariantStateInfo(props.data.status);
+});
+
+// const setVariantPriority = computed(() => {
+//     return setVariantPriorityInfo(data.value.status);
+// });
 </script>
+
 <template>
     <BTab title="Resumen" active class="fw-semibold pt-2">
         <BRow>
@@ -86,17 +94,7 @@ export default {
                                             </p>
                                             <BBadge
                                                 tag="div"
-                                                :variant="
-                                                    data?.priority?.toLowerCase() ==
-                                                    'alta'
-                                                        ? 'danger'
-                                                        : data?.priority?.toLowerCase() ==
-                                                              'media' ||
-                                                          data?.priority?.toLowerCase() ==
-                                                              'no definido'
-                                                        ? 'warning'
-                                                        : 'info'
-                                                "
+                                                :variant="setVariantPriority"
                                                 >{{ data.priority }}</BBadge
                                             >
                                         </div>
@@ -110,23 +108,7 @@ export default {
                                             </p>
                                             <BBadge
                                                 tag="div"
-                                                :variant="
-                                                    data?.status?.toLowerCase() ==
-                                                    'vencido'
-                                                        ? 'danger'
-                                                        : data?.status?.toLowerCase() ==
-                                                          'por vencer'
-                                                        ? 'warning'
-                                                        : data?.status?.toLowerCase() ==
-                                                          'en termino'
-                                                        ? 'success'
-                                                        : data?.status?.toLowerCase() ==
-                                                              'respondido' ||
-                                                          data?.status?.toLowerCase() ==
-                                                              'no requiere respuesta'
-                                                        ? 'primary'
-                                                        : 'secondary'
-                                                "
+                                                :variant="setVariantState"
                                                 >{{ data.status }}</BBadge
                                             >
                                         </div>
@@ -139,7 +121,7 @@ export default {
                                     Adjuntos
                                 </h6>
                                 <BRow class="g-3" v-show="files">
-                                    <overview_summary_element
+                                    <OverviewSummaryElement
                                         v-for="file in files"
                                         :key="file.name"
                                         :id="data.id"

@@ -1,132 +1,106 @@
-<script>
-import { reactive } from "vue";
+<script setup>
 import {
     getDocument,
     getDocumentFilesUploads,
 } from "@/services/docservice/doc.service";
+import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
+import OverviewSummary from "./OverviewSummary.vue";
+import OverviewDocuments from "./OverviewDocuments.vue";
+import OverviewResponse from "./OverviewResponse.vue";
 
-import overview_summaryVue from "./overview_summary.vue";
-import overview_documentsVue from "./overview_documents.vue";
-import overview_responseVue from "./overview_response.vue";
+import transformDate from "@/helpers/transformDate";
+import setVariantStateInfo from "@/helpers/setVariantStateInfo";
+// import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo";
+import setState from "@/helpers/setState";
 
-import transform_date from "@/helpers/transform_date";
+const data = ref({});
+const id = ref("");
+const company = ref("");
+const files = ref([]);
+const entryDate = ref("");
+const expirationDate = ref("");
+const loading = ref(false);
+const numberOutClaimExist = ref(false)
+const router = useRoute();
 
-export default {
-    setup() {
-        const state = reactive({
-            content:
-                "<h3><span class='ql-size-large;'>Hello World!</span></h3><p><br></p><h3>This is an simple editable area.</h3><p><br></p><ul><li>Select a text to reveal the toolbar.</li><li>Edit rich document on-the-fly, so elastic!</li></ul><p><br></p><p>End of simple area</p>",
-            _content: "",
-            disabled: false,
-        });
-        return {
-            state,
-        };
-    },
-    data() {
-        return {
-            data: "",
-            id: "",
-            company: "",
-            files: [],
-            entryDate: "",
-            expirationDate: "",
-            loading: false,
-        };
-    },
+onMounted(async () => {
+    try {
+        id.value = router.params.documentID;
+        company.value = router.params.company || "BAQVERDE";
 
-    async mounted() {
-        try {
-            this.id = this.$route.params.documentID;
-            this.company = this.$route.params.company || "BAQVERDE";
-
-            this.loading = true;
-            const docData = await getDocument(this.company, this.id);
-            if (docData?.entryDate && docData?.entryDate.seconds) {
-                const formattedDate = transform_date(
-                    docData?.entryDate.seconds
-                ); // Formatear fecha
-                this.entryDate = formattedDate; // Guardar la fecha formateada
-            }
-
-            if (docData?.expirationDate && docData?.expirationDate.seconds) {
-                const formattedDate = transform_date(
-                    docData?.expirationDate.seconds
-                ); // Formatear fecha
-                this.expirationDate = formattedDate; // Guardar la fecha formateada
-            }
-            console.log(docData)
-            this.data = {
-                id: this.id,
-                numberEntryClaim: docData?.numberEntryClaim || "No definido",
-                area: docData?.area || "No definido",
-                documentaryTypologyEntry:
-                    docData?.documentaryTypologyEntry || "No definido",
-                subject: docData?.subject || "No definido",
-                entryDate: this.entryDate || "No definido",
-                status:
-                    docData?.status?.toUpperCase() == "EXPIRE"
-                        ? "Vencido"
-                        : docData?.status?.toUpperCase() == "ABOUT_TO_EXPIRE"
-                        ? "Por vencer"
-                        : docData?.status?.toUpperCase() == "IN_TERM"
-                        ? "En Termino"
-                        : docData?.status?.toUpperCase() == "ANSWERED"
-                        ? "Respondido"
-                        : docData?.status?.toUpperCase() == "NO_RESPONSE"
-                        ? "No requiere respuesta"
-                        : docData?.status?.toUpperCase() || "No definido",
-                expirationDate: this.expirationDate || "No definido",
-                priority: docData?.priority || "BAJA",
-                serie: docData?.serie,
-                subSerie: docData?.subSerie,
-                externalRadicate: docData?.externalRadicate,
-                assignedTo: docData?.assignedTo,
-                folios: docData?.folios,
-                observations: docData?.observations,
-                inputMethod: docData?.inputMethod,
-                summary:
-                    docData?.summary?.replace("<p>", "").replace("</p>", "") ||
-                    "No definido",
-                personType: docData?.petitionerInformation?.personType,
-                identificationNumber:
-                    docData?.petitionerInformation?.identificationNumber,
-                identificationType:
-                    docData?.petitionerInformation?.identificationType || "No definido",
-                fullName:
-                    docData?.petitionerInformation?.firstNames +
-                        " " +
-                        docData?.petitionerInformation?.lastNames ||
-                    "No definido",
-                email: docData?.petitionerInformation?.email || "No definido",
-                phoneNumber:
-                    docData?.petitionerInformation?.phoneNumber ||
-                    "No definido",
-                address:
-                    docData?.petitionerInformation?.address || "No definido",
-            };
-            await getDocumentFilesUploads("BAQVERDE", this.id).then((data) => {
-                this.files = data;
-            });
-        } catch (error) {
-            console.log("Error viste de documentos: ", error);
-        } finally {
-            this.loading = false;
+        loading.value = true;
+        const docData = await getDocument(company.value, id.value);
+        if (docData?.createdAt && docData?.createdAt.seconds) {
+            const formattedDate = transformDate(docData?.createdAt.seconds); // Formatear fecha
+            entryDate.value = formattedDate; // Guardar la fecha formateada
         }
-    },
 
-    components: {
-        overview_summaryVue,
-        overview_documentsVue,
-        overview_responseVue,
-    },
+        if (docData?.expirationDate && docData?.expirationDate.seconds) {
+            const formattedDate = transformDate(
+                docData?.expirationDate.seconds
+            ); // Formatear fecha
+            expirationDate.value = formattedDate; // Guardar la fecha formateada
+        }
+        data.value = {
+            id: id.value,
+            numberEntryClaim: docData?.numberEntryClaim || "No definido",
+            area: docData?.area || "No definido",
+            documentaryTypologyEntry:
+                docData?.documentaryTypologyEntry || "No definido",
+            subject: docData?.subject || "No definido",
+            entryDate: entryDate.value || "No definido",
+            status: setState(docData?.status),
+            expirationDate: expirationDate.value || "No definido",
+            priority: docData?.priority || "BAJA",
+            serie: docData?.serie,
+            subSerie: docData?.subSerie,
+            externalRadicate: docData?.externalRadicate,
+            numberOutClaim: docData?.numberOutClaim || "-",
+            assignedTo: docData?.assignedTo,
+            folios: docData?.folios,
+            observations: docData?.observations,
+            inputMethod: docData?.inputMethod,
+            summary:
+                docData?.summary?.replace("<p>", "").replace("</p>", "") ||
+                "No definido",
+            personType: docData?.petitionerInformation?.personType,
+            identificationNumber:
+                docData?.petitionerInformation?.identificationNumber,
+            identificationType:
+                docData?.petitionerInformation?.identificationType ||
+                "No definido",
+            fullName:
+                docData?.petitionerInformation?.firstNames +
+                    " " +
+                    docData?.petitionerInformation?.lastNames || "No definido",
+            email: docData?.petitionerInformation?.email || "No definido",
+            phoneNumber:
+                docData?.petitionerInformation?.phoneNumber || "No definido",
+            address: docData?.petitionerInformation?.address || "No definido",
+        };
+        numberOutClaimExist.value = data.value.numberOutClaim != "-" ? true: false
+        await getDocumentFilesUploads("BAQVERDE", id.value).then((data) => {
+            files.value = data;
+        });
+    } catch (error) {
+        console.error("Error viste de documentos: ", error);
+    } finally {
+        loading.value = false;
+    }
+});
 
-    methods: {
-        toggleFavourite(ele) {
-            ele.target.closest(".favourite-btn").classList.toggle("active");
-        },
-    },
-};
+const setVariantState = computed(() => {
+    return setVariantStateInfo(data.value.status);
+});
+
+// const setVariantPriority = computed(() => {
+//     return setVariantPriorityInfo(data.value.status);
+// });
+
+// const toggleFavourite = (ele) => {
+//             ele.target.closest(".favourite-btn").classList.toggle("active");
+// }
 </script>
 
 <template>
@@ -192,21 +166,7 @@ export default {
                                                     <BBadge
                                                         pill
                                                         :variant="
-                                                            data?.status?.toLowerCase() ==
-                                                            'vencido'
-                                                                ? 'danger'
-                                                                : data?.status?.toLowerCase() ==
-                                                                  'por vencer'
-                                                                ? 'warning'
-                                                                : data?.status?.toLowerCase() ==
-                                                                  'en termino'
-                                                                ? 'success'
-                                                                : data?.status?.toLowerCase() ==
-                                                                      'respondido' ||
-                                                                  data?.status?.toLowerCase() ==
-                                                                      'no requiere respuesta'
-                                                                ? 'primary'
-                                                                : 'secondary'
+                                                            setVariantState
                                                         "
                                                         >{{
                                                             data.status
@@ -214,17 +174,7 @@ export default {
                                                     >
                                                     <!-- <BBadge
                                                         pill
-                                                        :variant="
-                                                            data?.priority?.toLowerCase() ==
-                                                            'alta'
-                                                                ? 'danger'
-                                                                : data?.priority?.toLowerCase() ==
-                                                                      'media' ||
-                                                                  data?.priority?.toLowerCase() ==
-                                                                      'no definido'
-                                                                ? 'warning'
-                                                                : 'info'
-                                                        "
+                                                        :variant="setVariantPriority"
                                                         >{{
                                                             data.priority
                                                         }}</BBadge
@@ -273,18 +223,28 @@ export default {
                     nav-class="nav-tabs-custom border-bottom-0"
                 >
                     <!-- Resumen -->
-                    <overview_summaryVue
+                    <OverviewSummary
                         :data="data"
                         :files="files"
                         :loading="loading"
                     />
 
-                    <overview_documentsVue
-                        :data="data"
-                        :files="files"
-                        :loading="loading"
-                    />
-                    <!-- <BTab title="Actividad" class="fw-semibold pt-2">
+                    <BTab title="Documentos" class="fw-semibold pt-2">
+                        <OverviewDocuments
+                            :data="data"
+                            :files="files"
+                            :loading="loading"
+                            :title="'Documentos de entrada'"
+                            :typeOfPerson="'Nombre del cliente'"
+                        />
+                        <OverviewDocuments
+                            :data="data"
+                            :files="files"
+                            :loading="loading"
+                            :title="'Documentos de salida'"
+                            :typeOfPerson="'Nombre del Empleado'"
+                        />
+                        <!-- <BTab title="Actividad" class="fw-semibold pt-2">
                         <BCard no-body>
                             <BCardBody>
                                 <h5 class="card-title">Activities</h5>
@@ -461,14 +421,15 @@ export default {
                             </BCardBody>
                         </BCard>
                     </BTab> -->
-                    <overview_responseVue :loading="loading" />
+                    </BTab>
+                    <OverviewResponse :loading="loading" :numberOutClaimExist="numberOutClaimExist"/>
                 </BTabs>
             </BCol>
         </BRow>
     </div>
 </template>
 
-<style>
+<style scoped>
 .spinner-container {
     width: auto;
     height: auto;
