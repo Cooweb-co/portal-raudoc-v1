@@ -46,7 +46,7 @@ const typeDocument = props.title == 'Documentos de salida' ? 'success':'primary'
                                 v-show="files"
                                 :typeDocument="typeDocument"
                             />
-                            <tr v-show="!files" class="w-100">
+                            <tr v-show="!files || files.length == 0" class="w-100">
                                 <td colspan="5">
                                     <h6 class="w-100 text-center">
                                         No hay archivos

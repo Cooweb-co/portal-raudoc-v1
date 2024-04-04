@@ -13,10 +13,10 @@ const props = defineProps({
 const name = ref(props.file?.name || "-");
 const extension = ref(props.file?.name.split(".").pop().toUpperCase() || "-");
 const fullNameClient = ref(props.file?.summary?.applicant?.fullName || "-");
-const startProccessAt = ref(transformDate(props.file?.startProccessAt?.seconds));
+const startProccessAt = ref(transformDate(props.file?.startProccessAt?.seconds || props.file?.createdAt?.seconds));
 
 const goToDocument = () => {
-    const year = props.file.startProccessAt.toDate().getFullYear();
+    const year = props.file?.startProccessAt?.toDate().getFullYear() || props.file?.createdAt?.toDate().getFullYear();
     const path = `/Companies/BAQVERDE/${year}/Claims/${props.id}`;
     openDocument(props.file.name, path);
 };

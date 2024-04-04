@@ -82,17 +82,17 @@ const columns = computed(() => {
     const sorted = sortedInfo.value || {};
     return [
         {
-            title: "Acción",
+            title: "Visualizar",
             dataIndex: "action",
             key: "action",
-            width: "4%",
+            width: "2%",
             className: "text-center",
         },
         {
-            title: "ID",
+            title: "N° Radicado",
             dataIndex: "numberEntryClaim",
             key: "numberEntryClaim",
-            width: "6%",
+            width: "3%",
             customFilterDropdown: true,
             onFilter: (value, record) =>
                 record.numberEntryClaim
@@ -108,13 +108,13 @@ const columns = computed(() => {
             },
         },
         {
-            title: "Titulo",
+            title: "Asunto",
             dataIndex: "subject",
             key: "subject",
-            width: "6%",
+            width: "5%",
         },
         {
-            title: "Peticionario",
+            title: "Nombre Peticionario",
             dataIndex: "petitioner",
             key: "petitioner",
             customFilterDropdown: true,
@@ -157,7 +157,7 @@ const columns = computed(() => {
             title: "Radicado de salida",
             dataIndex: "numberOutClaim",
             key: "numberOutClaim",
-            width: "5%",
+            width: "3%",
             className: "text-center",
             customFilterDropdown: true,
             onFilter: (value, record) =>
@@ -178,7 +178,7 @@ const columns = computed(() => {
             dataIndex: "entryDate",
             key: "entryDate",
             className: "text-center",
-            width: "5%",
+            width: "3%",
             sorter: (a, b) => {
                 const firstDate = moment(a.entryDate, "DD MMM, YYYY")
                     .startOf("day")
@@ -197,7 +197,7 @@ const columns = computed(() => {
             dataIndex: "expirationDate",
             key: "expirationDate",
             className: "text-center",
-            width: "5%",
+            width: "3%",
             sorter: (a, b) => {
                 const firstDate = moment(a.expirationDate, "DD MMM, YYYY")
                     .startOf("day")
@@ -215,7 +215,7 @@ const columns = computed(() => {
             title: "Estado",
             dataIndex: "status",
             key: "status",
-            width: "5%",
+            width: "1.8%",
             filters: [
                 {
                     text: "Vencido", //Rojo

@@ -17,11 +17,12 @@ import setState from "@/helpers/setState";
 const data = ref({});
 const id = ref("");
 const company = ref("");
-const files = ref([]);
+const filesEntry = ref([]);
+const filesOut = ref([]);
 const entryDate = ref("");
 const expirationDate = ref("");
 const loading = ref(false);
-const numberOutClaimExist = ref(false)
+const numberOutClaimExist = ref(false);
 const router = useRoute();
 
 onMounted(async () => {
@@ -50,23 +51,25 @@ onMounted(async () => {
                 docData?.documentaryTypologyEntry || "No definido",
             subject: docData?.subject || "No definido",
             entryDate: entryDate.value || "No definido",
-            status: setState(docData?.status),
+            status: setState(docData?.status) || "No definido",
             expirationDate: expirationDate.value || "No definido",
-            priority: docData?.priority || "BAJA",
-            serie: docData?.serie,
-            subSerie: docData?.subSerie,
-            externalRadicate: docData?.externalRadicate,
-            numberOutClaim: docData?.numberOutClaim || "-",
-            assignedTo: docData?.assignedTo,
-            folios: docData?.folios,
-            observations: docData?.observations,
-            inputMethod: docData?.inputMethod,
+            priority: docData?.priority || "No definido",
+            serie: docData?.serie || "No definido",
+            subSerie: docData?.subSerie || "No definido",
+            externalRadicate: docData?.externalRadicate || "No definido",
+            numberOutClaim: docData?.numberOutClaim || "No definido",
+            assignedTo: docData?.assignedTo || "No definido",
+            folios: docData?.folios || "No definido",
+            observations: docData?.observations || "No definido",
+            inputMethod: docData?.inputMethod || "No definido",
             summary:
                 docData?.summary?.replace("<p>", "").replace("</p>", "") ||
                 "No definido",
-            personType: docData?.petitionerInformation?.personType,
+            personType:
+                docData?.petitionerInformation?.personType || "No definido",
             identificationNumber:
-                docData?.petitionerInformation?.identificationNumber,
+                docData?.petitionerInformation?.identificationNumber ||
+                "No definido",
             identificationType:
                 docData?.petitionerInformation?.identificationType ||
                 "No definido",
@@ -79,9 +82,21 @@ onMounted(async () => {
                 docData?.petitionerInformation?.phoneNumber || "No definido",
             address: docData?.petitionerInformation?.address || "No definido",
         };
-        numberOutClaimExist.value = data.value.numberOutClaim != "-" ? true: false
+        numberOutClaimExist.value =
+            data.value.numberOutClaim == "No definido" ? false : true;
+        console.log(numberOutClaimExist.value);
         await getDocumentFilesUploads("BAQVERDE", id.value).then((data) => {
-            files.value = data;
+            if (Array.isArray(data)) {
+                filesOut.value = data.filter(
+                    (element) => element.typeRadicate == "OUT"
+                );
+                filesEntry.value = data.filter(
+                    (element) => element.typeRadicate != "OUT"
+                );
+            } else {
+                filesOut.value = [];
+                filesEntry.value = [];
+            }
         });
     } catch (error) {
         console.error("Error viste de documentos: ", error);
@@ -225,21 +240,21 @@ const setVariantState = computed(() => {
                     <!-- Resumen -->
                     <OverviewSummary
                         :data="data"
-                        :files="files"
+                        :files="filesEntry"
                         :loading="loading"
                     />
 
                     <BTab title="Documentos" class="fw-semibold pt-2">
                         <OverviewDocuments
                             :data="data"
-                            :files="files"
+                            :files="filesEntry"
                             :loading="loading"
                             :title="'Documentos de entrada'"
                             :typeOfPerson="'Nombre del cliente'"
                         />
                         <OverviewDocuments
                             :data="data"
-                            :files="files"
+                            :files="filesOut"
                             :loading="loading"
                             :title="'Documentos de salida'"
                             :typeOfPerson="'Nombre del Empleado'"
@@ -422,7 +437,11 @@ const setVariantState = computed(() => {
                         </BCard>
                     </BTab> -->
                     </BTab>
-                    <OverviewResponse :loading="loading" :numberOutClaimExist="numberOutClaimExist"/>
+                    <OverviewResponse
+                        :loading="loading"
+                        :numberOutClaimExist="numberOutClaimExist"
+                        :data="data"
+                    />
                 </BTabs>
             </BCol>
         </BRow>

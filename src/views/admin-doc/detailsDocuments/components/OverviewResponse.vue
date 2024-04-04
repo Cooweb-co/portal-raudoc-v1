@@ -7,18 +7,13 @@
 // import useVuelidate from "@vuelidate/core";
 import { toast } from "vue3-toastify";
 import { ref, watch, defineProps } from "vue";
+import axios from "axios";
 
+const props = defineProps(["loading", "numberOutClaimExist", "data"]);
 const files = ref([]);
 const dropzoneFile = ref("");
 const answered = ref(false);
 const documentNumber = ref("Número de radicado");
-const props = defineProps(['loading', 'numberOutClaimExist'])
-
-props.numberOutClaimExist ? answered.value = true : answered.value = false
-// const drop = (e) => {
-//     dropzoneFile.value = e.dataTransfer.files[0];
-//     files.value.push(dropzoneFile.value);
-// };
 
 const selectedFile = async () => {
     dropzoneFile.value = document.getElementById("formFile").files[0];
@@ -27,44 +22,71 @@ const selectedFile = async () => {
     console.log("file::::", file);
 };
 
-const uploadFile = () => {
+const uploadFile = async () => {
+    let idLoadFile;
     try {
-        if(answered.value) {
+        if (answered.value) {
             toast.error("Ya el radicado fue generado", {
                 autoClose: 1000,
             });
             return;
-        }
-        else if (files.value.length <= 0) {
+        } else if (files.value.length <= 0) {
             toast.error("No has subido ningún archivo", {
                 autoClose: 1000,
             });
             return;
         }
-        const idLoadFile = toast("Cargando archivo..", {
+
+        idLoadFile = toast("Cargando archivo..", {
             isLoading: true,
             hideProgressBar: true,
             closeButton: false,
             closeOnClick: false,
         });
-        setTimeout(() => {
-            answered.value = true;
-            documentNumber.value = 1234;
-            toast.update(idLoadFile, {
-                render: "Archivo cargado con éxito",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
-        }, 5000);
+
+        const headers = {
+            company: "BAQVERDE",
+            "Content-Type": "multipart/form-data",
+        };
+
+        const params = {
+            claimId: props.data.id,
+        };
+
+        const bodyFormData = new FormData();
+        for (const file of files.value) {
+            bodyFormData.append("files", file);
+        }
+
+        const res = await axios.post(
+            `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_GENERATE_RADICATE_OUT`,
+            bodyFormData,
+            {
+                headers,
+                params,
+            }
+        );
+        answered.value = true;
+        documentNumber.value = res.data.idRadicate;
+        toast.update(idLoadFile, {
+            render: "Archivo cargado con éxito",
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
     } catch (error) {
         console.error("Error al subir el archivo:", error);
+        toast.update(idLoadFile, {
+            render: "Problemas al cargar el archivo",
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
     }
 };
 
 const sendFile = () => {
     try {
-
         const idLoadFile = toast("Enviando archivo..", {
             isLoading: true,
             hideProgressBar: true,
@@ -92,6 +114,14 @@ watch(
     () => [...files.value],
     (currentValue) => {
         return currentValue;
+    }
+);
+watch(
+    () => props.numberOutClaimExist,
+    (currentValue) => {
+        console.log(currentValue);
+        if (currentValue == true) return (answered.value = true);
+        return;
     }
 );
 </script>
@@ -176,7 +206,8 @@ watch(
                     <div class="grid gx-2">
                         <BButton
                             type="submit"
-                            variant="success"
+                            :variant="answered ? 'secondary':'success'"
+                            :disabled="answered ? true : false"
                             class="w-sm"
                             @click="uploadFile"
                             >Generar Radicado</BButton
@@ -197,7 +228,13 @@ watch(
                 Borrador
             </BButton>-->
                     </div>
-                    <span class="h-100 text-center">#{{ documentNumber }}</span>
+                    <span class="h-100 text-center"
+                        >#{{
+                            data.numberOutClaim == "No definido"
+                                ? documentNumber
+                                : data.numberOutClaim
+                        }}</span
+                    >
                 </div>
                 <!--
                         </div>
@@ -281,7 +318,11 @@ watch(
                             </div>
                         </BCardBody>
                         <BoCardBody v-else>
-                            <h3 class="w-100 d-flex justify-content-center align-items-center text-lg py-2">Ya se envío una Respuesta</h3>
+                            <h3
+                                class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
+                            >
+                                Ya se envío una Respuesta
+                            </h3>
                         </BoCardBody>
                     </BCard>
                 </div>
