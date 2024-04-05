@@ -68,7 +68,7 @@ onBeforeMount(async () => {
 
             loading.value = false;
             dataSource.sort((a, b) => {
-                return convertirATimestamp(b?.createdAt) - convertirATimestamp(a?.createdAt);
+                return convertToTimestamp(b?.createdAt) - convertToTimestamp(a?.createdAt);
             });
         })
         .catch((error) => {
@@ -244,7 +244,7 @@ const columns = computed(() => {
     ];
 });
 
-const convertirATimestamp = (createdAt) => {
+const convertToTimestamp = (createdAt) => {
     const seconds = createdAt?._seconds * 1000;
     const nanoseconds = createdAt?._nanoseconds / 1000000;
 
