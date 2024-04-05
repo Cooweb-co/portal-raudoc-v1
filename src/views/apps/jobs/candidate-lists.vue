@@ -1,22 +1,32 @@
 <script>
 import Layout from "@/layouts/main.vue";
 import PageHeader from "@/components/page-header";
-import { candidatelist } from "@/common/data";
+import axios from 'axios';
 
 export default {
   data() {
-    const new_cadidateList = candidatelist.map(candidate => {
-                                                                  return {
-                                                                      ...candidate,
-                                                                      user: `user${Math.floor(Math.random() * 1000000)}`
-                                                                  }
-                                                    })
+    // const new_cadidateList = candidatelist.map(candidate => {
+    //                                                               return {
+    //                                                                   ...candidate,
+    //                                                                   user: `user${Math.floor(Math.random() * 1000000)}`
+    //                                                               }
+    //                                                 })
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: 'https://us-central1-raudoc-gestion-agil.cloudfunctions.net/USERS_LIST_V1',
+        headers: { 
+          'company': 'BAQVERDE'
+        }
+    };
     return {
       searchQuery: null,
       page: 1,
       perPage: 8,
       pages: [],
-      candidatelist: new_cadidateList
+      candidatelist: [],
+      config: config,
+      loading: false
     };
   },
   computed: {
@@ -26,14 +36,13 @@ export default {
     resultQuery() {
       if (this.searchQuery) {
         const search = this.searchQuery.toLowerCase();
+        console.log(search);
+        
         return this.displayedPosts.filter((data) => {
           return (
             data.name.toLowerCase().includes(search) ||
-            data.designation.toLowerCase().includes(search) ||
-            data.type.toLowerCase().includes(search) ||
-            data.ratingCount.toLowerCase().includes(search) ||
-            data.rating.toLowerCase().includes(search) ||
-            data.location.toLowerCase().includes(search)
+            `${data.identification}`.includes(search) ||
+            data.email.toLowerCase().includes(search)
           );
         });
       } else {
@@ -50,6 +59,7 @@ export default {
     this.setPages();
   },
   mounted() {
+    this.loading = true
     document.querySelectorAll(".custom-toggle").forEach((item) => {
 
       item.addEventListener('click', function () {
@@ -60,6 +70,13 @@ export default {
       }
       });
     })
+    axios.request(this.config).then(response => {
+      this.candidatelist = response.data
+      this.loading = false
+    }).catch((error) => {
+      this.loading = false
+      console.log(error);
+    });
   },
   methods: {
     setPages() {
@@ -117,7 +134,7 @@ export default {
 
     <BRow class="gy-2 mb-2" id="candidate-list">
       <BCol lg="12">
-        <table class="table ">
+        <table class="table">
           <thead class="table-light">
             <tr>
               <th scope="col">USUARIO</th>
@@ -126,21 +143,36 @@ export default {
               <th scope="col">CORREO</th>
             </tr>
           </thead>
-          <tbody v-for="(data, index) of resultQuery" :key="index">
+          <tbody v-if="loading">
               <tr>
-                <td>{{ data.user }}</td>
+                <td>
+                  <a-skeleton :loading="loading" :active="loading" />
+                </td>
+                <td>
+                  <a-skeleton :loading="loading" :active="loading" />
+                </td>
+                <td>
+                  <a-skeleton :loading="loading" :active="loading" />
+                </td>
+                <td>
+                  <a-skeleton :loading="loading" :active="loading" />
+                </td>
+              </tr>
+            </tbody>
+          <tbody v-else v-for="(data, index) of resultQuery" :key="index">
+              <tr>
+                <td>{{ data.identification }}</td>
                 <td>{{ data.name }}</td>
-                <td><div v-for="design in data.designation" :key="design">
-                  
+                <td>
                   <span class="badge" :class="{
-                    'bg-success-subtle text-success': design == 'ASESOR',
-                    'bg-danger-subtle text-danger': design == 'RADICADOR',
-                    'bg-primary-subtle text-primary': design == 'ADMIN EMPRESA' || design == 'SUPER ADMIN',
-                    'bg-warning-subtle text-warning': design == 'ADMINISTRADOR DE SISTEMA',
-                    'bg-info-subtle text-info': design == 'SUPERVISOR DE SISTEMA',
-                  }">{{ design }}</span>
-                </div></td>
-                <td>{{ data.user + '@email.com' }}</td>
+                    'bg-success-subtle text-success': data.rol == 'FUNCTIONARY',
+                    'bg-danger-subtle text-danger': data.rol == 'BOSS_OF_AREA',
+                    'bg-primary-subtle text-primary': data.rol == 'DIRECTOR' || data.rol == 'SUPER ADMIN',
+                    'bg-warning-subtle text-warning': data.rol == 'ADMINISTRADOR DE SISTEMA',
+                    'bg-info-subtle text-info': data.rol == 'SUPERVISOR DE SISTEMA',
+                  }">{{ data.rol }}</span>
+                </td>
+                <td>{{ data.email }}</td>
               </tr>
             </tbody>
         </table>
