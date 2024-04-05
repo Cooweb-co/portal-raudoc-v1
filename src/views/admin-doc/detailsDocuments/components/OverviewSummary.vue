@@ -9,6 +9,7 @@ const props = defineProps({
     data: Object,
     files: Array,
     loading: Boolean,
+    numberClaim: String
 });
 
 const setVariantState = computed(() => {
@@ -295,7 +296,7 @@ const setVariantState = computed(() => {
                                         <td class="fw-medium">
                                             Número de Radicación
                                         </td>
-                                        <td>{{ data.numberEntryClaim }}</td>
+                                        <td>{{ numberClaim }}</td>
                                     </tr>
                                     <tr>
                                         <td class="fw-medium">Area</td>

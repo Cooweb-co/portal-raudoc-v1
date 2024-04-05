@@ -21,6 +21,7 @@ const filesEntry = ref([]);
 const filesOut = ref([]);
 const entryDate = ref("");
 const expirationDate = ref("");
+const numberClaim = ref("");
 const loading = ref(false);
 const numberOutClaimExist = ref(false);
 const router = useRoute();
@@ -45,7 +46,7 @@ onMounted(async () => {
         }
         data.value = {
             id: id.value,
-            numberEntryClaim: docData?.numberEntryClaim || "No definido",
+            numberEntryClaim: docData?.numberEntryClaim,
             area: docData?.area || "No definido",
             documentaryTypologyEntry:
                 docData?.documentaryTypologyEntry || "No definido",
@@ -57,7 +58,7 @@ onMounted(async () => {
             serie: docData?.serie || "No definido",
             subSerie: docData?.subSerie || "No definido",
             externalRadicate: docData?.externalRadicate || "No definido",
-            numberOutClaim: docData?.numberOutClaim || "No definido",
+            numberOutClaim: docData?.numberOutClaim,
             assignedTo: docData?.assignedTo || "No definido",
             folios: docData?.folios || "No definido",
             observations: docData?.observations || "No definido",
@@ -84,7 +85,10 @@ onMounted(async () => {
         };
         numberOutClaimExist.value =
             data.value.numberOutClaim == "No definido" ? false : true;
-        console.log(numberOutClaimExist.value);
+        numberClaim.value =
+            data.value.numberEntryClaim ||
+            data.value.numberOutClaim ||
+            "No definido";
         await getDocumentFilesUploads("BAQVERDE", id.value).then((data) => {
             if (Array.isArray(data)) {
                 filesOut.value = data.filter(
@@ -108,6 +112,10 @@ onMounted(async () => {
 const setVariantState = computed(() => {
     return setVariantStateInfo(data.value.status);
 });
+
+const isClaimOut = () => {
+    return numberClaim.value.startsWith("BV-") ? true : false;
+};
 
 // const setVariantPriority = computed(() => {
 //     return setVariantPriorityInfo(data.value.status);
@@ -144,7 +152,7 @@ const setVariantState = computed(() => {
 
                                             <div v-else>
                                                 <h4 class="fw-bold">
-                                                    {{ data.numberEntryClaim }}
+                                                    {{ numberClaim }}
                                                     -
                                                     {{ data.subject }}
                                                 </h4>
@@ -241,10 +249,20 @@ const setVariantState = computed(() => {
                     <OverviewSummary
                         :data="data"
                         :files="filesEntry"
+                        :numberClaim="numberClaim"
                         :loading="loading"
                     />
 
-                    <BTab title="Documentos" class="fw-semibold pt-2">
+                    <BTab title="Documentos" class="fw-semibold pt-2" v-if="isClaimOut()">
+                        <OverviewDocuments
+                            :data="data"
+                            :files="filesEntry"
+                            :loading="loading"
+                            :title="'Documentos de salida'"
+                            :typeOfPerson="'Nombre del Empleado'"
+                        />
+                    </BTab>
+                    <BTab title="Documentos" class="fw-semibold pt-2" v-else>
                         <OverviewDocuments
                             :data="data"
                             :files="filesEntry"
@@ -439,8 +457,9 @@ const setVariantState = computed(() => {
                     </BTab>
                     <OverviewResponse
                         :loading="loading"
-                        :numberOutClaimExist="numberOutClaimExist"
+                        :numberOutClaimExist="numberOutClaimExist.value"
                         :data="data"
+                        v-if="!numberClaim.startsWith('BV-')"
                     />
                 </BTabs>
             </BCol>
