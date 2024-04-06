@@ -44,8 +44,10 @@ onBeforeMount(async () => {
                         "No definido",
                     createdAt: data?.createdAt,
                     numberEntryClaim: data?.numberEntryClaim || "-",
+                    numberOutClaim: data?.numberEntryClaim
+                        ? data?.numberOutClaim || "-"
+                        : "-",
                     externalRadicate: data?.externalRadicate || "-",
-                    numberOutClaim: data?.numberOutClaim || "-",
                     entryDate:
                         data?.createdAt && data?.createdAt._seconds
                             ? transformDate(data?.createdAt._seconds)
@@ -68,7 +70,10 @@ onBeforeMount(async () => {
 
             loading.value = false;
             dataSource.sort((a, b) => {
-                return convertToTimestamp(b?.createdAt) - convertToTimestamp(a?.createdAt);
+                return (
+                    convertToTimestamp(b?.createdAt) -
+                    convertToTimestamp(a?.createdAt)
+                );
             });
         })
         .catch((error) => {
@@ -76,6 +81,13 @@ onBeforeMount(async () => {
             console.error("Error:", error);
         });
 });
+
+
+
+const handleTableChange = (pag, filters, sorter) => {
+    filteredInfo.value = filters;
+    sortedInfo.value = sorter;
+};
 
 const columns = computed(() => {
     const sorted = sortedInfo.value || {};
@@ -248,13 +260,7 @@ const convertToTimestamp = (createdAt) => {
     const seconds = createdAt?._seconds * 1000;
     const nanoseconds = createdAt?._nanoseconds / 1000000;
 
-    return (
-        seconds + nanoseconds
-    );
-};
-
-const numberOutClaim = (text, record) => {
-    return record?.numberClaim?.startsWith("BV-") ? "-" : text;
+    return seconds + nanoseconds;
 };
 
 const numberClaimColor = (numberClaim) => {
@@ -279,10 +285,6 @@ const handleSearch = (selectedKeys, confirm, dataIndex) => {
 const handleReset = (clearFilters) => {
     clearFilters({ confirm: true });
     state.searchText = "";
-};
-const handleChangeSort = (pagination, filters, sorter) => {
-    filteredInfo.value = filters;
-    sortedInfo.value = sorter;
 };
 
 //Filtro de fechas
@@ -364,8 +366,9 @@ const setVariantState = (text) => {
             :dataSource="dataSource"
             :columns="columns"
             :loading="loading"
-            @change="handleChangeSort"
+            @change="handleTableChange"
             :scroll="{ x: 1500 }"
+            sticky
         >
             <template
                 #customFilterDropdown="{
@@ -507,13 +510,15 @@ const setVariantState = (text) => {
                 <!-- Columns -->
 
                 <template v-if="column.dataIndex === 'action'">
-                    <div class="d-flex justify-content-center align-items-center">
-                        <a
-                        class="fw-medium link-primary text-center actionButtonTableRadicates"
-                        :href="`/gestion-documental/radicado/${text}`"
+                    <div
+                        class="d-flex justify-content-center align-items-center"
                     >
-                        <EyeOutlined />
-                    </a>
+                        <a
+                            class="fw-medium link-primary text-center actionButtonTableRadicates"
+                            :href="`/gestion-documental/radicado/${text}`"
+                        >
+                            <EyeOutlined />
+                        </a>
                     </div>
                 </template>
 
@@ -541,7 +546,7 @@ const setVariantState = (text) => {
                         class="fw-medium link-success"
                         :href="`/gestion-documental/radicado/${record.id}`"
                     >
-                        {{ numberOutClaim(text, record) }}
+                        {{ text }}
                     </a>
                 </template>
 
@@ -611,5 +616,4 @@ const setVariantState = (text) => {
     background: #dddddd;
     transition: background 250ms;
 }
-
 </style>
