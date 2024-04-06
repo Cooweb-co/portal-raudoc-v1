@@ -79,21 +79,21 @@ export default [
 
   {
     path: "/gestion-documental/radicado/:documentID",
-    name: "projects Overview",
+    name: "projects-overview",
     meta: { title: "Projects Overview", authRequired: true },
     component: () => import("../views/admin-doc/detailsDocuments/Overview"),
   },
 
   {
     path: "/gestion-documental/organigrama",
-    name: "organigrama",
+    name: "organization-chart",
     meta: { title: "Organigrama", authRequired: true },
     component: () => import("../views/admin-doc/sitemap"),
   },
 
   {
     path: "/radicacion/radicar-documento/:id?",
-    name: "radicacion",
+    name: "claim",
     meta: { title: "Radicación", authRequired: true },
     component: () => import("../views/admin-doc/create"),
   },
@@ -106,9 +106,15 @@ export default [
   },
   {
     path: "/gestion-documental/lista-radicados",
-    name: "Lista de Radicados",
+    name: "list-claim",
     meta: { title: "Lista de Radicados", authRequired: true },
     component: () => import("../views/tickets/List"),
+  },
+  {
+    path: "/administration/users",
+    name: "administration-users",
+    meta: { title: "Administración de usuarios", authRequired: true },
+    component: () => import("../views/apps/administration/Users"),
   },
 
 
@@ -483,12 +489,7 @@ export default [
     meta: { title: "Candidate Grid", authRequired: true },
     component: () => import("../views/apps/jobs/candidate-grid"),
   },
-  {
-    path: "/jobs/candidate-lists",
-    name: "job-candidate-lists",
-    meta: { title: "Candidate Lists", authRequired: true },
-    component: () => import("../views/apps/jobs/candidate-lists"),
-  },
+
   {
     path: "/jobs/categories",
     name: "job-categories",
