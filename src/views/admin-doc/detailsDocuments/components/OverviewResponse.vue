@@ -18,8 +18,8 @@ const documentNumber = ref("Número de radicado");
 const selectedFile = async () => {
     dropzoneFile.value = document.getElementById("formFile").files[0];
     files.value.push(dropzoneFile.value);
-    const file = dropzoneFile.value;
-    console.log("file::::", file);
+    // const file = dropzoneFile.value;
+    // console.log("file::::", file);
 };
 
 const uploadFile = async () => {
@@ -119,7 +119,6 @@ watch(
 watch(
     () => props.numberOutClaimExist,
     (currentValue) => {
-        console.log(currentValue);
         if (currentValue == true) return (answered.value = true);
         return;
     }

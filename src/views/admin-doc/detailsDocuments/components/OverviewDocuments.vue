@@ -11,7 +11,6 @@ const props = defineProps({
     title: String,
     typeOfPerson: String
 });
-console.log(props.title);
 const typeDocument = props.title == 'Documentos de salida' ? 'success':'primary'
 </script>
 

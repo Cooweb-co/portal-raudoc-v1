@@ -3,7 +3,7 @@ import router from "@/router";
 import simplebar from "simplebar-vue";
 import { layoutComputed } from "@/state/helpers";
 
-import NavBar from "@/components/nav-bar";
+import NavBar from "@/components/Navbar";
 import Menu from "@/components/menu.vue";
 import RightBar from "@/components/right-bar";
 import Footer from "@/components/footer";
