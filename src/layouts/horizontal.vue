@@ -1,5 +1,5 @@
 <script>
-import NavBar from "@/components/nav-bar";
+import NavBar from "@/components/Navbar";
 import RightBar from "@/components/right-bar";
 import Footer from "@/components/footer";
 

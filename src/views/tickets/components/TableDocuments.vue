@@ -230,6 +230,7 @@ const columns = computed(() => {
                 },
             ],
             onFilter: (value, record) => record.status.indexOf(value) === 0,
+            defaultFilteredValue: ["En termino","Por vencer", "Vencido"],
         },
         // {
         //     title: "Prioridad",
