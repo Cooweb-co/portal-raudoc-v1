@@ -760,7 +760,7 @@ export default {
           <BCardBody>
             <div class="mb-3">
               <label class="form-label fw-bold" for="project-title-input"
-                >Asunto</label
+                >Asuntoss</label
               >
               <BSpinner
                 v-if="loadingAI"

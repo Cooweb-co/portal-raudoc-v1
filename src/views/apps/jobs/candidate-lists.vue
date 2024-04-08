@@ -5,12 +5,6 @@ import axios from 'axios';
 
 export default {
   data() {
-    // const new_cadidateList = candidatelist.map(candidate => {
-    //                                                               return {
-    //                                                                   ...candidate,
-    //                                                                   user: `user${Math.floor(Math.random() * 1000000)}`
-    //                                                               }
-    //                                                 })
     let config = {
         method: 'get',
         maxBodyLength: Infinity,
@@ -107,7 +101,7 @@ export default {
     <BRow class="g-4 mb-4">
       <BCol sm="auto">
         <div>
-          <BLink href="#!" class="btn btn-primary"><i class="ri-add-line align-bottom me-1"></i> Agregar usuario</BLink>
+          <BLink href="/create-user" class="btn btn-primary"><i class="ri-add-line align-bottom me-1"></i> Agregar usuario</BLink>
         </div>
       </BCol>
       <BCol sm>
@@ -165,12 +159,12 @@ export default {
                 <td>{{ data.name }}</td>
                 <td>
                   <span class="badge" :class="{
-                    'bg-success-subtle text-success': data.rol == 'FUNCTIONARY',
-                    'bg-danger-subtle text-danger': data.rol == 'BOSS_OF_AREA',
-                    'bg-primary-subtle text-primary': data.rol == 'DIRECTOR' || data.rol == 'SUPER ADMIN',
-                    'bg-warning-subtle text-warning': data.rol == 'ADMINISTRADOR DE SISTEMA',
-                    'bg-info-subtle text-info': data.rol == 'SUPERVISOR DE SISTEMA',
-                  }">{{ data.rol }}</span>
+                    'bg-success-subtle text-success': data.idRole == 'FUNCTIONARY',
+                    'bg-danger-subtle text-danger': data.idRole == 'BOSS_OF_AREA',
+                    'bg-primary-subtle text-primary': data.idRole == 'DIRECTOR' || data.idRole == 'SUPER ADMIN',
+                    'bg-warning-subtle text-warning': data.idRole == 'ADMINISTRADOR DE SISTEMA',
+                    'bg-info-subtle text-info': data.idRole == 'SUPERVISOR DE SISTEMA',
+                  }">{{ data.idRole }}</span>
                 </td>
                 <td>{{ data.email }}</td>
               </tr>
