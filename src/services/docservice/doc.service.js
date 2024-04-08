@@ -10,6 +10,8 @@ import {
     getDoc,
     getDocs,
     collection,
+    query,
+    where,
 } from "firebase/firestore";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 // import { getStorage } from 'firebase/storage';
@@ -124,5 +126,35 @@ export async function openDocument(fileName, filePath) {
         window.open(url, "_blank");
     } catch (error) {
         console.error("Error al obtener URL del archivo:", error);
+    }
+}
+
+export async function getInfoUser(company, email) {
+    try {
+        // Buscar el usuario por su correo electrónico
+        const usersCollection = collection(
+            firestore,
+            "Companies",
+            company,
+            "Users"
+        );
+        const fieldQuery = query(usersCollection, where("email", "==", email));
+        const fieldSnapshot = await getDocs(fieldQuery);
+
+        if (!fieldSnapshot.empty) {
+            // Si se encontraron documentos que coinciden, devolver el primer documento
+            const firstDocument = fieldSnapshot.docs[0];
+            return {
+                uid: firstDocument.id,
+                ...firstDocument.data()
+            };
+        } else {
+            // Si no se encontraron documentos, devolver null
+            console.log("No se encontraron documentos con ese campo y valor.");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error al obtener información del usuario:", error);
+        throw error;
     }
 }
