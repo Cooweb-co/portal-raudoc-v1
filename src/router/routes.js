@@ -89,7 +89,7 @@ export default [
     path: "/gestion-documental/radicado/:documentID",
     name: "projects-overview",
     meta: { title: "Projects Overview", authRequired: true },
-    component: () => import("../views/admin-doc/detailsDocuments/overview"),
+    component: () => import("../views/admin-doc/detailsDocuments/Overview"),
   },
 
   {
@@ -116,30 +116,14 @@ export default [
     path: "/gestion-documental/lista-radicados",
     name: "list-claim",
     meta: { title: "Lista de Radicados", authRequired: true },
-    component: () => import("../views/tickets/list"),
+    component: () => import("../views/tickets/List"),
   },
   {
     path: "/administration/users",
     name: "administration-users",
     meta: { title: "Administración de usuarios", authRequired: true },
-    component: () => import("../views/apps/administration/Users"),
+    component: () => import("../views/apps/jobs/candidate-lists.vue"),
   },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   {
     path: "/dashboard/crypto",
     name: "dashboard-crypto",
@@ -308,7 +292,7 @@ export default [
     path: "/apps/projects-list",
     name: "projects-list",
     meta: { title: "Projects List", authRequired: true },
-    component: () => import("../views/admin-doc/detailsDocuments/list"),
+    component: () => import("../views/admin-doc/detailsDocuments/list.vue"),
   },
 
   {
