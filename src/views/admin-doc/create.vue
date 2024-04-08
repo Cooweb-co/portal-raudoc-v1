@@ -246,6 +246,7 @@ export default {
       await axios
         .request(config)
         .then((response) => {
+          console.log(response);
           response.data.forEach((element) => {
             trds.value.push({
               label: element.name,
@@ -276,6 +277,7 @@ export default {
             });
           }
           series.value = aux;
+          console.log(series.value);
         });
       }
     });
@@ -296,6 +298,7 @@ export default {
             });
           }
         });
+        console.log(subseries.value);
       }
     });
 
@@ -317,6 +320,11 @@ export default {
         });
       }
     });
+
+    //obtener dias segun tipologia documental
+    const getDocDays = computed(() => {
+      return isDocs.value.filter((el) => el.value == form.value.documentType ? el.days : 0)
+    })
 
     function clearSelectInput() {
       if (form.value.area) {
@@ -374,6 +382,7 @@ export default {
       isDocs,
       radicate,
       peopleList,
+      getDocDays,
       clearSelectInput,
       getTrds,
       drop,
@@ -444,7 +453,7 @@ export default {
           area: this.form.area,
           serie: this.form.serie,
           subSerie: this.form.subSerie,
-          days: 15,
+          days: this.getDocDays[0]?.days,
           documentaryTypologyEntry: this.form.documentType,
           entryDate: this.form.date,
           expirationDate: dayjs(this.form.untilDate),
@@ -865,6 +874,7 @@ export default {
                   class="form-label fw-bold"
                   >Tipología Documental</label
                 >
+                <pre>{{ form.documentType }}</pre>
                 <Multiselect
                   v-model="form.documentType"
                   :required="true"
