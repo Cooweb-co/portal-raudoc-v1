@@ -182,7 +182,7 @@ export default {
                     <div class="d-flex align-items-center">
                         <h6 class="card-title mb-0 flex-grow-1">Popular Candidates</h6>
                         <div class="flex-shrink-0">
-                            <router-link to="/jobs/candidate-lists" class="link-primary">View All <i class="ri-arrow-right-line"></i></router-link>
+                            <router-link to="/administration/users" class="link-primary">View All <i class="ri-arrow-right-line"></i></router-link>
                         </div>
                     </div>
                 </BCardHeader>
