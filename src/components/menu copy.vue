@@ -719,7 +719,7 @@ export default {
                       <div class="collapse menu-dropdown" id="sidebarcandidatelists">
                         <ul class="nav nav-sm flex-column">
                           <li class="nav-item">
-                            <router-link to="/jobs/candidate-lists" class="nav-link" data-key="t-lists">
+                            <router-link to="/administration/users" class="nav-link" data-key="t-lists">
                               {{ $t("t-list-view") }}
                             </router-link>
                           </li>

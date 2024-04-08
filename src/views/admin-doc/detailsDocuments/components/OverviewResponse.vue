@@ -18,8 +18,8 @@ const documentNumber = ref("Número de radicado");
 const selectedFile = async () => {
     dropzoneFile.value = document.getElementById("formFile").files[0];
     files.value.push(dropzoneFile.value);
-    const file = dropzoneFile.value;
-    console.log("file::::", file);
+    // const file = dropzoneFile.value;
+    // console.log("file::::", file);
 };
 
 const uploadFile = async () => {
@@ -68,6 +68,7 @@ const uploadFile = async () => {
         );
         answered.value = true;
         documentNumber.value = res.data.idRadicate;
+        console.log(res.data)
         toast.update(idLoadFile, {
             render: "Archivo cargado con éxito",
             type: "success",
@@ -119,7 +120,6 @@ watch(
 watch(
     () => props.numberOutClaimExist,
     (currentValue) => {
-        console.log(currentValue);
         if (currentValue == true) return (answered.value = true);
         return;
     }
@@ -230,9 +230,9 @@ watch(
                     </div>
                     <span class="h-100 text-center"
                         >#{{
-                            data.numberOutClaim == "No definido"
+                            !props.data.numberOutClaim
                                 ? documentNumber
-                                : data.numberOutClaim
+                                : props.data.numberOutClaim
                         }}</span
                     >
                 </div>

@@ -13,7 +13,6 @@ class FirebaseAuthBackend {
             const app = firebase.initializeApp(firebaseConfig);
             // firebase.initializeApp(firebaseConfig);
             firebase.auth().onAuthStateChanged((user) => {
-                console.log("user", user);
                 if (user) {
                     sessionStorage.setItem("authUser", JSON.stringify(user));
                 } else {

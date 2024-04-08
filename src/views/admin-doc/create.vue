@@ -1,5 +1,12 @@
 <script>
-import { ref, watch, getCurrentInstance, onUnmounted, computed } from "vue";
+import {
+  ref,
+  watch,
+  getCurrentInstance,
+  onUnmounted,
+  computed,
+  onMounted,
+} from "vue";
 import Multiselect from "@vueform/multiselect";
 import dayjs from "dayjs";
 import "@vueform/multiselect/themes/default.css";
@@ -45,7 +52,7 @@ export default {
     const subseries = ref([]);
     const isDocs = ref([]);
     const radicate = ref("");
-    // const peopleList = ref([]);
+    const peopleList = ref([]);
 
     let config = {
       method: "get",
@@ -56,14 +63,15 @@ export default {
       },
     };
 
-    // let configGetPeople = {
-    //   method: "get",
-    //   maxBodyLength: Infinity,
-    //   url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/USERS_LIST_V1'",
-    //   headers: {
-    //     company: "BAQVERDE",
-    //   },
-    // };
+    // objeto de configuracion para el servicio de obtencion de usuarios por area
+    let configGetPeople = {
+      method: "get",
+      maxBodyLength: Infinity,
+      url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/USERS_LIST_V1",
+      headers: {
+        company: "BAQVERDE",
+      },
+    };
 
     // controlador de variables para el formulario de radicacion
     const form = ref({
@@ -85,8 +93,9 @@ export default {
       email: "",
       address: "",
       assignedTo: "",
+      subject: "",
+      description: "",
     });
-
     // reglas de validacion
     const rules = {
       area: { required: MESSAGE_REQUIRED },
@@ -107,6 +116,8 @@ export default {
       email: { required: MESSAGE_REQUIRED, MESSAGE_EMAIL },
       address: { required: MESSAGE_REQUIRED },
       assignedTo: { required: MESSAGE_REQUIRED },
+      subject: { required: MESSAGE_REQUIRED },
+      description: { required: MESSAGE_REQUIRED },
     };
 
     const v$ = useVuelidate(rules, form.value);
@@ -119,13 +130,10 @@ export default {
         closeOnClick: false,
       });
 
-      // console.log("startListening");
-
       unsubscribe = onListenClaimData(
         documentID.value,
         companyID.value,
         (data) => {
-          // console.log("onListenClaimData >>", data);
           claimData.value = data;
           if (data.status == "DRAFT" && data.summary == null) {
             loadingAI.value = true;
@@ -133,8 +141,6 @@ export default {
               toast.update(idProccessAI, {
                 render: "Extrayendo información relevante...",
                 type: toast.TYPE.INFO,
-                // delay: 3000,
-                // isLoading: true,
               });
             }, 3000);
           }
@@ -161,9 +167,10 @@ export default {
 
           instance.proxy.subject = data.subject ? data.subject : "";
           instance.proxy.editorData = data.summary ? data.summary : "";
+          form.value.subject = data.subject ? data.subject : "";
+          form.value.description = data.summary ? data.summary : "";
         }
       );
-      // console.log("unsubscribe::", unsubscribe);
       return unsubscribe;
     };
 
@@ -213,11 +220,33 @@ export default {
       }
     };
 
+    // obtener listado de usuarios activos por areas
+    async function getPeople() {
+      var auxPeople = [];
+      axios
+        .request(configGetPeople)
+        .then((response) => {
+          response.data.forEach((element) => {
+            auxPeople.push({
+              label: element.name,
+              value: element.name,
+              area: element.area,
+              role: element.rol,
+            });
+          });
+          peopleList.value = auxPeople;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
     // obtener listado trds
     async function getTrds() {
       await axios
         .request(config)
         .then((response) => {
+          console.log(response);
           response.data.forEach((element) => {
             trds.value.push({
               label: element.name,
@@ -231,25 +260,11 @@ export default {
         });
     }
 
-    // obtener listado de usuarios activos por areas
-    // async function getPeople() {
-    //   await axios
-    //     .request(configGetPeople)
-    //     .then((response) => {
-    //       peopleList.value = response.data;
-    //     })
-    //     .catch((error) => {
-    //       console.log(error);
-    //     });
-
-    //   console.log(peopleList.value);
-    // }
-
     // computadas para la dependencia de los campos
     // manejador del input de serie
     // eslint-disable-next-line vue/return-in-computed-property
     const auxSerie = computed(() => {
-      const aux = []
+      const aux = [];
       if (form.value.area) {
         trds.value.forEach((i) => {
           if (i.label == form.value.area) {
@@ -261,7 +276,8 @@ export default {
               });
             });
           }
-          series.value = aux
+          series.value = aux;
+          console.log(series.value);
         });
       }
     });
@@ -282,6 +298,7 @@ export default {
             });
           }
         });
+        console.log(subseries.value);
       }
     });
 
@@ -291,6 +308,7 @@ export default {
       if (form.value.subSerie) {
         subseries.value.forEach((i) => {
           if (i.label == form.value.subSerie) {
+            isDocs.value = [];
             i.documents.forEach((j) => {
               isDocs.value.push({
                 label: j.name,
@@ -303,18 +321,35 @@ export default {
       }
     });
 
+    //obtener dias segun tipologia documental
+    const getDocDays = computed(() => {
+      return isDocs.value.filter((el) => el.value == form.value.documentType ? el.days : 0)
+    })
+
     function clearSelectInput() {
       if (form.value.area) {
-        form.value.serie = ""
-        form.value.subSerie = ""
-        form.value.documentType = ""
+        form.value.serie = "";
+        form.value.subSerie = "";
+        form.value.documentType = "";
       }
+    }
+
+    function clearInputSubSerie() {
+      form.value.subSerie = "";
+    }
+
+    function clearInputDocType() {
+      form.value.documentType = "";
     }
 
     onUnmounted(() => {
       if (unsubscribe) {
         unsubscribe;
       }
+    });
+
+    onMounted(() => {
+      getPeople();
     });
 
     watch(
@@ -327,8 +362,6 @@ export default {
     return {
       dropzoneFile,
       files,
-      drop,
-      selectedFile,
       loadingBtnAI,
       documentID,
       claimData,
@@ -340,7 +373,6 @@ export default {
       qrModal,
       loadingAI,
       newDate,
-      getTrds,
       trds,
       series,
       subseries,
@@ -349,18 +381,24 @@ export default {
       auxDocTypes,
       isDocs,
       radicate,
-      clearSelectInput
+      peopleList,
+      getDocDays,
+      clearSelectInput,
+      getTrds,
+      drop,
+      selectedFile,
+      getPeople,
+      clearInputSubSerie,
+      clearInputDocType,
     };
   },
   data() {
     return {
       value: ["C#", "HTML", "CSS"],
-      editorData: "",
       content: "<h1>Some initial content</h1>",
       isDisabledAI: false,
       isDisabledCreate: false,
       loadingBtnCreate: false,
-      subject: "",
       identificationType: "",
       gender: "",
       countryOfResidence: "",
@@ -395,7 +433,6 @@ export default {
     },
 
     fillFieldWithAI() {
-      // console.log(this.claimData.applicant.address);
       this.identificationType = this.claimData.applicant.identificationType;
       this.gender = this.claimData.applicant.gender;
       this.countryOfResidence = this.claimData.applicant.countryOfResidence;
@@ -416,9 +453,10 @@ export default {
           area: this.form.area,
           serie: this.form.serie,
           subSerie: this.form.subSerie,
-          days: 15,
+          days: this.getDocDays[0]?.days,
           documentaryTypologyEntry: this.form.documentType,
           entryDate: this.form.date,
+          expirationDate: dayjs(this.form.untilDate),
           folios: parseInt(this.form.folios),
           assignedTo: this.form.assignedTo,
           observations: "prueba",
@@ -440,11 +478,10 @@ export default {
           body,
           config
         );
-        if (response.data) {
+        if (response.data.message) {
           this.saveLoading = false;
           this.showRadicationButton = true;
         }
-        // console.log(response);
       } catch (error) {
         console.log(error);
       }
@@ -477,103 +514,17 @@ export default {
             autoClose: 3000,
           });
           this.radicate = response.data;
-          console.log(response);
           this.qrModal = true;
         }
-
-        // console.log(response);
       } catch (error) {
         this.submitLoading = false;
         console.log(error);
       }
     },
 
-    async handleSubmitChange() {
-      // let camposFaltantes = [];
-      // if (!this.subject) camposFaltantes.push("Asunto");
-      // if (!this.identificationType) camposFaltantes.push("Tipo de Documento");
-      // if (!this.editorData) camposFaltantes.push("Resumen");
-      // if (!this.gender) camposFaltantes.push("Género");
-      // if (!this.countryOfResidence) camposFaltantes.push("País de Residencia");
-      // if (!this.cityOfResidence) camposFaltantes.push("Ciudad de Residencia");
-      // if (!this.typeOfApplicant) camposFaltantes.push("Tipo de Solicitud");
-      // if (!this.priority) camposFaltantes.push("Prioridad");
-      // if (!this.status) camposFaltantes.push("Estado");
-      // if (!this.deadline) camposFaltantes.push("Fecha límite");
-      // if (camposFaltantes.length > 0) {
-      //   toast.error(
-      //     `Todos los campos son requeridos. Faltan: ${camposFaltantes.join(
-      //       ", "
-      //     )}`,
-      //     {
-      //       position: toast.POSITION.TOP_RIGHT,
-      //       autoClose: 3000,
-      //     }
-      //   );
-      //   return;
-      // }
-      // console.log("La fecha límite es: " + this.deadline);
-      // Aquí continúa la lógica para manejar el envío de datos cuando todos los campos están llenos
-      // const dataToSend = {
-      //   id: this.documentID || null,
-      //   assignedTo: this.claimData.assignedTo || null,
-      //   state: this.status || "ABIERTO",
-      //   priority: this.priority || "BAJA",
-      //   summary: this.editorData || null,
-      //   subject: this.subject || null,
-      //   destinationEntity: this.claimData.destinationEntity || null,
-      //   applicant: {
-      //     fullName: this.claimData.applicant.fullName || null,
-      //     id: this.claimData.applicant.identification || null,
-      //     identificationType: this.identificationType || null,
-      //     address: this.claimData.applicant.address || null,
-      //     sex: this.gender || null,
-      //     countryOfResidence: this.countryOfResidence || null,
-      //     cityOfResidence: this.cityOfResidence || null,
-      //   },
-      //   deadline: this.deadline || null,
-      //   typeDocumentClaim: this.typeOfApplicant || null,
-      //   claims: this.claimData.claims || null,
-      //   summaryMarkdown: this.claimData.summaryMarkdown || null,
-      //   updatedAt: new Date(),
-      // };
-      // console.log(dataToSend);
-      // if (!this.documentID) {
-      //   console.error("documentID es nulo o indefinido.");
-      //   toast.error("Error: documentID es requerido.", {
-      //     position: toast.POSITION.TOP_RIGHT,
-      //     autoClose: 3000,
-      //   });
-      //   return;
-      // }
-      // const dataToSendJSON = JSON.stringify(dataToSend, null, 2);
-      // const url = `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_UPDATE_BY_ID_V1?claimId=${this.documentID}`;
-      // try {
-      //   const response = await axios.post(url, dataToSendJSON, {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       company: "BAQVERDE",
-      //     },
-      //   });
-      //   console.log(response);
-      //   toast.success("Documento cargado y añadido correctamente!", {
-      //     position: toast.POSITION.TOP_RIGHT,
-      //     autoClose: 3000,
-      //   });
-      //   this.$router.push("/apps/tickets-list");
-      // } catch (error) {
-      //   console.error(error);
-      //   toast.error("Error al guardar cambios", {
-      //     position: toast.POSITION.TOP_RIGHT,
-      //     autoClose: 3000,
-      //   });
-      // }
-    },
-
     async handleSaveInfo() {
       try {
         this.v$.$touch();
-
         if (this.v$.$invalid) {
           return;
         } else {
@@ -591,7 +542,6 @@ export default {
       this.isDisabledAI = false;
     }, 1000);
     this.getTrds();
-    // this.getPeople();
   },
   computed: {
     user() {
@@ -629,6 +579,7 @@ export default {
           <a-qrcode
             error-level="H"
             :value="'http://portal.raudoc.com/r/BAQVERDE/' + documentID"
+            icon=""
           />
         </div>
       </div>
@@ -648,7 +599,7 @@ export default {
       <div class="col-6 col-sm-6">
         <a-radio-group v-model:value="mode" :style="{ marginBottom: '' }">
           <a-radio-button value="Entry">Entrada</a-radio-button>
-          <a-radio-button value="Output">Salida</a-radio-button>
+          <a-radio-button value="Out">Salida</a-radio-button>
         </a-radio-group>
         <div>{{ auxSerie }}</div>
         <div>{{ auxSubSerie }}</div>
@@ -773,11 +724,12 @@ export default {
 
               <input
                 type="text"
-                v-model="subject"
+                v-model="form.subject"
                 class="form-control"
                 id="project-title-input"
                 placeholder="Ingrese asunto del radicado"
               />
+              <ValidateLabel v-bind="{ v$ }" attribute="subject" />
             </div>
 
             <BCard no-body> </BCard>
@@ -795,9 +747,10 @@ export default {
               <!-- <ckeditor v-model="editorData" :editor="editor"></ckeditor> -->
               <textarea
                 class="form-control"
-                v-model="editorData"
+                v-model="form.description"
                 style="min-height: 255px"
               ></textarea>
+              <ValidateLabel v-bind="{ v$ }" attribute="description" />
             </div>
           </BCardBody>
         </BCard>
@@ -893,6 +846,7 @@ export default {
                   :create-option="true"
                   placeholder="Seleccione"
                   :options="series"
+                  @change="clearInputSubSerie"
                 />
                 <ValidateLabel v-bind="{ v$ }" attribute="serie" />
               </BCol>
@@ -910,6 +864,7 @@ export default {
                   :create-option="true"
                   placeholder="Seleccione"
                   :options="subseries"
+                  @change="clearInputDocType"
                 />
                 <ValidateLabel v-bind="{ v$ }" attribute="subSerie" />
               </BCol>
@@ -919,6 +874,7 @@ export default {
                   class="form-label fw-bold"
                   >Tipología Documental</label
                 >
+                <pre>{{ form.documentType }}</pre>
                 <Multiselect
                   v-model="form.documentType"
                   :required="true"
@@ -936,7 +892,6 @@ export default {
                   class="form-label fw-bold"
                   >Fecha límite</label
                 >
-
                 <flat-pickr
                   v-model="form.untilDate"
                   :config="rangeDateconfig"
@@ -976,18 +931,8 @@ export default {
                   placeholder="# Radicado externo"
                 />
               </BCol>
-              <BCol lg="3" class="mb-3">
+              <BCol lg="6" class="mb-3">
                 <label for="username" class="form-label fw-bold">
-                  Asignado a <span class="text-danger">*</span></label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="form.assignedTo"
-                  id="RadicadoExterno"
-                  placeholder="Persona asignada"
-                />
-                <!-- <label for="username" class="form-label fw-bold">
                   Asignado a <span class="text-danger">*</span></label
                 >
                 <Multiselect
@@ -995,10 +940,10 @@ export default {
                   :required="true"
                   :close-on-select="true"
                   :create-option="true"
+                  :searchable="true"
                   placeholder="Seleccione"
-                  :options="[]"
-                  :disabled="true"
-                /> -->
+                  :options="peopleList"
+                />
                 <ValidateLabel v-bind="{ v$ }" attribute="assignedTo" />
               </BCol>
             </BRow>

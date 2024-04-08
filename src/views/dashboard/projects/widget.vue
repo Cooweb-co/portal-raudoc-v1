@@ -1,98 +1,134 @@
-<script>
-import { BriefcaseIcon, AwardIcon, ClockIcon } from '@zhuowenli/vue-feather-icons';
-
-export default {
-  setup() {
-    return {
-      projectsWidgets: [
-        {
-          id: 1,
-          feaIcon: "briefcase",
-          feaIconClass: "primary",
-          label: "PETICIONES RECIBIDAS",
-          counter: "8250",
-          suffix: "",
-          badgeClass: "danger",
-          icon: "ri-arrow-down-s-line",
-          percentage: "5.02 %",
-          caption: "Acumulado",
-        },
-        {
-          id: 2,
-          feaIcon: "award",
-          feaIconClass: "warning",
-          label: "PETICIONES RESPONDIDAS",
-          counter: "7522",
-          separator: ",",
-          suffix: "",
-          badgeClass: "success",
-          icon: "ri-arrow-up-s-line",
-          percentage: "3.58 %",
-          caption: "Mes Actual",
-        },
-        {
-          id: 3,
-          feaIcon: "clock",
-          feaIconClass: "info",
-          label: "PENDIENTES POR RESPONDER",
-          counter: "168",
-          suffix: "m",
-          badgeClass: "danger",
-          icon: "ri-arrow-down-s-line",
-          percentage: "10.35 %",
-          caption: "04 Ene - 04 Feb",
-        },
-      ],
-    };
-  },
-  components: {
-    BriefcaseIcon,
+<script setup>
+import {
+    SendIcon,
     AwardIcon,
-    ClockIcon
-  },
-};
+    ClockIcon,
+    CornerDownRightIcon,
+} from "@zhuowenli/vue-feather-icons";
+import { ref, onMounted } from "vue";
+import { state } from "@/state/modules/auth";
+import { getInfoUser } from "@/services/docservice/doc.service";
+import axios from "axios";
+
+const user = ref(state.currentUser);
+const loading = ref(false);
+
+console.log(user.value);
+const projectsWidgets = ref();
+
+onMounted(async () => {
+    try {
+        loading.value = true;
+        const resInfoUser = await getInfoUser("BAQVERDE", user.value.email);
+        const url =
+            "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_COUNT_CLAIMS_BY_USER";
+        const config = {
+            params: {
+                uid: resInfoUser.uid,
+            },
+            headers: {
+                company: "BAQVERDE",
+                "Content-Type": "application/json",
+            },
+        };
+        const body = {
+            role: resInfoUser.rol,
+            areaId: resInfoUser.areaId,
+        };
+        const dataForCard = await axios.post(url, body, config);
+        projectsWidgets.value = dataForCard.data;
+        loading.value = false;
+    } catch (error) {
+        console.error(error);
+    }
+});
 </script>
 
 <template>
-  <BCol xl="4" v-for="(item, index) of projectsWidgets" :key="index">
-    <BCard no-body class="card-animate">
-      <BCardBody>
-        <div class="d-flex align-items-center">
-          <div class="avatar-sm flex-shrink-0">
-            <span class="avatar-title rounded-2 fs-2" :class="{
-              'bg-primary-subtle text-primary': item.feaIconClass === 'primary',
-              'bg-warning-subtle text-warning': item.feaIconClass === 'warning',
-              'bg-info-subtle text-info': item.feaIconClass === 'info'
-            }">
-              <template v-if="item.feaIcon == 'briefcase'">
-                <BriefcaseIcon size="24" class="text-primary"></BriefcaseIcon>
-              </template>
+    <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" active />
+    <BCol xl="4" v-for="(item, index) of projectsWidgets" :key="index" v-else>
+        <BCard no-body class="card-animate">
+            <BCardBody>
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm flex-shrink-0">
+                        <span
+                            class="avatar-title rounded-2 fs-2"
+                            :class="{
+                                'bg-primary-subtle text-primary':
+                                    item.value.toUpperCase() === 'primary' ||
+                                    'DOCUMENTOS PROCESADOS',
+                                'bg-warning-subtle text-warning':
+                                    item.value.toUpperCase() ===
+                                    'PETICIONES POR RESPONDER',
+                                'bg-info-subtle text-info':
+                                    item.value.toUpperCase() === 'info',
+                            }"
+                        >
+                            <template
+                                v-if="
+                                    item.value.toUpperCase() ==
+                                    'PETICIONES RESPONDIDAS'
+                                "
+                            >
+                                <SendIcon
+                                    size="24"
+                                    class="text-primary"
+                                ></SendIcon>
+                            </template>
 
-              <template v-if="item.feaIcon == 'award'">
-                <AwardIcon size="24" class="text-primary"></AwardIcon>
-              </template>
+                            <template
+                                v-if="
+                                    item.value.toUpperCase() ==
+                                    'PETICIONES RECIBIDAS'
+                                "
+                            >
+                                <CornerDownRightIcon
+                                    size="24"
+                                    class="text-primary"
+                                ></CornerDownRightIcon>
+                            </template>
 
-              <template v-if="item.feaIcon == 'clock'">
-                <ClockIcon size="24" class="text-primary"></ClockIcon>
-              </template>
-            </span>
-          </div>
-          <div class="flex-grow-1 overflow-hidden ms-3">
-            <p class="text-uppercase fw-medium text-muted text-truncate mb-3">
-              {{ item.label }}
-            </p>
-            <div class="d-flex align-items-center mb-3">
-              <h4 class="fs-4 flex-grow-1 mb-0">
-                <span class="counter-value">{{
-                  item.counter
-                }}</span>
-              </h4>
-              <span :class="{ 'badge bg-danger-subtle text-danger fs-12': item.icon == 'ri-arrow-down-s-line', 'badge bg-success-subtle text-success fs-12': item.icon == 'ri-arrow-up-s-line' }"><i :class="`${item.icon} fs-13 align-middle me-1`"></i>{{ item.percentage }}</span>
-            </div>
-            <p class="text-muted text-truncate mb-0">{{ item.caption }}</p>
-          </div>
-        </div>
-        <!-- <div class="d-flex align-items-center">
+                            <template
+                                v-if="
+                                    item.value.toUpperCase() ==
+                                    'PETICIONES POR RESPONDER'
+                                "
+                            >
+                                <ClockIcon
+                                    size="24"
+                                    class="text-primary"
+                                ></ClockIcon>
+                            </template>
+
+                            <template
+                                v-if="
+                                    item.value.toUpperCase() ==
+                                    'DOCUMENTOS PROCESADOS'
+                                "
+                            >
+                                <AwardIcon
+                                    size="24"
+                                    class="text-primary"
+                                ></AwardIcon>
+                            </template>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden ms-3">
+                        <p
+                            class="text-uppercase fw-medium text-muted text-truncate mb-3"
+                        >
+                            {{ item.value }}
+                        </p>
+                        <div class="d-flex align-items-center mb-3">
+                            <h4 class="fs-4 flex-grow-1 mb-0">
+                                <span class="counter-value">{{
+                                    item.count
+                                }}</span>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="d-flex align-items-center">
           <div class="avatar-sm flex-shrink-0">
             <span class="avatar-title rounded-2 fs-2" :class="{
               'bg-primary-subtle text-primary': item.feaIconClass === 'primary',
@@ -125,7 +161,7 @@ export default {
             <p class="text-muted text-truncate mb-0">{{ item.caption }}</p>
           </div>
         </div> -->
-      </BCardBody>
-    </BCard>
-  </BCol>
+            </BCardBody>
+        </BCard>
+    </BCol>
 </template>
