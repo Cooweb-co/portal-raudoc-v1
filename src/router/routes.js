@@ -21,6 +21,14 @@ export default [
     },
   },
   {
+    path: "/create-user",
+    name: "createUser",
+    component: () => import("../views/pages/create-user.vue"),
+    meta: {
+      title: "Create User"
+    },
+  },
+  {
     path: "/register",
     name: "Register",
     component: () => import("../views/account/register.vue"),
@@ -81,7 +89,7 @@ export default [
     path: "/gestion-documental/radicado/:documentID",
     name: "projects-overview",
     meta: { title: "Projects Overview", authRequired: true },
-    component: () => import("../views/admin-doc/detailsDocuments/Overview"),
+    component: () => import("../views/admin-doc/detailsDocuments/overview"),
   },
 
   {
@@ -108,7 +116,7 @@ export default [
     path: "/gestion-documental/lista-radicados",
     name: "list-claim",
     meta: { title: "Lista de Radicados", authRequired: true },
-    component: () => import("../views/tickets/List"),
+    component: () => import("../views/tickets/list"),
   },
   {
     path: "/administration/users",
