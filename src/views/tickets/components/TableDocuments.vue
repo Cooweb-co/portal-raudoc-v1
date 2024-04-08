@@ -8,7 +8,7 @@ import transformDate from "@/helpers/transformDate";
 import setState from "@/helpers/setState";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
 
-const dataSource = ref([]);
+const dataSource = reactive([]);
 const state = reactive({
     searchText: "",
     searchedColumn: "",
@@ -35,12 +35,19 @@ onBeforeMount(async () => {
         )
         .then((response) => {
             response.data.map((data) => {
-                dataSource.value.push({
+                dataSource.push({
                     id: data?.claimId,
                     key: data?.claimId,
+                    numberClaim:
+                        data?.numberEntryClaim ||
+                        data?.numberOutClaim ||
+                        "No definido",
+                    createdAt: data?.createdAt,
                     numberEntryClaim: data?.numberEntryClaim || "-",
+                    numberOutClaim: data?.numberEntryClaim
+                        ? data?.numberOutClaim || "-"
+                        : "-",
                     externalRadicate: data?.externalRadicate || "-",
-                    numberOutClaim: data?.numberOutClaim || "-",
                     entryDate:
                         data?.createdAt && data?.createdAt._seconds
                             ? transformDate(data?.createdAt._seconds)
@@ -60,16 +67,13 @@ onBeforeMount(async () => {
                     action: data?.claimId,
                 });
             });
-            loading.value = false;
-            dataSource.value.sort((a, b) => {
-                const numA = parseInt(
-                    a.numberEntryClaim.replace(/^EXT-BV-2024-/, "")
-                );
-                const numB = parseInt(
-                    b.numberEntryClaim.replace(/^EXT-BV-2024-/, "")
-                );
 
-                return numB - numA;
+            loading.value = false;
+            dataSource.sort((a, b) => {
+                return (
+                    convertToTimestamp(b?.createdAt) -
+                    convertToTimestamp(a?.createdAt)
+                );
             });
         })
         .catch((error) => {
@@ -78,6 +82,13 @@ onBeforeMount(async () => {
         });
 });
 
+
+
+const handleTableChange = (pag, filters, sorter) => {
+    filteredInfo.value = filters;
+    sortedInfo.value = sorter;
+};
+
 const columns = computed(() => {
     const sorted = sortedInfo.value || {};
     return [
@@ -85,17 +96,17 @@ const columns = computed(() => {
             title: "Visualizar",
             dataIndex: "action",
             key: "action",
-            width: "2%",
+            width: "3%",
             className: "text-center",
         },
         {
             title: "N° Radicado",
-            dataIndex: "numberEntryClaim",
-            key: "numberEntryClaim",
-            width: "3%",
+            dataIndex: "numberClaim",
+            key: "numberClaim",
+            width: "6%",
             customFilterDropdown: true,
             onFilter: (value, record) =>
-                record.numberEntryClaim
+                record.numberClaim
                     .toString()
                     .toLowerCase()
                     .includes(value.toLowerCase()),
@@ -111,14 +122,14 @@ const columns = computed(() => {
             title: "Asunto",
             dataIndex: "subject",
             key: "subject",
-            width: "5%",
+            width: "8%",
         },
         {
             title: "Nombre Peticionario",
             dataIndex: "petitioner",
             key: "petitioner",
             customFilterDropdown: true,
-            width: "3%",
+            width: "5%",
             className: "text-center",
             onFilter: (value, record) =>
                 record.petitioner
@@ -134,30 +145,10 @@ const columns = computed(() => {
             },
         },
         {
-            title: "Asignado a",
-            dataIndex: "assignedTo",
-            key: "assignedTo",
-            width: "3%",
-            className: "text-center",
-            customFilterDropdown: true,
-            onFilter: (value, record) =>
-                record.assignedTo
-                    .toString()
-                    .toLowerCase()
-                    .includes(value.toLowerCase()),
-            onFilterDropdownOpenChange: (visible) => {
-                if (visible) {
-                    setTimeout(() => {
-                        searchInput.value?.focus();
-                    }, 100);
-                }
-            },
-        },
-        {
             title: "Radicado de salida",
             dataIndex: "numberOutClaim",
             key: "numberOutClaim",
-            width: "3%",
+            width: "5%",
             className: "text-center",
             customFilterDropdown: true,
             onFilter: (value, record) =>
@@ -178,7 +169,7 @@ const columns = computed(() => {
             dataIndex: "entryDate",
             key: "entryDate",
             className: "text-center",
-            width: "3%",
+            width: "5%",
             sorter: (a, b) => {
                 const firstDate = moment(a.entryDate, "DD MMM, YYYY")
                     .startOf("day")
@@ -193,11 +184,11 @@ const columns = computed(() => {
             ellipsis: true,
         },
         {
-            title: "Fecha de vencimiento",
+            title: "Expiración",
             dataIndex: "expirationDate",
             key: "expirationDate",
             className: "text-center",
-            width: "3%",
+            width: "5%",
             sorter: (a, b) => {
                 const firstDate = moment(a.expirationDate, "DD MMM, YYYY")
                     .startOf("day")
@@ -215,7 +206,7 @@ const columns = computed(() => {
             title: "Estado",
             dataIndex: "status",
             key: "status",
-            width: "1.8%",
+            width: "3%",
             filters: [
                 {
                     text: "Vencido", //Rojo
@@ -265,7 +256,24 @@ const columns = computed(() => {
     ];
 });
 
+const convertToTimestamp = (createdAt) => {
+    const seconds = createdAt?._seconds * 1000;
+    const nanoseconds = createdAt?._nanoseconds / 1000000;
+
+    return seconds + nanoseconds;
+};
+
+const numberClaimColor = (numberClaim) => {
+    return numberClaim?.startsWith("BV-") ? "link-success" : "link-primary";
+};
+const numberClaimColorhighlight = (numberClaim) => {
+    return numberClaim?.startsWith("BV-")
+        ? "link-success highlight-numberOutClaim"
+        : "link-primary highlight-numberEntryClaim ";
+};
+
 //Filtro de búsqueda
+
 const handleChange = (selectedKeys, dataIndex) => {
     state.searchText = selectedKeys[0];
     state.searchedColumn = dataIndex;
@@ -277,11 +285,6 @@ const handleSearch = (selectedKeys, confirm, dataIndex) => {
 const handleReset = (clearFilters) => {
     clearFilters({ confirm: true });
     state.searchText = "";
-};
-
-const handleChangeSort = (pagination, filters, sorter) => {
-    filteredInfo.value = filters;
-    sortedInfo.value = sorter;
 };
 
 //Filtro de fechas
@@ -298,10 +301,8 @@ const filterForDate = (dates) => {
 
     if (!validateString) {
         originDataSource.value = [...dataSource.value];
-        console.log(dataSource.value);
         dataSource.value = dataSource.value.filter((data) => {
             const fechaMoment = moment(data.entryDate, "DD MMM, YYYY");
-            console.log(fechaMoment.isSameOrAfter(dates));
             return fechaMoment.isSameOrAfter(dates);
         });
     } else {
@@ -314,7 +315,6 @@ const filterForDate = (dates) => {
         originDataSource.value = [...dataSource.value];
         dataSource.value = dataSource.value.filter((data) => {
             const fechaMoment = moment(data.entryDate, "DD MMM, YYYY");
-            console.log(dateStart.value, dateEnd.value);
             return fechaMoment.isBetween(
                 dateStart.value,
                 dateEnd.value,
@@ -365,9 +365,10 @@ const setVariantState = (text) => {
         <a-table
             :dataSource="dataSource"
             :columns="columns"
-            :scroll="{ x: 2000 }"
             :loading="loading"
-            @change="handleChangeSort"
+            @change="handleTableChange"
+            :scroll="{ x: 1500 }"
+            sticky
         >
             <template
                 #customFilterDropdown="{
@@ -436,7 +437,7 @@ const setVariantState = (text) => {
                     v-if="
                         (state.searchText &&
                             state.searchedColumn === column.dataIndex &&
-                            column.dataIndex === 'numberEntryClaim') ||
+                            column.dataIndex === 'numberClaim') ||
                         (state.searchText &&
                             state.searchedColumn === column.dataIndex &&
                             column.dataIndex === 'numberOutClaim')
@@ -459,11 +460,7 @@ const setVariantState = (text) => {
                             "
                             :key="i"
                             class="fw-medium"
-                            :class="
-                                column.dataIndex === 'numberEntryClaim'
-                                    ? 'link-primary highlight-numberEntryClaim '
-                                    : 'link-success highlight-numberOutClaim'
-                            "
+                            :class="numberClaimColorhighlight(text)"
                         >
                             {{ fragment }}
                         </mark>
@@ -471,11 +468,7 @@ const setVariantState = (text) => {
                             <a
                                 :key="i"
                                 class="fw-medium"
-                                :class="
-                                    column.dataIndex === 'numberEntryClaim'
-                                        ? 'link-primary'
-                                        : 'link-success'
-                                "
+                                :class="numberClaimColor(text)"
                                 :href="`/gestion-documental/radicado/${record.id}`"
                             >
                                 {{ fragment }}</a
@@ -517,22 +510,26 @@ const setVariantState = (text) => {
                 <!-- Columns -->
 
                 <template v-if="column.dataIndex === 'action'">
-                    <a
-                        class="fw-medium link-primary text-center actionButtonTableRadicates"
-                        :href="`/gestion-documental/radicado/${text}`"
+                    <div
+                        class="d-flex justify-content-center align-items-center"
                     >
-                        <EyeOutlined />
-                    </a>
+                        <a
+                            class="fw-medium link-primary text-center actionButtonTableRadicates"
+                            :href="`/gestion-documental/radicado/${text}`"
+                        >
+                            <EyeOutlined />
+                        </a>
+                    </div>
                 </template>
 
                 <template
                     v-if="
-                        column.dataIndex == 'numberEntryClaim' &&
-                        !state.searchText
+                        column.dataIndex == 'numberClaim' && !state.searchText
                     "
                 >
                     <a
-                        class="fw-medium link-primary"
+                        class="fw-medium"
+                        :class="numberClaimColor(text)"
                         :href="`/gestion-documental/radicado/${record.id}`"
                     >
                         {{ text }}
