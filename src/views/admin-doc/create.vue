@@ -227,11 +227,13 @@ export default {
         .request(configGetPeople)
         .then((response) => {
           response.data.forEach((element) => {
+            console.log(element);
             auxPeople.push({
               label: element.name,
               value: element.name,
               area: element.area,
-              role: element.rol,
+              role: element.role,
+              uid: element.uid
             });
           });
           peopleList.value = auxPeople;
@@ -326,6 +328,10 @@ export default {
       return isDocs.value.filter((el) => el.value == form.value.documentType ? el.days : 0)
     })
 
+    const getAssignedUid = computed(() => {
+      return peopleList.value.filter((el) => el.value == form.value.assignedTo ? el.uid : '');
+    })
+
     function clearSelectInput() {
       if (form.value.area) {
         form.value.serie = "";
@@ -382,6 +388,7 @@ export default {
       isDocs,
       radicate,
       peopleList,
+      getAssignedUid,
       getDocDays,
       clearSelectInput,
       getTrds,
@@ -456,7 +463,9 @@ export default {
           days: this.getDocDays[0]?.days,
           documentaryTypologyEntry: this.form.documentType,
           entryDate: this.form.date,
-          expirationDate: dayjs(this.form.untilDate),
+          endDate: dayjs(this.form.untilDate),
+          assignedToUid: this.getAssignedUid[0]?.uid,
+          city: 'Barranquilla',
           folios: parseInt(this.form.folios),
           assignedTo: this.form.assignedTo,
           observations: "prueba",
@@ -483,6 +492,8 @@ export default {
           this.showRadicationButton = true;
         }
       } catch (error) {
+        this.saveLoading = false;
+        this.showRadicationButton = false;
         console.log(error);
       }
     },
@@ -604,6 +615,7 @@ export default {
         <div>{{ auxSerie }}</div>
         <div>{{ auxSubSerie }}</div>
         <div>{{ auxDocTypes }}</div>
+        <pre>{{ getAssignedUid[0]?.uid }}</pre>
       </div>
       <div class="text-end mb-4 col-6 col-sm-6">
         <BButton
@@ -871,10 +883,9 @@ export default {
               <BCol lg="3" class="mb-3">
                 <label
                   for="choices-privacy-status-input"
-                  class="form-label fw-bold"
+                  class="form-label fw-bold col-11 text-truncate"
                   >Tipología Documental</label
                 >
-                <pre>{{ form.documentType }}</pre>
                 <Multiselect
                   v-model="form.documentType"
                   :required="true"

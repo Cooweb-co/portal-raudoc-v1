@@ -116,7 +116,7 @@ export default [
     path: "/gestion-documental/lista-radicados",
     name: "list-claim",
     meta: { title: "Lista de Radicados", authRequired: true },
-    component: () => import("../views/tickets/list"),
+    component: () => import("../views/tickets/List"),
   },
   {
     path: "/administration/users",
