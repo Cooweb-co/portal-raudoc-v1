@@ -19,8 +19,10 @@ export default {
       perPage: 16,
       pages: [],
       candidatelist: [],
+      originalCandidatelist: [],
       config: config,
-      loading: false
+      loading: false,
+      selectRole: ''
     };
   },
   computed: {
@@ -30,7 +32,6 @@ export default {
     resultQuery() {
       if (this.searchQuery) {
         const search = this.searchQuery.toLowerCase();
-        console.log(search);
 
         return this.displayedPosts.filter((data) => {
           return (
@@ -48,6 +49,9 @@ export default {
     candidatelist() {
       this.setPages();
     },
+    selectRole(newValue) {
+      this.fetchUsers(newValue);
+    }
   },
   created() {
     this.setPages();
@@ -65,7 +69,8 @@ export default {
       });
     })
     axios.request(this.config).then(response => {
-      this.candidatelist = response.data
+      this.originalCandidatelist = response.data
+      this.selectRole = 'TODOS'
       this.loading = false
     }).catch((error) => {
       this.loading = false
@@ -86,6 +91,17 @@ export default {
       let from = page * perPage - perPage;
       let to = page * perPage;
       return candidatelist.slice(from, to);
+    },
+    fetchUsers(selectedRole) {
+      console.log(this.candidatelist.length);
+      if (selectedRole != "TODOS") {
+        this.candidatelist = this.originalCandidatelist.filter(
+          (user) => user.idRole == selectedRole
+        );
+      } else {
+        // Si el rol seleccionado es "TODOS", simplemente copia de nuevo todos los datos originales
+        this.candidatelist = [...this.originalCandidatelist];
+      }
     }
   },
   components: {
@@ -112,14 +128,13 @@ export default {
             <i class="ri-search-line search-icon"></i>
           </div>
           <div class="w-md">
-            <select class="form-select" data-choices data-choices-search-false>
+            <select v-model="selectRole" class="form-select" data-choices data-choices-search-false>
               <option value="TODOS" selected>Todos</option>
-              <option value="ADMIN">ADMIN</option>
-              <option value="SUPER ADMIN">SUPER ADMIN</option>
-              <option value="ADMIN EMPRESA">ADMIN EMPRESA</option>
-              <option value="ASESOR">ASESOR</option>
-              <option value="REDICADOR">REDICADOR</option>
-              <option value="SUPERVISOR SISTEMA">SUPERVISOR SISTEMA</option>
+              <option value="ADMIN">Administrador</option>
+              <option value="BOSS_OF_AREA">Jefe de área</option>
+              <option value="DIRECTOR">Director</option>
+              <option value="FUNCTIONARY">Funcionario</option>
+              <option value="RADICATOR">Radicador</option>
             </select>
           </div>
         </div>
@@ -158,13 +173,14 @@ export default {
                 <td>{{ data.identification }}</td>
                 <td>{{ data.name }}</td>
                 <td>
+                  <h5>
                   <span class="badge" :class="{
                     'bg-success-subtle text-success': data.idRole == 'FUNCTIONARY',
                     'bg-danger-subtle text-danger': data.idRole == 'BOSS_OF_AREA',
                     'bg-primary-subtle text-primary': data.idRole == 'DIRECTOR' || data.idRole == 'SUPER ADMIN',
                     'bg-warning-subtle text-warning': data.idRole == 'ADMINISTRADOR DE SISTEMA',
                     'bg-info-subtle text-info': data.idRole == 'SUPERVISOR DE SISTEMA',
-                  }">{{ data.idRole }}</span>
+                  }">{{ data.role }}</span></h5>
                 </td>
                 <td>{{ data.email }}</td>
               </tr>
