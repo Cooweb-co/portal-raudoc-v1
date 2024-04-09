@@ -24,7 +24,7 @@ onMounted(async () => {
             "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_COUNT_CLAIMS_BY_USER";
         const config = {
             params: {
-                uid: resInfoUser.uid,
+                uid: resInfoUser?.uid,
             },
             headers: {
                 company: "BAQVERDE",
