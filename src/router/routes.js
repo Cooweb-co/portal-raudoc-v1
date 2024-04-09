@@ -122,24 +122,8 @@ export default [
     path: "/administration/users",
     name: "administration-users",
     meta: { title: "Administración de usuarios", authRequired: true },
-    component: () => import("../views/apps/administration/Users"),
+    component: () => import("../views/apps/jobs/candidate-lists.vue"),
   },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   {
     path: "/dashboard/crypto",
     name: "dashboard-crypto",
@@ -308,7 +292,7 @@ export default [
     path: "/apps/projects-list",
     name: "projects-list",
     meta: { title: "Projects List", authRequired: true },
-    component: () => import("../views/admin-doc/detailsDocuments/list"),
+    component: () => import("../views/admin-doc/detailsDocuments/list.vue"),
   },
 
   {

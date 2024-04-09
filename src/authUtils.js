@@ -58,7 +58,7 @@ class FirebaseAuthBackend {
             firebase.auth().signInWithEmailAndPassword(email, password).then( async () => {
                 var user = firebase.auth().currentUser;
 
-                const refUser = firebase.firestore().collection('Users').doc(user.uid);
+                const refUser = firebase.firestore().collection('Users').doc(user?.uid);
                 const doc = await refUser.get();
 
                 console.log(doc.get('displayName'));

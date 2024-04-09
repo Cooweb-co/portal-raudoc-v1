@@ -429,4 +429,4 @@ export default {
       </div>
     </b-modal>
 
-</Layout></template>
+</Layout></template>./list.vue
