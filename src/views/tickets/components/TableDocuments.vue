@@ -1,6 +1,6 @@
 <script setup>
 import { SearchOutlined, EyeOutlined } from "@ant-design/icons-vue";
-import calendarFilter from "./calendarFilter.vue";
+import calendarFilter from "./CalendarFilter.vue";
 import { ref, reactive, onBeforeMount, computed } from "vue";
 import axios from "axios";
 import moment from "moment";

@@ -25,8 +25,21 @@ onMounted(async () => {
 </script>
 
 <template>
-    <BRow>
-        <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" active />
-        <ClaimsCounterElement :cardsData="cardsData" v-else/>
+    <BRow v-if="loading">
+        <BCol>
+            <a-skeleton :paragraph="{ rows: 2 }" active avatar />
+        </BCol>
+        <BCol>
+            <a-skeleton :paragraph="{ rows: 2 }" active avatar />
+        </BCol>
+        <BCol>
+            <a-skeleton :paragraph="{ rows: 2 }" active avatar />
+        </BCol>
+        <BCol>
+            <a-skeleton :paragraph="{ rows: 2 }" active avatar />
+        </BCol>
+    </BRow>
+    <BRow v-else>
+        <ClaimsCounterElement :cardsData="cardsData" />
     </BRow>
 </template>
