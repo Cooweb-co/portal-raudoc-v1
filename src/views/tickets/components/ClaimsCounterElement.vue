@@ -13,7 +13,7 @@ const cardsData = ref(props.cardsData);
 </script>
 
 <template>
-    <BCol v-for="(cardData, i) in cardsData" :key="i" xxl="3" sm="6">
+    <BCol v-for="(cardData, i) in cardsData" :key="i" sm="3">
         <BCard no-body class="card-animate">
             <BCardBody>
                 <div class="d-flex justify-content-between">

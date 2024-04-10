@@ -100,7 +100,7 @@ onMounted(async () => {
             <a-skeleton :paragraph="{ rows: 2 }" active avatar />
         </BCol>
     </BRow>
-    <BCol xl="4" v-for="(item, index) of projectsWidgets" :key="index" v-else>
+    <BCol sm="3" v-for="(item, index) of projectsWidgets" :key="index" v-else>
         <BCard no-body class="card-animate">
             <BCardBody>
                 <div class="d-flex align-items-center">

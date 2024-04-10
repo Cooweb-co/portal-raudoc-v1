@@ -280,7 +280,7 @@ onMounted(() => {
                 <picture
                     class="d-flex justify-content-center align-items-end"
                 >
-                    <img src="/BAQVERDE.png" alt="BAQVERDE" class="w-25"/>
+                    <img src="/BAQVERDE.png" alt="BAQVERDE" style="width: 20%;"/>
                 </picture>
                 <div class="d-flex align-items-center">
                     <BDropdown
