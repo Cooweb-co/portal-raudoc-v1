@@ -7,7 +7,6 @@ import {
 } from "@zhuowenli/vue-feather-icons";
 import { ref, onMounted } from "vue";
 import { state } from "@/state/modules/auth";
-import { getInfoUser } from "@/services/docservice/doc.service";
 import axios from "axios";
 
 const user = ref(state.currentUser);
@@ -18,12 +17,11 @@ const projectsWidgets = ref();
 onMounted(async () => {
     try {
         loading.value = true;
-        const resInfoUser = await getInfoUser("BAQVERDE", user.value.email);
         const url =
             "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_COUNT_CLAIMS_BY_USER";
         const config = {
             params: {
-                uid: resInfoUser?.uid,
+                uid: user.value?.uid,
             },
             headers: {
                 company: "BAQVERDE",
@@ -31,14 +29,13 @@ onMounted(async () => {
             },
         };
         const body = {
-            role: resInfoUser.idRole,
-            areaId: resInfoUser.areaId,
+            role: user.value.idRole,
+            areaId: user.value.areaId,
         };
         const dataForCard = await axios.post(url, body, config);
         if (dataForCard.data.length > 0) {
             loading.value = false;
             projectsWidgets.value = dataForCard.data;
-            console.log(dataForCard.data);
         } else {
             loading.value = false;
             projectsWidgets.value = [

@@ -32,6 +32,7 @@ export const actions = {
 
         return getFirebaseBackend().loginUser(email, password).then((response) => {
             const user = response
+            console.log(user)
             commit('SET_CURRENT_USER', user)
             return user
         });
