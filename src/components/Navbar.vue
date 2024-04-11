@@ -19,6 +19,8 @@ const notifications = ref([
     },
 ]);
 
+
+
 // const languages = ref([
 //   {
 //     flag: require('@/assets/images/flags/us.svg'),
@@ -44,7 +46,13 @@ const flag = ref(null);
 // });
 
 const user = computed(() => {
-    return state.currentUser;
+    return JSON.parse(state.currentUserInfo);
+});
+
+
+const name = computed(()=> {
+  const namesToArray = user.value?.name?.split(' ');
+  return namesToArray[0] +  ' ' + namesToArray[namesToArray.length - 2]
 });
 
 const toggleHamburgerMenu = () => {
@@ -827,7 +835,7 @@ onMounted(() => {
                                 <span class="text-start ms-xl-2">
                                     <span
                                         class="d-none d-xl-inline-block ms-1 fw-medium user-name-text"
-                                        >{{ user.displayName }}</span
+                                        >{{ name }}</span
                                     >
                                     <span
                                         class="d-none d-xl-block ms-1 fs-12 user-name-sub-text"
