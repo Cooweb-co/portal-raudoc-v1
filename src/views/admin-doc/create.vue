@@ -16,12 +16,18 @@ import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
 import Modal from "../modals/Modal.vue";
 import moment from 'moment'
 
+import {
+  onSnapshot,
+  collection,
+} from "firebase/firestore";
+
 //google places api imports
 import { Loader } from "@googlemaps/js-api-loader";
 
 import {
   createClaimID,
   onListenClaimData,
+  getDocStatus
 } from "../../services/docservice/doc.service";
 import axios from "axios";
 
@@ -109,56 +115,86 @@ export default {
 
     const v$ = useVuelidate(rules, form.value);
 
-    const startListening = () => {
-      idProccessAI = toast("Analizando documento con IA...", {
-        isLoading: true,
-        hideProgressBar: true,
-        closeButton: false,
-        closeOnClick: false,
+
+    const collectionRef = collection(
+      storage,
+      "Companies",
+      companyID.value,
+      "Claims",
+      companyID.value,
+      "Files"
+    );
+
+    onSnapshot(collectionRef, (querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          console.log("Nuevo estado del documento:", doc.data());
+          let status = doc.data?.status
+          if (status === 'ERROR') {
+            return false
+          } else if (status === 'PROCESSED') {
+            return true
+          }
+        });
       });
 
-      unsubscribe = onListenClaimData(
-        documentID.value,
-        companyID.value,
-        (data) => {
-          claimData.value = data;
-          if (data.status == "DRAFT" && data.summary == null) {
-            loadingAI.value = true;
-            setTimeout(() => {
+    const startListening = () => {
+
+      try {
+        idProccessAI = toast("Analizando documento con IA...", {
+          isLoading: true,
+          hideProgressBar: true,
+          closeButton: false,
+          closeOnClick: false,
+        });
+
+        unsubscribe = onListenClaimData(
+          documentID.value,
+          companyID.value,
+          async (data) => {
+            let statusDoc = await getDocStatus(companyID.value, documentID.value)
+            console.log(statusDoc);
+            claimData.value = data;
+            if (data.status == "DRAFT" && data.summary == null) {
+              loadingAI.value = true;
+              setTimeout(() => {
+                toast.update(idProccessAI, {
+                  render: "Extrayendo información relevante...",
+                  type: toast.TYPE.INFO,
+                });
+              }, 3000);
+            }
+            if (data.summary) {
               toast.update(idProccessAI, {
-                render: "Extrayendo información relevante...",
-                type: toast.TYPE.INFO,
+                render: "Resumen realizado con exito!",
+                type: toast.TYPE.SUCCESS,
+                isLoading: false,
+                autoClose: 3000,
               });
-            }, 3000);
-          }
-          if (data.summary) {
-            toast.update(idProccessAI, {
-              render: "Resumen realizado con exito!",
-              type: toast.TYPE.SUCCESS,
-              isLoading: false,
-              autoClose: 3000,
-            });
-            loadingAI.value = false;
-          }
+              loadingAI.value = false;
+            }
 
-          if (data.status == "ERROR") {
-            toast.update(idProccessAI, {
-              render:
-                "Complete la información de asunto y resumen manualmente. Documento no valido para este proceso.",
-              type: toast.TYPE.WARNING,
-              isLoading: false,
-              autoClose: 1000,
-            });
-            loadingAI.value = false;
-          }
+            if (data.status === 'ERROR') {
+              toast.update(idProccessAI, {
+                render:
+                  "Complete la información de asunto y resumen manualmente. Documento no valido para este proceso.",
+                type: toast.TYPE.WARNING,
+                isLoading: false,
+                autoClose: 1000,
+              });
+              loadingAI.value = false;
+            }
 
-          instance.proxy.subject = data.subject ? data.subject : "";
-          instance.proxy.editorData = data.summary ? data.summary : "";
-          form.value.subject = data.subject ? data.subject : "";
-          form.value.description = data.summary ? data.summary : "";
-        }
-      );
-      return unsubscribe;
+            instance.proxy.subject = data.subject ? data.subject : "";
+            instance.proxy.editorData = data.summary ? data.summary : "";
+            form.value.subject = data.subject ? data.subject : "";
+            form.value.description = data.summary ? data.summary : "";
+          }
+        );
+        return unsubscribe;
+      } catch (error) {
+        console.log('error: ', error);
+      }
+
     };
 
     const drop = (e) => {
