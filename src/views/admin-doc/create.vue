@@ -1,11 +1,5 @@
 <script>
-import {
-  ref,
-  watch,
-  getCurrentInstance,
-  onUnmounted,
-  computed,
-} from "vue";
+import { ref, watch, getCurrentInstance, onUnmounted, computed } from "vue";
 import Multiselect from "@vueform/multiselect";
 import dayjs from "dayjs";
 import "@vueform/multiselect/themes/default.css";
@@ -20,6 +14,10 @@ import { uploadBytes, ref as storageRef } from "firebase/storage";
 import ValidateLabel from "../../utils/ValidateLabel.vue";
 import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
 import Modal from "../modals/Modal.vue";
+import moment from 'moment'
+
+//google places api imports
+import { Loader } from "@googlemaps/js-api-loader";
 
 import {
   createClaimID,
@@ -208,17 +206,19 @@ export default {
       }
     };
 
-
-
     //obtener dias segun tipologia documental
     const getDocDays = computed(() => {
-      return isDocs.value.filter((el) => el.value == form.value.documentType ? el.days : 0)
-    })
+      return isDocs.value.filter((el) =>
+        el.label == form.value.documentType ? el : 0
+      );
+    });
 
     //obtener uid de persona asignada
     const getAssignedUid = computed(() => {
-      return peopleList.value.filter((el) => el.value == form.value.assignedTo ? el?.uid : '');
-    })
+      return peopleList.value.filter((el) =>
+        el.value == form.value.assignedTo ? el?.uid : ""
+      );
+    });
 
     // obtener listado trds
     async function getTrds() {
@@ -230,7 +230,7 @@ export default {
               label: element.name,
               value: element.name,
               series: element.series,
-              id: element.id
+              id: element.id,
             });
           });
         })
@@ -241,8 +241,8 @@ export default {
 
     //obtener dias segun tipologia documental
     const getAreaId = computed(() => {
-      return trds.value.find((el) => el.value === form.value.area)?.id
-    })
+      return trds.value.find((el) => el.value === form.value.area)?.id;
+    });
 
     // obtener listado de usuarios activos por areas
     async function getPeople() {
@@ -253,7 +253,7 @@ export default {
         headers: {
           company: "BAQVERDE",
         },
-      }
+      };
       var auxPeople = [];
       axios
         .request(config)
@@ -264,7 +264,7 @@ export default {
               value: element.name,
               area: element.area,
               role: element.role,
-              uid: element.uid
+              uid: element.uid,
             });
           });
           peopleList.value = auxPeople;
@@ -319,7 +319,7 @@ export default {
     const auxDocTypes = computed(() => {
       if (form.value.subSerie) {
         subseries.value.forEach((i) => {
-          if (i.label == form.value.subSerie) {
+          if (form.value.subSerie == i.label) {
             isDocs.value = [];
             i.documents.forEach((j) => {
               isDocs.value.push({
@@ -339,7 +339,7 @@ export default {
         form.value.subSerie = "";
         form.value.documentType = "";
       }
-      await getPeople()
+      await getPeople();
     }
 
     function clearInputSubSerie() {
@@ -362,6 +362,10 @@ export default {
         return currentValue;
       }
     );
+
+    function getAddress() {
+      console.log(form.value);
+    }
 
     return {
       dropzoneFile,
@@ -396,6 +400,8 @@ export default {
       getPeople,
       clearInputSubSerie,
       clearInputDocType,
+      getAddress,
+      moment
     };
   },
   data() {
@@ -415,9 +421,9 @@ export default {
       deadline: "",
       rangeDateconfig: {
         wrap: true,
-        altFormat: "d/m/Y H:i",
+        altFormat: "d/m/Y",
         altInput: true,
-        dateFormat: "d/m/Y H:i",
+        dateFormat: "d/m/Y",
       },
       showRadicationButton: false,
     };
@@ -459,15 +465,15 @@ export default {
           area: this.form.area,
           serie: this.form.serie,
           subSerie: this.form.subSerie,
-          days: this.getDocDays[0]?.days,
+          days: this.getDocDays[0]?.days ?? null,
           documentaryTypologyEntry: this.form.documentType,
           entryDate: this.form.date,
-          endDate: dayjs(this.form.untilDate),
+          endDate: this.form.untilDate === null ? '' : this.form.untilDate,
           assignedToUid: this.getAssignedUid[0]?.uid,
-          city: 'Barranquilla',
+          city: this.form.city,
           folios: parseInt(this.form.folios),
           assignedTo: this.form.assignedTo,
-          observations: "prueba",
+          observations: this.form.description,
           externalRadicate: this.form.externalFiling,
           inputMethod: this.form.inputMethod,
           petitionerInformation: {
@@ -547,11 +553,53 @@ export default {
       }
     },
   },
-  mounted() {
+  async mounted() {
     setTimeout(() => {
       this.isDisabledAI = false;
     }, 1000);
     this.getTrds();
+
+    const loader = new Loader({
+      apiKey: "AIzaSyAELgR27D_WqfANHM3LBXeammM-lCvqhBU",
+      version: "weekly",
+    });
+    const Places = await loader.importLibrary("places");
+
+    //YOU ARE HERE !!!!!!!!!!!!!!
+
+    // the center, defaultbounds are not necessary but are best practices to limit/focus search results
+    const center = { lat: 34.082298, lng: -82.284777 };
+    // Create a bounding box with sides ~10km away from the center point
+    const defaultBounds = {
+      north: center.lat + 0.1,
+      south: center.lat - 0.1,
+      east: center.lng + 0.1,
+      west: center.lng - 0.1,
+    };
+
+    //this const will be the first arg for the new instance of the Places API
+
+    const input = document.getElementById("place"); //binds to our input element
+
+    //this object will be our second arg for the new instance of the Places API
+    const options = {
+      bounds: defaultBounds, //optional
+      types: ["establishment"], //optioanl
+      componentRestrictions: { country: "co" }, //limiter for the places api search
+      fields: ["address_components", "geometry", "icon", "name"], //allows the api to accept these inputs and return similar ones
+      strictBounds: false, //optional
+    };
+
+    // per the Google docs create the new instance of the import above. I named it Places.
+    const autocomplete = new Places.Autocomplete(input, options);
+
+    //add the place_changed listener to display results when inputs change
+    autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace(); //this callback is inherent you will see it if you logged autocomplete
+      this.form.address = place.name + ', ' + place.address_components[1].long_name + ' #' + place.address_components[0].long_name
+      this.form.city = place.address_components[4].long_name
+      console.log("place", place);
+    });
   },
   computed: {
     user() {
@@ -598,8 +646,6 @@ export default {
         <div>{{ auxSerie }}</div>
         <div>{{ auxSubSerie }}</div>
         <div>{{ auxDocTypes }}</div>
-        <pre>{{ getAssignedUid[0]?.uid }}</pre>
-        <pre>{{ getAreaId }}</pre>
       </div>
       <div class="text-end mb-4 col-6 col-sm-6">
         <BButton v-if="!showRadicationButton" type="submit" variant="success" class="w-sm" @click="handleSaveInfo"
@@ -701,9 +747,8 @@ export default {
               <BCol lg="6" class="mb-3">
                 <label for="choices-privacy-status-input" class="form-label fw-bold">Área</label>
                 <Multiselect v-model="form.area" :required="true" :close-on-select="true" :searchable="true"
-                  :create-option="true" placeholder="Seleccione" :options="trds"
-                  @select="clearSelectInput" />
-              
+                  :create-option="true" placeholder="Seleccione" :options="trds" @select="clearSelectInput" />
+
                 <ValidateLabel v-bind="{ v$ }" attribute="area" />
               </BCol>
               <BCol lg="3">
@@ -867,7 +912,9 @@ export default {
               <BCol lg="12" class="mb-3">
                 <label for="username" class="form-label fw-bold">Dirección <span
                     class="text-danger fw-bold">*</span></label>
-                <input type="text" class="form-control" v-model="form.address" id="username"
+                <!-- <input type="text" class="form-control" v-model="form.address" id="username"
+                  placeholder="Ingrese una dirección" /> -->
+                <input id="place" class="form-control" type="text" @change="getAddress()"
                   placeholder="Ingrese una dirección" />
 
                 <ValidateLabel v-bind="{ v$ }" attribute="address" />
