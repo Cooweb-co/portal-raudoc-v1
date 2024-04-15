@@ -2,12 +2,17 @@ import { getFirebaseBackend } from '../../authUtils.js'
 
 export const state = {
     currentUser: sessionStorage.getItem('authUser'),
+    currentUserInfo: sessionStorage.getItem('authUserInfo') // Init variable with session storage key
 }
 
 export const mutations = {
     SET_CURRENT_USER(state, newValue) {
         state.currentUser = newValue
         saveState('auth.currentUser', newValue)
+    },
+    SET_CURRENT_USER_INFO(state, newValue) {
+        state.currentUserInfo = JSON.stringify(newValue)
+        saveState('authUserInfo', newValue)
     }
 }
 
@@ -30,9 +35,14 @@ export const actions = {
     logIn({ commit, dispatch, getters }, { email, password } = {}) {
         if (getters.loggedIn) return dispatch('validate')
 
-        return getFirebaseBackend().loginUser(email, password).then((response) => {
+        return getFirebaseBackend().loginUser(email, password).then(async (response) => {
             const user = response
             commit('SET_CURRENT_USER', user)
+
+            // Fetch user info with an email and save it in session storage
+            const currentUser = await getFirebaseBackend().getUserInfo('BAQVERDE', email);
+            commit('SET_CURRENT_USER_INFO', currentUser)
+
             return user
         });
     },

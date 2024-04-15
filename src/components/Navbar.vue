@@ -19,6 +19,8 @@ const notifications = ref([
     },
 ]);
 
+
+
 // const languages = ref([
 //   {
 //     flag: require('@/assets/images/flags/us.svg'),
@@ -44,8 +46,19 @@ const flag = ref(null);
 // });
 
 const user = computed(() => {
-    return state.currentUser;
+  return JSON.parse(state.currentUserInfo)
 });
+
+
+const name = computed(()=> {
+  const namesToArray = user?.value?.name?.split(' ');
+  if(!user?.value?.name) return '-'
+  return capitalizeFirstLetter(namesToArray[0]) +  ' ' + capitalizeFirstLetter(namesToArray[namesToArray.length - 2])
+});
+
+function capitalizeFirstLetter(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
 
 const toggleHamburgerMenu = () => {
     // Aquí va tu lógica de toggleHamburgerMenu
@@ -280,7 +293,7 @@ onMounted(() => {
                 <picture
                     class="d-flex justify-content-center align-items-end"
                 >
-                    <img src="/BAQVERDE.png" alt="BAQVERDE" class="w-25"/>
+                    <img src="/BAQVERDE.png" alt="BAQVERDE" style="width: 20%;"/>
                 </picture>
                 <div class="d-flex align-items-center">
                     <BDropdown
@@ -827,7 +840,7 @@ onMounted(() => {
                                 <span class="text-start ms-xl-2">
                                     <span
                                         class="d-none d-xl-inline-block ms-1 fw-medium user-name-text"
-                                        >{{ user.displayName }}</span
+                                        >{{ name }}</span
                                     >
                                     <span
                                         class="d-none d-xl-block ms-1 fs-12 user-name-sub-text"
@@ -837,7 +850,7 @@ onMounted(() => {
                             </span>
                         </template>
                         <h6 class="dropdown-header">
-                            Hola {{ user.displayName }}!
+                            Hola {{ name }}!
                         </h6>
                         <router-link class="dropdown-item" to="/pages/profile"
                             ><i

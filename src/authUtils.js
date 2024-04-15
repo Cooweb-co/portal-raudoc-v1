@@ -3,13 +3,19 @@ import firebase from 'firebase/compat/app';
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
 import { getStorage } from "firebase/storage";
+import {
+    getDocs,
+    collection,
+    query,
+    where,
+} from "firebase/firestore";
 
 class FirebaseAuthBackend {
-    
+
     constructor(firebaseConfig) {
         if (firebaseConfig) {
             // Initialize Firebase
-            
+
             const app = firebase.initializeApp(firebaseConfig);
             // firebase.initializeApp(firebaseConfig);
             firebase.auth().onAuthStateChanged((user) => {
@@ -21,7 +27,7 @@ class FirebaseAuthBackend {
             });
 
             this.storage = getStorage(app);
-            this.firestore= firebase.firestore()
+            this.firestore = firebase.firestore()
         }
     }
 
@@ -55,7 +61,7 @@ class FirebaseAuthBackend {
      */
     loginUser(email, password) {
         return new Promise((resolve, reject) => {
-            firebase.auth().signInWithEmailAndPassword(email, password).then( async () => {
+            firebase.auth().signInWithEmailAndPassword(email, password).then(async () => {
                 var user = firebase.auth().currentUser;
 
                 const refUser = firebase.firestore().collection('Users').doc(user?.uid);
@@ -74,6 +80,37 @@ class FirebaseAuthBackend {
                 reject(this._handleError(error));
             });
         });
+    }
+
+    /**
+     * Get user info from firestore
+    */
+    async getUserInfo(company, email) {
+        try {
+            // Buscar el usuario por su correo electrónico
+            const usersCollection = collection(
+                this.firestore,
+                "Companies",
+                company,
+                "Users"
+            );
+            const fieldQuery = query(usersCollection, where("email", "==", email));
+            const fieldSnapshot = await getDocs(fieldQuery);
+
+            if (!fieldSnapshot.empty) {
+                // Si se encontraron documentos que coinciden, devolver el primer documento
+                const firstDocument = fieldSnapshot.docs[0];
+                return {
+                    uid: firstDocument.id,
+                    ...firstDocument.data()
+                };
+            } else {
+                return null;
+            }
+        } catch (error) {
+            console.error("Error al obtener información del usuario:", error);
+            throw error;
+        }
     }
 
     /**
@@ -133,6 +170,7 @@ let _fireBaseBackend = null;
  * @param {*} config 
  */
 const initFirebaseBackend = (config) => {
+    console.log('CONFIG:: ', config)
     if (!_fireBaseBackend) {
         _fireBaseBackend = new FirebaseAuthBackend(config);
     }
