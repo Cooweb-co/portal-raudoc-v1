@@ -9,7 +9,7 @@ import { toast } from "vue3-toastify";
 import { ref, watch, defineProps } from "vue";
 import axios from "axios";
 
-const props = defineProps(["loading", "numberOutClaimExist", "data"]);
+const props = defineProps(["loading", "data"]);
 const files = ref([]);
 const dropzoneFile = ref("");
 const answered = ref(false);
@@ -68,7 +68,7 @@ const uploadFile = async () => {
         );
         answered.value = true;
         documentNumber.value = res.data.idRadicate;
-        console.log(res.data)
+        console.log(res.data);
         toast.update(idLoadFile, {
             render: "Archivo cargado con éxito",
             type: "success",
@@ -118,9 +118,9 @@ watch(
     }
 );
 watch(
-    () => props.numberOutClaimExist,
+    () => props.data,
     (currentValue) => {
-        if (currentValue == true) return (answered.value = true);
+        if (currentValue.numberOutClaim) return (answered.value = true);
         return;
     }
 );
@@ -206,7 +206,7 @@ watch(
                     <div class="grid gx-2">
                         <BButton
                             type="submit"
-                            :variant="answered ? 'secondary':'success'"
+                            :variant="answered ? 'secondary' : 'success'"
                             :disabled="answered ? true : false"
                             class="w-sm"
                             @click="uploadFile"
@@ -321,7 +321,7 @@ watch(
                             <h3
                                 class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
                             >
-                                Ya se envío una Respuesta
+                                Radicado Generado
                             </h3>
                         </BoCardBody>
                     </BCard>

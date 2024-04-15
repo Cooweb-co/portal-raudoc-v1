@@ -51,11 +51,7 @@ const toggleHamburgerMenu = () => {
     // Aquí va tu lógica de toggleHamburgerMenu
 };
 
-const deleteNotification = () => {
-  for (let i = 0; i < selectNotifications.value.length; i++) {
-    notifications.value = notifications.value.filter(element => element.id != selectNotifications.value[i]);
-  }
-}
+
 
 // const toggleMenu = () => {
 //   $parent.toggleMenu();
@@ -108,6 +104,17 @@ const deselectNotifications = (id) => {
     selectNotifications.value = selectNotifications.value.filter(
         (element) => element != id
     );
+};
+
+const deleteNotification = () => {
+  for (let i = 0; i < selectNotifications.value.length; i++) {
+    notifications.value = notifications.value.filter(element => element.id != selectNotifications.value[i]);
+  }
+}
+
+const markAsRead = () => {
+    selectNotifications.value = []
+    notifications.value = []
 };
 
 onMounted(() => {
@@ -270,7 +277,11 @@ onMounted(() => {
             </div>
           </form> -->
                 </div>
-
+                <picture
+                    class="d-flex justify-content-center align-items-end"
+                >
+                    <img src="/BAQVERDE.png" alt="BAQVERDE" class="w-25"/>
+                </picture>
                 <div class="d-flex align-items-center">
                     <BDropdown
                         class="dropdown d-md-none topbar-head-dropdown header-item"
@@ -525,8 +536,9 @@ onMounted(() => {
                         <BTabs
                             nav-class="dropdown-tabs nav-tab-custom bg-primary px-2 pt-2"
                         >
-                            <div class="d-flex justify-content-end align-items-center w-100">
-                              <BButton variant="outline-danger" size="sm" class="position-relative right-0 m-2 mb-0" @click="deleteNotification"><Trash2Icon /></BButton>
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                              <BButton variant="outline-success" size="sm" class=" m-2 mb-0" @click="markAsRead">Marcar como leídas todas</BButton>
+                              <BButton variant="outline-danger" size="sm" class=" m-2 mb-0" @click="deleteNotification"><Trash2Icon /></BButton>
                             </div>
                             <!-- <BTab title=" All (4) " class="tab-pane fade py-2 ps-2 show" id="all-noti-tab" role="tabpanel">
                 <simplebar data-simplebar style="max-height: 300px" class="pe-2">

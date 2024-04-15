@@ -23,7 +23,6 @@ const entryDate = ref("");
 const expirationDate = ref("");
 const numberClaim = ref("");
 const loading = ref(false);
-const numberOutClaimExist = ref(false);
 const router = useRoute();
 
 onMounted(async () => {
@@ -33,8 +32,6 @@ onMounted(async () => {
 
         loading.value = true;
         const docData = await getDocument(company.value, id.value);
-        console.log(docData);
-        console.log(docData.expirationDate);
         if (docData?.createdAt && docData?.createdAt.seconds) {
             const formattedDate = transformDate(docData?.createdAt.seconds); // Formatear fecha
             entryDate.value = formattedDate; // Guardar la fecha formateada
@@ -83,8 +80,6 @@ onMounted(async () => {
                 docData?.petitionerInformation?.phoneNumber || "No definido",
             address: docData?.petitionerInformation?.address || "No definido",
         };
-        numberOutClaimExist.value =
-            data.value.numberOutClaim == "No definido" ? false : true;
         numberClaim.value =
             data.value.numberEntryClaim ||
             data.value.numberOutClaim ||
@@ -237,7 +232,7 @@ const isClaimOut = () => {
                             :title="'Documentos de salida'" :typeOfPerson="'Nombre del Empleado'" />
 
                     </BTab>
-                    <OverviewResponse :loading="loading" :numberOutClaimExist="numberOutClaimExist.value" :data="data"
+                    <OverviewResponse :loading="loading" :data="data"
                         v-if="!numberClaim.startsWith('BV-')" />
                 </BTabs>
             </BCol>

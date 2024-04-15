@@ -13,7 +13,6 @@ import axios from "axios";
 const user = ref(state.currentUser);
 const loading = ref(false);
 
-console.log(user.value);
 const projectsWidgets = ref();
 
 onMounted(async () => {
@@ -32,20 +31,75 @@ onMounted(async () => {
             },
         };
         const body = {
-            role: resInfoUser.rol,
+            role: resInfoUser.idRole,
             areaId: resInfoUser.areaId,
         };
         const dataForCard = await axios.post(url, body, config);
-        projectsWidgets.value = dataForCard.data;
-        loading.value = false;
+        if (dataForCard.data.length > 0) {
+            loading.value = false;
+            projectsWidgets.value = dataForCard.data;
+            console.log(dataForCard.data);
+        } else {
+            loading.value = false;
+            projectsWidgets.value = [
+                {
+                    value: "Peticiones Recibidas",
+                    count: 0,
+                },
+                {
+                    value: "Peticiones Respondidas",
+                    count: 0,
+                },
+                {
+                    value: "Peticiones por responder",
+                    count: 0,
+                },
+                {
+                    value: "Documentos Procesados",
+                    count: 0,
+                },
+            ];
+        }
     } catch (error) {
         console.error(error);
+        loading.value = false;
+            projectsWidgets.value = [
+                {
+                    value: "Peticiones Recibidas",
+                    count: 0,
+                },
+                {
+                    value: "Peticiones Respondidas",
+                    count: 0,
+                },
+                {
+                    value: "Peticiones por responder",
+                    count: 0,
+                },
+                {
+                    value: "Documentos Procesados",
+                    count: 0,
+                },
+            ];
     }
 });
 </script>
 
 <template>
-    <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" active />
+    <BRow v-if="loading">
+        <BCol no-body class="card-animate">
+            <a-skeleton :paragraph="{ rows: 2 }" active avatar />
+        </BCol>
+        <BCol no-body class="card-animate">
+            <a-skeleton :paragraph="{ rows: 2 }" active avatar />
+        </BCol>
+        <BCol no-body class="card-animate">
+            <a-skeleton :paragraph="{ rows: 2 }" active avatar />
+        </BCol>
+        <BCol no-body class="card-animate">
+            <a-skeleton :paragraph="{ rows: 2 }" active avatar />
+        </BCol>
+    </BRow>
     <BCol xl="4" v-for="(item, index) of projectsWidgets" :key="index" v-else>
         <BCard no-body class="card-animate">
             <BCardBody>
