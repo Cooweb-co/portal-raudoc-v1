@@ -46,14 +46,19 @@ const flag = ref(null);
 // });
 
 const user = computed(() => {
-    return JSON.parse(state.currentUserInfo);
+  return JSON.parse(state.currentUserInfo)
 });
 
 
 const name = computed(()=> {
-  const namesToArray = user.value?.name?.split(' ');
-  return namesToArray[0] +  ' ' + namesToArray[namesToArray.length - 2]
+  const namesToArray = user?.value?.name?.split(' ');
+  if(!user?.value?.name) return '-'
+  return capitalizeFirstLetter(namesToArray[0]) +  ' ' + capitalizeFirstLetter(namesToArray[namesToArray.length - 2])
 });
+
+function capitalizeFirstLetter(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
 
 const toggleHamburgerMenu = () => {
     // Aquí va tu lógica de toggleHamburgerMenu
@@ -845,7 +850,7 @@ onMounted(() => {
                             </span>
                         </template>
                         <h6 class="dropdown-header">
-                            Hola {{ user.displayName }}!
+                            Hola {{ name }}!
                         </h6>
                         <router-link class="dropdown-item" to="/pages/profile"
                             ><i

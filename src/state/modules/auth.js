@@ -11,7 +11,7 @@ export const mutations = {
         saveState('auth.currentUser', newValue)
     },
     SET_CURRENT_USER_INFO(state, newValue) {
-        state.currentUserInfo = newValue
+        state.currentUserInfo = JSON.stringify(newValue)
         saveState('authUserInfo', newValue)
     }
 }
