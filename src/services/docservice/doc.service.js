@@ -8,6 +8,9 @@ import {
 } from "firebase/firestore";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
+
+import store from '@/state/store'
+
 const firestore = getFirebaseBackend().firestore;
 
 export const createClaimID = async (uid) => {
@@ -31,14 +34,18 @@ export const createClaimID = async (uid) => {
 };
 
 export const onListenClaimData = async (claimId, companyId, callback) => {
+    try {
+        return onSnapshot(
+            doc(firestore, "Companies", companyId, "Claims", claimId),
+            (doc) => {
+                console.log("onListenClaimData::::OnSnapshot", doc.data());
+                callback(doc.data());
+            }
+        );
+    } catch (error) {
+        console.log("error: ", error);
+    }
     // eslint-disable-next-line no-useless-catch
-    return onSnapshot(
-        doc(firestore, "Companies", companyId, "Claims", claimId),
-        (doc) => {
-            console.log("onListenClaimData::::OnSnapshot", doc.data());
-            callback(doc.data());
-        }
-    );
 };
 
 export const saveFile = async (pathDocument, urlPDF, fileName) => {
@@ -117,5 +124,37 @@ export async function openDocument(fileName, filePath) {
         window.open(url, "_blank");
     } catch (error) {
         console.error("Error al obtener URL del archivo:", error);
+    }
+}
+
+export async function getDocStatus(companyId, claimId) {
+    try {
+        console.log('Llega')
+        const collectionRef = collection(
+            firestore,
+            "Companies",
+            companyId,
+            "Claims",
+            claimId,
+            "Files"
+        );
+
+        onSnapshot(collectionRef, (querySnapshot) => {
+            const querySnapshotUpdates = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data()
+                console.log('Data',data)
+                querySnapshotUpdates.push(data);
+                store.dispatch('createDocState/STATE_DOC', { newValue: data });
+                // if (status === 'ERROR') {
+                //   return false
+                // } else if (status === 'PROCESSED') {
+                //   return true
+                // }
+            });
+        });
+        return
+    } catch (error) {
+        console.error("Error al obtener los documentos:", error);
     }
 }
