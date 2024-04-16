@@ -15,11 +15,12 @@ import ValidateLabel from "../../utils/ValidateLabel.vue";
 import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
 import Modal from "../modals/Modal.vue";
 import moment from 'moment'
+import store from '@/state/store'
 
-import {
-  onSnapshot,
-  collection,
-} from "firebase/firestore";
+// import {
+//   onSnapshot,
+//   collection,
+// } from "firebase/firestore";
 
 //google places api imports
 import { Loader } from "@googlemaps/js-api-loader";
@@ -56,7 +57,7 @@ export default {
     const isDocs = ref([]);
     const radicate = ref("");
     const peopleList = ref([]);
-
+    // const statusDoc = reactive();
     let config = {
       method: "get",
       maxBodyLength: Infinity,
@@ -116,26 +117,26 @@ export default {
     const v$ = useVuelidate(rules, form.value);
 
 
-    const collectionRef = collection(
-      storage,
-      "Companies",
-      companyID.value,
-      "Claims",
-      companyID.value,
-      "Files"
-    );
+    // const collectionRef = collection(
+    //   storage,
+    //   "Companies",
+    //   companyID.value,
+    //   "Claims",
+    //   companyID.value,
+    //   "Files"
+    // );
 
-    onSnapshot(collectionRef, (querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          console.log("Nuevo estado del documento:", doc.data());
-          let status = doc.data?.status
-          if (status === 'ERROR') {
-            return false
-          } else if (status === 'PROCESSED') {
-            return true
-          }
-        });
-      });
+    // onSnapshot(collectionRef, (querySnapshot) => {
+    //     querySnapshot.forEach((doc) => {
+    //       console.log("Nuevo estado del documento:", doc.data());
+    //       let status = doc.data?.status
+    //       if (status === 'ERROR') {
+    //         return false
+    //       } else if (status === 'PROCESSED') {
+    //         return true
+    //       }
+    //     });
+    //   });
 
     const startListening = () => {
 
@@ -146,13 +147,13 @@ export default {
           closeButton: false,
           closeOnClick: false,
         });
+      console.log(companyID.value, documentID.value)
 
         unsubscribe = onListenClaimData(
           documentID.value,
           companyID.value,
           async (data) => {
-            let statusDoc = await getDocStatus(companyID.value, documentID.value)
-            console.log(statusDoc);
+            await getDocStatus(companyID.value, documentID.value)
             claimData.value = data;
             if (data.status == "DRAFT" && data.summary == null) {
               loadingAI.value = true;
@@ -169,17 +170,6 @@ export default {
                 type: toast.TYPE.SUCCESS,
                 isLoading: false,
                 autoClose: 3000,
-              });
-              loadingAI.value = false;
-            }
-
-            if (data.status === 'ERROR') {
-              toast.update(idProccessAI, {
-                render:
-                  "Complete la información de asunto y resumen manualmente. Documento no valido para este proceso.",
-                type: toast.TYPE.WARNING,
-                isLoading: false,
-                autoClose: 1000,
               });
               loadingAI.value = false;
             }
@@ -279,6 +269,8 @@ export default {
     const getAreaId = computed(() => {
       return trds.value.find((el) => el.value === form.value.area)?.id;
     });
+
+    const stateDoc = computed(() => store.state.createDocState.stateDoc)
 
     // obtener listado de usuarios activos por areas
     async function getPeople() {
@@ -398,6 +390,20 @@ export default {
         return currentValue;
       }
     );
+    
+    watch(stateDoc, (newValue) => {
+    console.log('El estado stateDoc ha cambiado: ', newValue.status);
+    if (newValue.status == 'ERROR') {
+      console.log('Entró al if error');
+      toast.update(idProccessAI, {
+        render: "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
+        type: toast.TYPE.WARNING,
+        isLoading: false,
+        autoClose: 1000,
+      });
+      loadingAI.value = false;
+    }
+  });
 
     function getAddress() {
       console.log(form.value);
@@ -642,6 +648,7 @@ export default {
       return this.$store.state.auth.currentUser;
     },
   },
+  
   components: {
     Layout,
     PageHeader,
