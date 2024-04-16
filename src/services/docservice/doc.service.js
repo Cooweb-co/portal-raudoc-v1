@@ -143,14 +143,8 @@ export async function getDocStatus(companyId, claimId) {
             const querySnapshotUpdates = [];
             querySnapshot.forEach((doc) => {
                 const data = doc.data()
-                console.log('Data',data)
                 querySnapshotUpdates.push(data);
                 store.dispatch('createDocState/STATE_DOC', { newValue: data });
-                // if (status === 'ERROR') {
-                //   return false
-                // } else if (status === 'PROCESSED') {
-                //   return true
-                // }
             });
         });
         return
