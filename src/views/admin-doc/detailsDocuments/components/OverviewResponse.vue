@@ -6,12 +6,15 @@
 // import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 // import useVuelidate from "@vuelidate/core";
 import { toast } from "vue3-toastify";
-import { ref, watch, defineProps } from "vue";
+import { ref, watch, defineProps, computed } from "vue";
 import axios from "axios";
+import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
+// import { message } from "ant-design-vue";
 
 const props = defineProps(["loading", "data"]);
 const files = ref([]);
 const dropzoneFile = ref("");
+const dropzone = ref(false);
 const answered = ref(false);
 const documentNumber = ref("Número de radicado");
 
@@ -21,6 +24,13 @@ const selectedFile = async () => {
     // const file = dropzoneFile.value;
     // console.log("file::::", file);
 };
+
+const classDropZone = computed(() => {
+    const styles =
+        "mt-4 w-100 d-flex flex-column justify-content-center align-items-center drop-area ";
+    if (!dropzone.value) return styles + " border-secondary text-secondary";
+    return styles + " border-primary text-primary";
+});
 
 const uploadFile = async () => {
     let idLoadFile;
@@ -55,6 +65,7 @@ const uploadFile = async () => {
 
         const bodyFormData = new FormData();
         for (const file of files.value) {
+            console.log("Filer for::", file);
             bodyFormData.append("files", file);
         }
 
@@ -111,9 +122,27 @@ const deleteRecord = (ele) => {
     ele.target.parentElement.parentElement.parentElement.remove();
 };
 
+function onDragOver() {
+    dropzone.value = true;
+}
+
+function onDragEnter() {
+    dropzone.value = true;
+}
+
+function onDragLeave() {
+    dropzone.value = false;
+}
+
+function onFileDrop(event) {
+    event.preventDefault();
+    files.value = [...event.dataTransfer.files];
+}
+
 watch(
     () => [...files.value],
     (currentValue) => {
+        console.log(currentValue);
         return currentValue;
     }
 );
@@ -134,7 +163,14 @@ watch(
         </template>
         <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" active />
 
-        <main v-else>
+        <main
+            v-else
+            @dragover.prevent="onDragOver"
+            @dragenter.prevent="onDragEnter"
+            @dragleave.prevent="onDragLeave"
+            @drop="onFileDrop"
+            class="w-100 h-100"
+        >
             <!-- <BCardBody>
                 <div class="mb-3 mb-lg-0">
                             <label for="choices-priority-input" class="form-label">Prioridad</label>
@@ -315,6 +351,14 @@ watch(
                                         </div>
                                     </div>
                                 </div>
+                                <div :class="classDropZone">
+                                    <p>
+                                        <FileTextIcon size="28" />
+                                    </p>
+                                    <span>
+                                        Arrastra el archivo para subirlo</span
+                                    >
+                                </div>
                             </div>
                         </BCardBody>
                         <BoCardBody v-else>
@@ -330,3 +374,11 @@ watch(
         </main>
     </BTab>
 </template>
+
+<style scoped>
+.drop-area {
+    height: 20vh;
+    border: 2.5px dotted;
+    border-radius: 10px;
+}
+</style>

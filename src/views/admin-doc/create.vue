@@ -1,5 +1,5 @@
 <script>
-import { ref, watch, getCurrentInstance, onUnmounted, computed } from "vue";
+import { ref, watch, getCurrentInstance, onUnmounted, computed, reactive } from "vue";
 import Multiselect from "@vueform/multiselect";
 import dayjs from "dayjs";
 import "@vueform/multiselect/themes/default.css";
@@ -57,6 +57,7 @@ export default {
         const isDocs = ref([]);
         const radicate = ref("");
         const peopleList = ref([]);
+        const timerAI = ref([]);
         // const statusDoc = reactive();
         let config = {
             method: "get",
@@ -68,7 +69,7 @@ export default {
         };
 
         // controlador de variables para el formulario de radicacion
-        const form = ref({
+        const form = reactive({
             area: "",
             date: newDate.value,
             inputMethod: "",
@@ -89,6 +90,7 @@ export default {
             assignedTo: "",
             subject: "",
             description: "",
+            observations: "",
         });
         // reglas de validacion
         const rules = {
@@ -114,7 +116,7 @@ export default {
             description: { required: MESSAGE_REQUIRED },
         };
 
-        const v$ = useVuelidate(rules, form.value);
+        const v$ = useVuelidate(rules, form);
 
         // const collectionRef = collection(
         //   storage,
@@ -154,6 +156,15 @@ export default {
                         claimData.value = data;
                         if (data.status == "DRAFT" && data.summary == null) {
                             loadingAI.value = true;
+                            timerAI.value = setTimeout(() => {
+                                toast.update(idProccessAI, {
+                                    render: "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
+                                    type: toast.TYPE.WARNING,
+                                    isLoading: false,
+                                    autoClose: 7000,
+                                });
+                                loadingAI.value = false;
+                            }, 40000);
                             setTimeout(() => {
                                 toast.update(idProccessAI, {
                                     render: "Extrayendo información relevante...",
@@ -169,16 +180,18 @@ export default {
                                 autoClose: 3000,
                             });
                             loadingAI.value = false;
+                            clearTimeout(timerAI.value);
+                            timerAI.value = 0;
                             instance.proxy.subject = data.subject
                                 ? data.subject
                                 : "";
                             instance.proxy.editorData = data.summary
                                 ? data.summary
                                 : "";
-                            form.value.subject = data.subject
+                            form.subject = data.subject
                                 ? data.subject
                                 : "";
-                            form.value.description = data.summary
+                            form.description = data.summary
                                 ? data.summary
                                 : "";
                         }
@@ -235,20 +248,6 @@ export default {
             }
         };
 
-        //obtener dias segun tipologia documental
-        const getDocDays = computed(() => {
-            return isDocs.value.filter((el) =>
-                el.label == form.value.documentType ? el : 0
-            );
-        });
-
-        //obtener uid de persona asignada
-        const getAssignedUid = computed(() => {
-            return peopleList.value.filter((el) =>
-                el.value == form.value.assignedTo ? el?.uid : ""
-            );
-        });
-
         // obtener listado trds
         async function getTrds() {
             await axios
@@ -267,13 +266,6 @@ export default {
                     console.log(error);
                 });
         }
-
-        //obtener dias segun tipologia documental
-        const getAreaId = computed(() => {
-            return trds.value.find((el) => el.value === form.value.area)?.id;
-        });
-
-        const stateDoc = computed(() => store.state.createDocState.stateDoc);
 
         // obtener listado de usuarios activos por areas
         async function getPeople() {
@@ -305,14 +297,46 @@ export default {
                 });
         }
 
+        //obtener dias segun tipologia documental
+        const getDocDays = computed(() => {
+            return isDocs.value.filter((el) =>
+                el.label == form.documentType ? el : 0
+            );
+        });
+
+        //obtener uid de persona asignada
+        const getAssignedUid = computed(() => {
+            return peopleList.value.filter((el) =>
+                el.value == form.assignedTo ? el?.uid : ""
+            );
+        });
+
+        //obtener dias segun tipologia documental
+        const getAreaId = computed(() => {
+            return trds.value.find((el) => el.value === form.area)?.id;
+        });
+
+        const stateDoc = computed(() => store.state.createDocState.stateDoc);
+
+
         // computadas para la dependencia de los campos
         // manejador del input de serie
+
+        const showDeadLine = computed(() => {
+            console.log('ShowDeadline')
+            if (form.documentType?.toLocaleLowerCase() == 'demanda') {
+                console.log('ShowDeadline true')
+                return true
+            }
+            return false
+        });
+
         // eslint-disable-next-line vue/return-in-computed-property
         const auxSerie = computed(() => {
             const aux = [];
-            if (form.value.area) {
+            if (form.area) {
                 trds.value.forEach((i) => {
-                    if (i.label == form.value.area) {
+                    if (i.label == form.area) {
                         i.series.forEach((j) => {
                             aux.push({
                                 label: j.name,
@@ -329,9 +353,9 @@ export default {
         // manejador del input de subserie
         // eslint-disable-next-line vue/return-in-computed-property
         const auxSubSerie = computed(() => {
-            if (form.value.serie) {
+            if (form.serie) {
                 series.value.forEach((i) => {
-                    if (i.label == form.value.serie) {
+                    if (i.label == form.serie) {
                         subseries.value = [];
                         i.subseries.forEach((j) => {
                             subseries.value.push({
@@ -348,9 +372,9 @@ export default {
         // manejador del inpur de tipologia documental
         // eslint-disable-next-line vue/return-in-computed-property
         const auxDocTypes = computed(() => {
-            if (form.value.subSerie) {
+            if (form.subSerie) {
                 subseries.value.forEach((i) => {
-                    if (form.value.subSerie == i.label) {
+                    if (form.subSerie == i.label) {
                         isDocs.value = [];
                         i.documents.forEach((j) => {
                             isDocs.value.push({
@@ -365,21 +389,15 @@ export default {
         });
 
         async function clearSelectInput() {
-            if (form.value.area) {
-                form.value.serie = "";
-                form.value.subSerie = "";
-                form.value.documentType = "";
+            if (form.area) {
+                form.serie = "";
+                form.subSerie = "";
+                form.documentType = "";
+                form.assignedTo = "";
             }
             await getPeople();
         }
 
-        function clearInputSubSerie() {
-            form.value.subSerie = "";
-        }
-
-        function clearInputDocType() {
-            form.value.documentType = "";
-        }
 
         onUnmounted(() => {
             if (unsubscribe) {
@@ -404,11 +422,34 @@ export default {
                     autoClose: 7000,
                 });
                 loadingAI.value = false;
+                clearTimeout(timerAI.value);
+                timerAI.value = 0;
             }
         });
 
+        watch(form, (newValueForm) => {
+            if(newValueForm.area == null) {
+                form.serie = "";
+                form.subSerie = "";
+                form.documentType = "";
+                form.assignedTo = "";
+            }
+            else if(newValueForm.serie == null) {
+                form.subSerie = "";
+                form.documentType = "";
+                form.assignedTo = "";
+            }
+            else if(newValueForm.subSerie == null) {
+                form.documentType = "";
+                form.assignedTo = "";
+            }
+            else if(newValueForm.documentType == null) {
+                form.assignedTo = "";
+            }
+        })
+
         function getAddress() {
-            console.log(form.value);
+            console.log(form);
         }
 
         return {
@@ -442,9 +483,8 @@ export default {
             drop,
             selectedFile,
             getPeople,
-            clearInputSubSerie,
-            clearInputDocType,
             getAddress,
+            showDeadLine,
             moment,
         };
     },
@@ -508,6 +548,8 @@ export default {
                 };
 
                 const body = {
+                    subject: this.form.subject,
+                    summary: this.form.description,
                     area: this.form.area,
                     serie: this.form.serie,
                     subSerie: this.form.subSerie,
@@ -520,7 +562,7 @@ export default {
                     city: this.form.city,
                     folios: parseInt(this.form.folios),
                     assignedTo: this.form.assignedTo,
-                    observations: this.form.description,
+                    observations: this.form.observations,
                     externalRadicate: this.form.externalFiling,
                     inputMethod: this.form.inputMethod,
                     petitionerInformation: {
@@ -843,7 +885,7 @@ export default {
                             <label
                                 class="form-label fw-bold"
                                 for="project-title-input"
-                                >Asuntoss</label
+                                >Asuntos</label
                             >
                             <BSpinner
                                 v-if="loadingAI"
@@ -940,6 +982,7 @@ export default {
                                     v-model="form.date"
                                     :config="rangeDateconfig"
                                     class="form-control flatpickr-input"
+                                    disabled
                                 ></flat-pickr>
                                 <ValidateLabel
                                     v-bind="{ v$ }"
@@ -1001,7 +1044,6 @@ export default {
                                     :create-option="true"
                                     placeholder="Seleccione"
                                     :options="series"
-                                    @change="clearInputSubSerie"
                                 />
                                 <ValidateLabel
                                     v-bind="{ v$ }"
@@ -1022,7 +1064,6 @@ export default {
                                     :create-option="true"
                                     placeholder="Seleccione"
                                     :options="subseries"
-                                    @change="clearInputDocType"
                                 />
                                 <ValidateLabel
                                     v-bind="{ v$ }"
@@ -1049,7 +1090,7 @@ export default {
                                     attribute="documentType"
                                 />
                             </BCol>
-                            <BCol lg="3">
+                            <BCol lg="3" v-if="showDeadLine">
                                 <label
                                     for="datepicker-deadline-input"
                                     class="form-label fw-bold"
