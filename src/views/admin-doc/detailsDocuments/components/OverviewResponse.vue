@@ -13,21 +13,22 @@ import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
 
 const props = defineProps(["loading", "data"]);
 const files = ref([]);
-const dropzoneFile = ref("");
 const dropzone = ref(false);
 const answered = ref(false);
 const documentNumber = ref("Número de radicado");
 
 const selectedFile = async () => {
-    dropzoneFile.value = document.getElementById("formFile").files[0];
-    files.value.push(dropzoneFile.value);
+    const newFiles = document.getElementById("formFile").files;
+    for (let i = 0; i < newFiles.length; i++) {
+        files.value.push(newFiles[i]);
+    }
     // const file = dropzoneFile.value;
     // console.log("file::::", file);
 };
 
 const classDropZone = computed(() => {
     const styles =
-        "mt-4 w-100 d-flex flex-column justify-content-center align-items-center drop-area ";
+        "mt-4 w-100 d-flex flex-column justify-content-center align-items-center drop-area mb-5";
     if (!dropzone.value) return styles + " border-secondary text-secondary";
     return styles + " border-primary text-primary";
 });
@@ -86,6 +87,7 @@ const uploadFile = async () => {
             isLoading: false,
             autoClose: 3000,
         });
+        setTimeout(() => location.reload(), 4000)
     } catch (error) {
         console.error("Error al subir el archivo:", error);
         toast.update(idLoadFile, {
@@ -118,34 +120,28 @@ const sendFile = () => {
     }
 };
 
-const deleteRecord = (ele) => {
-    ele.target.parentElement.parentElement.parentElement.remove();
+const deleteRecord = (name) => {
+    files.value = files.value.filter((file) => name != file.name);
 };
 
-function onDragOver() {
+const onDragOver = () => {
     dropzone.value = true;
 }
 
-function onDragEnter() {
+const onDragEnter = () => {
     dropzone.value = true;
 }
 
-function onDragLeave() {
+const onDragLeave = () => {
     dropzone.value = false;
 }
 
-function onFileDrop(event) {
+const onFileDrop = (event) => {
     event.preventDefault();
-    files.value = [...event.dataTransfer.files];
+    dropzone.value = false;
+    files.value = [...files.value, ...event.dataTransfer.files];
 }
 
-watch(
-    () => [...files.value],
-    (currentValue) => {
-        console.log(currentValue);
-        return currentValue;
-    }
-);
 watch(
     () => props.data,
     (currentValue) => {
@@ -292,18 +288,25 @@ watch(
                         </BCardHeader>
                         <BCardBody v-if="!answered">
                             <div>
-                                <div class="mb-3">
-                                    <label
-                                        for="formFile"
-                                        class="form-label fw-6 text-muted"
-                                        >Agregue archivos aquí</label
+                                <div :class="classDropZone">
+                                    <p>
+                                        <FileTextIcon size="28" />
+                                    </p>
+                                    <span>
+                                        Arrastra el archivo para subirlo</span
                                     >
                                     <input
-                                        class="form-control"
                                         type="file"
+                                        name="formFile"
                                         id="formFile"
+                                        multiple
+                                        class="input-file"
                                         @change="selectedFile"
                                     />
+                                    <label for="formFile" class="link-primary label-formFile"
+                                        >o Clic acá para selecciona un
+                                        archivo</label
+                                    >
                                 </div>
                                 <div class="vstack gap-2">
                                     <div
@@ -343,21 +346,15 @@ watch(
                                                     variant="danger"
                                                     size="sm"
                                                     data-dz-remove=""
-                                                    @click="deleteRecord"
+                                                    @click="
+                                                        deleteRecord(file.name)
+                                                    "
                                                 >
                                                     borrar
                                                 </BButton>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div :class="classDropZone">
-                                    <p>
-                                        <FileTextIcon size="28" />
-                                    </p>
-                                    <span>
-                                        Arrastra el archivo para subirlo</span
-                                    >
                                 </div>
                             </div>
                         </BCardBody>
@@ -380,5 +377,18 @@ watch(
     height: 20vh;
     border: 2.5px dotted;
     border-radius: 10px;
+}
+
+.input-file {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.label-formFile:hover {
+    cursor: pointer;
 }
 </style>

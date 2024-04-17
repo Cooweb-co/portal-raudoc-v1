@@ -1,5 +1,12 @@
 <script>
-import { ref, watch, getCurrentInstance, onUnmounted, computed, reactive } from "vue";
+import {
+    ref,
+    watch,
+    getCurrentInstance,
+    onUnmounted,
+    computed,
+    reactive,
+} from "vue";
 import Multiselect from "@vueform/multiselect";
 import dayjs from "dayjs";
 import "@vueform/multiselect/themes/default.css";
@@ -58,7 +65,8 @@ export default {
         const radicate = ref("");
         const peopleList = ref([]);
         const timerAI = ref([]);
-        // const statusDoc = reactive();
+        const dropzone = ref(false);
+
         let config = {
             method: "get",
             maxBodyLength: Infinity,
@@ -118,27 +126,6 @@ export default {
 
         const v$ = useVuelidate(rules, form);
 
-        // const collectionRef = collection(
-        //   storage,
-        //   "Companies",
-        //   companyID.value,
-        //   "Claims",
-        //   companyID.value,
-        //   "Files"
-        // );
-
-        // onSnapshot(collectionRef, (querySnapshot) => {
-        //     querySnapshot.forEach((doc) => {
-        //       console.log("Nuevo estado del documento:", doc.data());
-        //       let status = doc.data?.status
-        //       if (status === 'ERROR') {
-        //         return false
-        //       } else if (status === 'PROCESSED') {
-        //         return true
-        //       }
-        //     });
-        //   });
-
         const startListening = () => {
             try {
                 idProccessAI = toast("Analizando documento con IA...", {
@@ -188,12 +175,8 @@ export default {
                             instance.proxy.editorData = data.summary
                                 ? data.summary
                                 : "";
-                            form.subject = data.subject
-                                ? data.subject
-                                : "";
-                            form.description = data.summary
-                                ? data.summary
-                                : "";
+                            form.subject = data.subject ? data.subject : "";
+                            form.description = data.summary ? data.summary : "";
                         }
                     }
                 );
@@ -203,15 +186,15 @@ export default {
             }
         };
 
-        const drop = (e) => {
-            dropzoneFile.value = e.dataTransfer.files[0];
-            files.value.push(dropzoneFile.value);
-        };
+        // Select files and drag and drop
 
         const selectedFile = async () => {
-            dropzoneFile.value = document.getElementById("formFile").files[0];
-            files.value.push(dropzoneFile.value);
-            const file = dropzoneFile.value;
+            const newFiles = document.getElementById("formFile").files;
+            for (let i = 0; i < newFiles.length; i++) {
+                files.value.push(newFiles[i]);
+            }
+            const file = files.value[files.value.length - 1];
+            console.log(file);
             try {
                 if (!documentID.value) {
                     await instance.proxy.handleCreateClaimID();
@@ -247,6 +230,14 @@ export default {
                 console.error("Error al subir el archivo:", error);
             }
         };
+
+        const classDropZone = computed(() => {
+            const styles =
+                "mt-2 w-100 d-flex flex-column justify-content-center align-items-center drop-area mb-5";
+            if (!dropzone.value) return styles + "border-0 text-secondary";
+            return styles + " border-primary text-primary";
+        });
+
 
         // obtener listado trds
         async function getTrds() {
@@ -318,17 +309,15 @@ export default {
 
         const stateDoc = computed(() => store.state.createDocState.stateDoc);
 
-
         // computadas para la dependencia de los campos
         // manejador del input de serie
 
         const showDeadLine = computed(() => {
-            console.log('ShowDeadline')
-            if (form.documentType?.toLocaleLowerCase() == 'demanda') {
-                console.log('ShowDeadline true')
-                return true
+            if (form.documentType?.toLocaleLowerCase() == "demanda") {
+                console.log("ShowDeadline true");
+                return true;
             }
-            return false
+            return false;
         });
 
         // eslint-disable-next-line vue/return-in-computed-property
@@ -398,7 +387,6 @@ export default {
             await getPeople();
         }
 
-
         onUnmounted(() => {
             if (unsubscribe) {
                 unsubscribe;
@@ -413,7 +401,6 @@ export default {
         );
 
         watch(stateDoc, (newValue) => {
-            console.log("El estado stateDoc ha cambiado: ", newValue.status);
             if (newValue.status == "ERROR") {
                 toast.update(idProccessAI, {
                     render: "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
@@ -428,25 +415,22 @@ export default {
         });
 
         watch(form, (newValueForm) => {
-            if(newValueForm.area == null) {
+            if (newValueForm.area == null) {
                 form.serie = "";
                 form.subSerie = "";
                 form.documentType = "";
                 form.assignedTo = "";
-            }
-            else if(newValueForm.serie == null) {
+            } else if (newValueForm.serie == null) {
                 form.subSerie = "";
                 form.documentType = "";
                 form.assignedTo = "";
-            }
-            else if(newValueForm.subSerie == null) {
+            } else if (newValueForm.subSerie == null) {
                 form.documentType = "";
                 form.assignedTo = "";
-            }
-            else if(newValueForm.documentType == null) {
+            } else if (newValueForm.documentType == null) {
                 form.assignedTo = "";
             }
-        })
+        });
 
         function getAddress() {
             console.log(form);
@@ -480,7 +464,7 @@ export default {
             getAreaId,
             clearSelectInput,
             getTrds,
-            drop,
+            classDropZone,
             selectedFile,
             getPeople,
             getAddress,
@@ -522,10 +506,6 @@ export default {
             } catch (error) {
                 console.log(error);
             }
-        },
-
-        deleteRecord(ele) {
-            ele.target.parentElement.parentElement.parentElement.remove();
         },
 
         fillFieldWithAI() {
@@ -618,8 +598,6 @@ export default {
                         position: toast.POSITION.TOP_RIGHT,
                         autoClose: 3000,
                     });
-                    this.radicate = response.data;
-                    this.qrModal = true;
                 }
             } catch (error) {
                 this.submitLoading = false;
@@ -640,6 +618,33 @@ export default {
                 this.saveLoading = false;
                 console.log(error);
             }
+        },
+
+        closeModal() {
+            this.qrModal = false;
+            location.reload();
+        },
+
+        deleteRecord (name) {
+            this.files = this.files.filter((file) => name != file.name);
+        },
+
+        onDragOver () {
+            this.dropzone = true;
+        },
+
+        onDragEnter () {
+            this.dropzone = true;
+        },
+
+        onDragLeave () {
+            this.dropzone = false;
+        },
+
+        onFileDrop (event) {
+            event.preventDefault();
+            this.dropzone = false;
+            this.files = [...this.files, ...event.dataTransfer.files];
         },
     },
     async mounted() {
@@ -719,7 +724,7 @@ export default {
         title=""
         size="small"
         :hideIconClose="true"
-        @close="qrModal = false"
+        @close="closeModal"
     >
         <template #content>
             <div
@@ -765,7 +770,7 @@ export default {
                 <div>{{ auxSubSerie }}</div>
                 <div>{{ auxDocTypes }}</div>
             </div>
-            <div class="text-end mb-4 col-6 col-sm-6">
+            <div class="text-end mb-2 col-6 col-sm-6">
                 <BButton
                     v-if="!showRadicationButton"
                     type="submit"
@@ -808,7 +813,15 @@ export default {
         <!-- columns of page data ( document section ) - ( form section ) -->
         <BRow>
             <!-- Document section column -->
-            <BCol lg="4" md="12" sm="12">
+            <BCol
+                lg="4"
+                md="12"
+                sm="12"
+                @dragover.prevent="onDragOver"
+                @dragenter.prevent="onDragEnter"
+                @dragleave.prevent="onDragLeave"
+                @drop="onFileDrop"
+            >
                 <!-- {{ claimData }} -->
                 <BCard no-body>
                     <BCardHeader>
@@ -818,20 +831,27 @@ export default {
                             AGREGA ARCHIVO PARA RADICAR
                         </h5>
                     </BCardHeader>
-                    <BCardBody>
+                    <BCardBody v-if="!answered">
                         <div>
-                            <div class="mb-3">
-                                <label
-                                    for="formFile"
-                                    class="form-label fw-6 text-muted"
-                                    >Agregue archivos aquí</label
-                                >
+                            <div :class="classDropZone">
+                                <p>
+                                    <FileTextIcon size="28" />
+                                </p>
+                                <span> Arrastra el archivo para subirlo</span>
                                 <input
-                                    class="form-control"
                                     type="file"
+                                    name="formFile"
                                     id="formFile"
+                                    multiple
+                                    class="input-file"
                                     @change="selectedFile"
                                 />
+                                <label
+                                    for="formFile"
+                                    class="link-primary label-formFile"
+                                    >o Clic acá para selecciona un
+                                    archivo</label
+                                >
                             </div>
                             <div class="vstack gap-2">
                                 <div
@@ -839,7 +859,10 @@ export default {
                                     v-for="(file, index) of files"
                                     :key="index"
                                 >
-                                    <div class="d-flex align-items-center p-2">
+                                    <div
+                                        class="d-flex align-items-center p-2"
+                                        v-if="file"
+                                    >
                                         <div class="flex-grow-1">
                                             <div class="pt-1">
                                                 <h5
@@ -868,7 +891,7 @@ export default {
                                                 variant="danger"
                                                 size="sm"
                                                 data-dz-remove=""
-                                                @click="deleteRecord"
+                                                @click="deleteRecord(file.name)"
                                             >
                                                 borrar
                                             </BButton>
@@ -878,6 +901,13 @@ export default {
                             </div>
                         </div>
                     </BCardBody>
+                    <BoCardBody v-else>
+                        <h3
+                            class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
+                        >
+                            Radicado Generado
+                        </h3>
+                    </BoCardBody>
                 </BCard>
                 <BCard no-body>
                     <BCardBody>
@@ -1384,5 +1414,24 @@ export default {
     align-items: center;
     justify-content: center;
     gap: 10px;
+}
+
+.drop-area {
+    height: 100%x;
+    border: 2.5px dotted;
+    border-radius: 10px;
+}
+
+.input-file {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.label-formFile:hover {
+    cursor: pointer;
 }
 </style>
