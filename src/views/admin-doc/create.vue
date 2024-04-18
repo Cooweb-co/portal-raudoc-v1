@@ -1033,7 +1033,7 @@ export default {
                                     attribute="area"
                                 />
                             </BCol>
-                            <BCol lg="3">
+                            <BCol lg="3" style="cursor: no-drop;">
                                 <label
                                     for="datepicker-deadline-input"
                                     class="form-label fw-bold"
