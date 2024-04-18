@@ -23,6 +23,8 @@ import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
 import Modal from "../modals/Modal.vue";
 import moment from "moment";
 import store from "@/state/store";
+import { FileTextIcon, AlertOctagonIcon } from "@zhuowenli/vue-feather-icons";
+
 
 // import {
 //   onSnapshot,
@@ -44,9 +46,12 @@ export default {
         const instance = getCurrentInstance();
         const storage = getFirebaseBackend().storage;
         const files = ref([]);
+        const filesToUpload = ref([]);
+        const readDocument = ref(false);
         const dropzoneFile = ref("");
         const loadingBtnAI = ref(false);
         const documentID = ref(null);
+        const documentAIID = ref(null);
         const companyID = ref("BAQVERDE");
         const year = ref(new Date().getFullYear());
         const claimData = ref(null);
@@ -136,7 +141,7 @@ export default {
                 });
 
                 unsubscribe = onListenClaimData(
-                    documentID.value,
+                    documentAIID.value,
                     companyID.value,
                     async (data) => {
                         await getDocStatus(companyID.value, documentID.value);
@@ -151,7 +156,7 @@ export default {
                                     autoClose: 7000,
                                 });
                                 loadingAI.value = false;
-                            }, 40000);
+                            }, 60000);
                             setTimeout(() => {
                                 toast.update(idProccessAI, {
                                     render: "Extrayendo información relevante...",
@@ -188,56 +193,91 @@ export default {
 
         // Select files and drag and drop
 
-        const selectedFile = async () => {
+        const selectedFile = () => {
             const newFiles = document.getElementById("formFile").files;
             for (let i = 0; i < newFiles.length; i++) {
                 files.value.push(newFiles[i]);
+                filesToUpload.value.push(newFiles[i])
             }
-            const file = files.value[files.value.length - 1];
-            console.log(file);
-            try {
-                if (!documentID.value) {
-                    await instance.proxy.handleCreateClaimID();
+        };
 
-                    toast.success("Radicado en borrador creado!", {
-                        position: toast.POSITION.TOP_RIGHT,
+        const uploadDocument = async () => {
+            for (let i = 0; i < filesToUpload.value.length; i++) {
+                const file = filesToUpload.value[i];
+                console.log(file);
+                try {
+                    if (!documentID.value) {
+                        await instance.proxy.handleCreateClaimID();
+
+                        toast.success("Radicado en borrador creado!", {
+                            position: toast.POSITION.TOP_RIGHT,
+                            autoClose: 3000,
+                        });
+                    }
+                    const uniqueFileName = Date.now() + ".pdf";
+                    const folder = `Companies/${companyID.value}/${year.value}/Claims/${documentID.value}`;
+                    const storagePath = `${folder}/${uniqueFileName}`;
+                    const fileRef = storageRef(storage, storagePath);
+                    const idLoadFile = toast(`Cargando el archivo ${file.name}...`, {
+                        isLoading: true,
+                        hideProgressBar: true,
+                        closeButton: false,
+                        closeOnClick: false,
+                    });
+                    const uploadResult = await uploadBytes(fileRef, file);
+                    console.log(
+                        "Archivo subido con éxito:",
+                        uploadResult.metadata.fullPath
+                    );
+                    toast.update(idLoadFile, {
+                        render: `Archivo cargado con éxito ${file.name}`,
+                        type: "success",
+                        isLoading: false,
                         autoClose: 3000,
                     });
+                    if (!readDocument.value) {
+                        readDocument.value = true;
+                        documentAIID.value = documentID.value;
+                        startListening();
+                    }
+                } catch (error) {
+                    console.error("Error al subir el archivo:", error);
                 }
-                const uniqueFileName = Date.now() + ".pdf";
-                const folder = `Companies/${companyID.value}/${year.value}/Claims/${documentID.value}`;
-                const storagePath = `${folder}/${uniqueFileName}`;
-                const fileRef = storageRef(storage, storagePath);
-                const idLoadFile = toast("Cargando archivo..", {
-                    isLoading: true,
-                    hideProgressBar: true,
-                    closeButton: false,
-                    closeOnClick: false,
-                });
-                const uploadResult = await uploadBytes(fileRef, file);
-                console.log(
-                    "Archivo subido con éxito:",
-                    uploadResult.metadata.fullPath
-                );
-                toast.update(idLoadFile, {
-                    render: "Archivo cargado con éxito",
-                    type: "success",
-                    isLoading: false,
-                    autoClose: 3000,
-                });
-                startListening();
-            } catch (error) {
-                console.error("Error al subir el archivo:", error);
             }
+            filesToUpload.value = []
         };
 
         const classDropZone = computed(() => {
             const styles =
-                "mt-2 w-100 d-flex flex-column justify-content-center align-items-center drop-area mb-5";
+                "w-100 d-flex flex-column justify-content-center align-items-center drop-area m-1";
             if (!dropzone.value) return styles + "border-0 text-secondary";
             return styles + " border-primary text-primary";
         });
 
+        const deleteRecord = (name) => {
+            files.value = files.value.filter((file) => name != file.name);
+            filesToUpload.value = filesToUpload.value.filter((file) => name != file.name);
+        };
+
+        const onDragOver = () => {
+            dropzone.value = true;
+        };
+
+        const onDragEnter = () => {
+            dropzone.value = true;
+        };
+
+        const onDragLeave = () => {
+            dropzone.value = false;
+        };
+
+        const onFileDrop = (event) => {
+            event.preventDefault();
+            dropzone.value = false;
+            files.value = [...files.value, ...event.dataTransfer.files];
+            filesToUpload.value =  [...filesToUpload.value, ...event.dataTransfer.files]
+            console.log(files.value);
+        };
 
         // obtener listado trds
         async function getTrds() {
@@ -396,6 +436,7 @@ export default {
         watch(
             () => [...files.value],
             (currentValue) => {
+                uploadDocument();
                 return currentValue;
             }
         );
@@ -464,8 +505,13 @@ export default {
             getAreaId,
             clearSelectInput,
             getTrds,
+            deleteRecord,
             classDropZone,
+            onDragOver,
+            onDragEnter,
+            onDragLeave,
             selectedFile,
+            onFileDrop,
             getPeople,
             getAddress,
             showDeadLine,
@@ -575,6 +621,7 @@ export default {
         async handleSubmitDocument() {
             try {
                 this.submitLoading = true;
+                this.handleSaveChanges()
                 const config = {
                     headers: {
                         company: "BAQVERDE",
@@ -594,6 +641,8 @@ export default {
 
                 if (response) {
                     this.submitLoading = false;
+                    this.radicate = response.data;
+                    this.qrModal = true;
                     toast.success("Radicado emitido exitosamente!", {
                         position: toast.POSITION.TOP_RIGHT,
                         autoClose: 3000,
@@ -619,32 +668,9 @@ export default {
                 console.log(error);
             }
         },
-
         closeModal() {
             this.qrModal = false;
             location.reload();
-        },
-
-        deleteRecord (name) {
-            this.files = this.files.filter((file) => name != file.name);
-        },
-
-        onDragOver () {
-            this.dropzone = true;
-        },
-
-        onDragEnter () {
-            this.dropzone = true;
-        },
-
-        onDragLeave () {
-            this.dropzone = false;
-        },
-
-        onFileDrop (event) {
-            event.preventDefault();
-            this.dropzone = false;
-            this.files = [...this.files, ...event.dataTransfer.files];
         },
     },
     async mounted() {
@@ -713,6 +739,8 @@ export default {
         flatPickr,
         ValidateLabel,
         Modal,
+        FileTextIcon,
+        AlertOctagonIcon
     },
 };
 </script>
@@ -770,7 +798,7 @@ export default {
                 <div>{{ auxSubSerie }}</div>
                 <div>{{ auxDocTypes }}</div>
             </div>
-            <div class="text-end mb-2 col-6 col-sm-6">
+            <div class="text-end mb-4 col-6 col-sm-6">
                 <BButton
                     v-if="!showRadicationButton"
                     type="submit"
@@ -852,8 +880,11 @@ export default {
                                     >o Clic acá para selecciona un
                                     archivo</label
                                 >
+                                <span class="text-success d-flex justify-content-center align-items-center gap-1" style="opacity: 0.8; font-size: 0.6rem;">
+                                    <AlertOctagonIcon size="10"/> Solo se analizará con la IA el primer archivo subido.
+                                </span>
                             </div>
-                            <div class="vstack gap-2">
+                            <div class="vstack gap-2 mt-2" v-if="files.length > 0">
                                 <div
                                     class="border rounded"
                                     v-for="(file, index) of files"
@@ -1417,7 +1448,7 @@ export default {
 }
 
 .drop-area {
-    height: 100%x;
+    height: 20vh;
     border: 2.5px dotted;
     border-radius: 10px;
 }
