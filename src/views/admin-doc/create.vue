@@ -1,5 +1,12 @@
 <script>
-import { ref, watch, getCurrentInstance, onUnmounted, computed } from "vue";
+import {
+    ref,
+    watch,
+    getCurrentInstance,
+    onUnmounted,
+    computed,
+    reactive,
+} from "vue";
 import Multiselect from "@vueform/multiselect";
 import dayjs from "dayjs";
 import "@vueform/multiselect/themes/default.css";
@@ -16,6 +23,8 @@ import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
 import Modal from "../modals/Modal.vue";
 import moment from "moment";
 import store from "@/state/store";
+import { FileTextIcon, AlertOctagonIcon } from "@zhuowenli/vue-feather-icons";
+
 
 // import {
 //   onSnapshot,
@@ -37,9 +46,12 @@ export default {
         const instance = getCurrentInstance();
         const storage = getFirebaseBackend().storage;
         const files = ref([]);
+        const filesToUpload = ref([]);
+        const readDocument = ref(false);
         const dropzoneFile = ref("");
         const loadingBtnAI = ref(false);
         const documentID = ref(null);
+        const documentAIID = ref(null);
         const companyID = ref("BAQVERDE");
         const year = ref(new Date().getFullYear());
         const claimData = ref(null);
@@ -57,7 +69,9 @@ export default {
         const isDocs = ref([]);
         const radicate = ref("");
         const peopleList = ref([]);
-        // const statusDoc = reactive();
+        const timerAI = ref([]);
+        const dropzone = ref(false);
+
         let config = {
             method: "get",
             maxBodyLength: Infinity,
@@ -68,7 +82,7 @@ export default {
         };
 
         // controlador de variables para el formulario de radicacion
-        const form = ref({
+        const form = reactive({
             area: "",
             date: newDate.value,
             inputMethod: "",
@@ -89,6 +103,7 @@ export default {
             assignedTo: "",
             subject: "",
             description: "",
+            observations: "",
         });
         // reglas de validacion
         const rules = {
@@ -114,28 +129,7 @@ export default {
             description: { required: MESSAGE_REQUIRED },
         };
 
-        const v$ = useVuelidate(rules, form.value);
-
-        // const collectionRef = collection(
-        //   storage,
-        //   "Companies",
-        //   companyID.value,
-        //   "Claims",
-        //   companyID.value,
-        //   "Files"
-        // );
-
-        // onSnapshot(collectionRef, (querySnapshot) => {
-        //     querySnapshot.forEach((doc) => {
-        //       console.log("Nuevo estado del documento:", doc.data());
-        //       let status = doc.data?.status
-        //       if (status === 'ERROR') {
-        //         return false
-        //       } else if (status === 'PROCESSED') {
-        //         return true
-        //       }
-        //     });
-        //   });
+        const v$ = useVuelidate(rules, form);
 
         const startListening = () => {
             try {
@@ -147,13 +141,22 @@ export default {
                 });
 
                 unsubscribe = onListenClaimData(
-                    documentID.value,
+                    documentAIID.value,
                     companyID.value,
                     async (data) => {
                         await getDocStatus(companyID.value, documentID.value);
                         claimData.value = data;
                         if (data.status == "DRAFT" && data.summary == null) {
                             loadingAI.value = true;
+                            timerAI.value = setTimeout(() => {
+                                toast.update(idProccessAI, {
+                                    render: "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
+                                    type: toast.TYPE.WARNING,
+                                    isLoading: false,
+                                    autoClose: 7000,
+                                });
+                                loadingAI.value = false;
+                            }, 60000);
                             setTimeout(() => {
                                 toast.update(idProccessAI, {
                                     render: "Extrayendo información relevante...",
@@ -169,18 +172,16 @@ export default {
                                 autoClose: 3000,
                             });
                             loadingAI.value = false;
+                            clearTimeout(timerAI.value);
+                            timerAI.value = 0;
                             instance.proxy.subject = data.subject
                                 ? data.subject
                                 : "";
                             instance.proxy.editorData = data.summary
                                 ? data.summary
                                 : "";
-                            form.value.subject = data.subject
-                                ? data.subject
-                                : "";
-                            form.value.description = data.summary
-                                ? data.summary
-                                : "";
+                            form.subject = data.subject ? data.subject : "";
+                            form.description = data.summary ? data.summary : "";
                         }
                     }
                 );
@@ -190,64 +191,93 @@ export default {
             }
         };
 
-        const drop = (e) => {
-            dropzoneFile.value = e.dataTransfer.files[0];
-            files.value.push(dropzoneFile.value);
-        };
+        // Select files and drag and drop
 
-        const selectedFile = async () => {
-            dropzoneFile.value = document.getElementById("formFile").files[0];
-            files.value.push(dropzoneFile.value);
-            const file = dropzoneFile.value;
-            try {
-                if (!documentID.value) {
-                    await instance.proxy.handleCreateClaimID();
-
-                    toast.success("Radicado en borrador creado!", {
-                        position: toast.POSITION.TOP_RIGHT,
-                        autoClose: 3000,
-                    });
-                }
-                const uniqueFileName = Date.now() + ".pdf";
-                const folder = `Companies/${companyID.value}/${year.value}/Claims/${documentID.value}`;
-                const storagePath = `${folder}/${uniqueFileName}`;
-                const fileRef = storageRef(storage, storagePath);
-                const idLoadFile = toast("Cargando archivo..", {
-                    isLoading: true,
-                    hideProgressBar: true,
-                    closeButton: false,
-                    closeOnClick: false,
-                });
-                const uploadResult = await uploadBytes(fileRef, file);
-                console.log(
-                    "Archivo subido con éxito:",
-                    uploadResult.metadata.fullPath
-                );
-                toast.update(idLoadFile, {
-                    render: "Archivo cargado con éxito",
-                    type: "success",
-                    isLoading: false,
-                    autoClose: 3000,
-                });
-                startListening();
-            } catch (error) {
-                console.error("Error al subir el archivo:", error);
+        const selectedFile = () => {
+            const newFiles = document.getElementById("formFile").files;
+            for (let i = 0; i < newFiles.length; i++) {
+                files.value.push(newFiles[i]);
+                filesToUpload.value.push(newFiles[i])
             }
         };
 
-        //obtener dias segun tipologia documental
-        const getDocDays = computed(() => {
-            return isDocs.value.filter((el) =>
-                el.label == form.value.documentType ? el : 0
-            );
+        const uploadDocument = async () => {
+            for (let i = 0; i < filesToUpload.value.length; i++) {
+                const file = filesToUpload.value[i];
+                console.log(file);
+                try {
+                    if (!documentID.value) {
+                        await instance.proxy.handleCreateClaimID();
+
+                        toast.success("Radicado en borrador creado!", {
+                            position: toast.POSITION.TOP_RIGHT,
+                            autoClose: 3000,
+                        });
+                    }
+                    const uniqueFileName = Date.now() + ".pdf";
+                    const folder = `Companies/${companyID.value}/${year.value}/Claims/${documentID.value}`;
+                    const storagePath = `${folder}/${uniqueFileName}`;
+                    const fileRef = storageRef(storage, storagePath);
+                    const idLoadFile = toast(`Cargando el archivo ${file.name}...`, {
+                        isLoading: true,
+                        hideProgressBar: true,
+                        closeButton: false,
+                        closeOnClick: false,
+                    });
+                    const uploadResult = await uploadBytes(fileRef, file);
+                    console.log(
+                        "Archivo subido con éxito:",
+                        uploadResult.metadata.fullPath
+                    );
+                    toast.update(idLoadFile, {
+                        render: `Archivo cargado con éxito ${file.name}`,
+                        type: "success",
+                        isLoading: false,
+                        autoClose: 3000,
+                    });
+                    if (!readDocument.value) {
+                        readDocument.value = true;
+                        documentAIID.value = documentID.value;
+                        startListening();
+                    }
+                } catch (error) {
+                    console.error("Error al subir el archivo:", error);
+                }
+            }
+            filesToUpload.value = []
+        };
+
+        const classDropZone = computed(() => {
+            const styles =
+                "w-100 d-flex flex-column justify-content-center align-items-center drop-area m-1";
+            if (!dropzone.value) return styles + "border-0 text-secondary";
+            return styles + " border-primary text-primary";
         });
 
-        //obtener uid de persona asignada
-        const getAssignedUid = computed(() => {
-            return peopleList.value.filter((el) =>
-                el.value == form.value.assignedTo ? el?.uid : ""
-            );
-        });
+        const deleteRecord = (name) => {
+            files.value = files.value.filter((file) => name != file.name);
+            filesToUpload.value = filesToUpload.value.filter((file) => name != file.name);
+        };
+
+        const onDragOver = () => {
+            dropzone.value = true;
+        };
+
+        const onDragEnter = () => {
+            dropzone.value = true;
+        };
+
+        const onDragLeave = () => {
+            dropzone.value = false;
+        };
+
+        const onFileDrop = (event) => {
+            event.preventDefault();
+            dropzone.value = false;
+            files.value = [...files.value, ...event.dataTransfer.files];
+            filesToUpload.value =  [...filesToUpload.value, ...event.dataTransfer.files]
+            console.log(files.value);
+        };
 
         // obtener listado trds
         async function getTrds() {
@@ -267,13 +297,6 @@ export default {
                     console.log(error);
                 });
         }
-
-        //obtener dias segun tipologia documental
-        const getAreaId = computed(() => {
-            return trds.value.find((el) => el.value === form.value.area)?.id;
-        });
-
-        const stateDoc = computed(() => store.state.createDocState.stateDoc);
 
         // obtener listado de usuarios activos por areas
         async function getPeople() {
@@ -305,14 +328,44 @@ export default {
                 });
         }
 
+        //obtener dias segun tipologia documental
+        const getDocDays = computed(() => {
+            return isDocs.value.filter((el) =>
+                el.label == form.documentType ? el : 0
+            );
+        });
+
+        //obtener uid de persona asignada
+        const getAssignedUid = computed(() => {
+            return peopleList.value.filter((el) =>
+                el.value == form.assignedTo ? el?.uid : ""
+            );
+        });
+
+        //obtener dias segun tipologia documental
+        const getAreaId = computed(() => {
+            return trds.value.find((el) => el.value === form.area)?.id;
+        });
+
+        const stateDoc = computed(() => store.state.createDocState.stateDoc);
+
         // computadas para la dependencia de los campos
         // manejador del input de serie
+
+        const showDeadLine = computed(() => {
+            if (form.documentType?.toLocaleLowerCase() == "demanda") {
+                console.log("ShowDeadline true");
+                return true;
+            }
+            return false;
+        });
+
         // eslint-disable-next-line vue/return-in-computed-property
         const auxSerie = computed(() => {
             const aux = [];
-            if (form.value.area) {
+            if (form.area) {
                 trds.value.forEach((i) => {
-                    if (i.label == form.value.area) {
+                    if (i.label == form.area) {
                         i.series.forEach((j) => {
                             aux.push({
                                 label: j.name,
@@ -329,9 +382,9 @@ export default {
         // manejador del input de subserie
         // eslint-disable-next-line vue/return-in-computed-property
         const auxSubSerie = computed(() => {
-            if (form.value.serie) {
+            if (form.serie) {
                 series.value.forEach((i) => {
-                    if (i.label == form.value.serie) {
+                    if (i.label == form.serie) {
                         subseries.value = [];
                         i.subseries.forEach((j) => {
                             subseries.value.push({
@@ -348,9 +401,9 @@ export default {
         // manejador del inpur de tipologia documental
         // eslint-disable-next-line vue/return-in-computed-property
         const auxDocTypes = computed(() => {
-            if (form.value.subSerie) {
+            if (form.subSerie) {
                 subseries.value.forEach((i) => {
-                    if (form.value.subSerie == i.label) {
+                    if (form.subSerie == i.label) {
                         isDocs.value = [];
                         i.documents.forEach((j) => {
                             isDocs.value.push({
@@ -365,20 +418,13 @@ export default {
         });
 
         async function clearSelectInput() {
-            if (form.value.area) {
-                form.value.serie = "";
-                form.value.subSerie = "";
-                form.value.documentType = "";
+            if (form.area) {
+                form.serie = "";
+                form.subSerie = "";
+                form.documentType = "";
+                form.assignedTo = "";
             }
             await getPeople();
-        }
-
-        function clearInputSubSerie() {
-            form.value.subSerie = "";
-        }
-
-        function clearInputDocType() {
-            form.value.documentType = "";
         }
 
         onUnmounted(() => {
@@ -390,12 +436,12 @@ export default {
         watch(
             () => [...files.value],
             (currentValue) => {
+                uploadDocument();
                 return currentValue;
             }
         );
 
         watch(stateDoc, (newValue) => {
-            console.log("El estado stateDoc ha cambiado: ", newValue.status);
             if (newValue.status == "ERROR") {
                 toast.update(idProccessAI, {
                     render: "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
@@ -404,11 +450,31 @@ export default {
                     autoClose: 7000,
                 });
                 loadingAI.value = false;
+                clearTimeout(timerAI.value);
+                timerAI.value = 0;
+            }
+        });
+
+        watch(form, (newValueForm) => {
+            if (newValueForm.area == null) {
+                form.serie = "";
+                form.subSerie = "";
+                form.documentType = "";
+                form.assignedTo = "";
+            } else if (newValueForm.serie == null) {
+                form.subSerie = "";
+                form.documentType = "";
+                form.assignedTo = "";
+            } else if (newValueForm.subSerie == null) {
+                form.documentType = "";
+                form.assignedTo = "";
+            } else if (newValueForm.documentType == null) {
+                form.assignedTo = "";
             }
         });
 
         function getAddress() {
-            console.log(form.value);
+            console.log(form);
         }
 
         return {
@@ -439,12 +505,16 @@ export default {
             getAreaId,
             clearSelectInput,
             getTrds,
-            drop,
+            deleteRecord,
+            classDropZone,
+            onDragOver,
+            onDragEnter,
+            onDragLeave,
             selectedFile,
+            onFileDrop,
             getPeople,
-            clearInputSubSerie,
-            clearInputDocType,
             getAddress,
+            showDeadLine,
             moment,
         };
     },
@@ -484,10 +554,6 @@ export default {
             }
         },
 
-        deleteRecord(ele) {
-            ele.target.parentElement.parentElement.parentElement.remove();
-        },
-
         fillFieldWithAI() {
             this.identificationType =
                 this.claimData.applicant.identificationType;
@@ -508,6 +574,8 @@ export default {
                 };
 
                 const body = {
+                    subject: this.form.subject,
+                    summary: this.form.description,
                     area: this.form.area,
                     serie: this.form.serie,
                     subSerie: this.form.subSerie,
@@ -520,7 +588,7 @@ export default {
                     city: this.form.city,
                     folios: parseInt(this.form.folios),
                     assignedTo: this.form.assignedTo,
-                    observations: this.form.description,
+                    observations: this.form.observations,
                     externalRadicate: this.form.externalFiling,
                     inputMethod: this.form.inputMethod,
                     petitionerInformation: {
@@ -553,6 +621,7 @@ export default {
         async handleSubmitDocument() {
             try {
                 this.submitLoading = true;
+                this.handleSaveChanges()
                 const config = {
                     headers: {
                         company: "BAQVERDE",
@@ -572,12 +641,12 @@ export default {
 
                 if (response) {
                     this.submitLoading = false;
+                    this.radicate = response.data;
+                    this.qrModal = true;
                     toast.success("Radicado emitido exitosamente!", {
                         position: toast.POSITION.TOP_RIGHT,
                         autoClose: 3000,
                     });
-                    this.radicate = response.data;
-                    this.qrModal = true;
                 }
             } catch (error) {
                 this.submitLoading = false;
@@ -598,6 +667,10 @@ export default {
                 this.saveLoading = false;
                 console.log(error);
             }
+        },
+        closeModal() {
+            this.qrModal = false;
+            location.reload();
         },
     },
     async mounted() {
@@ -666,6 +739,8 @@ export default {
         flatPickr,
         ValidateLabel,
         Modal,
+        FileTextIcon,
+        AlertOctagonIcon
     },
 };
 </script>
@@ -677,7 +752,7 @@ export default {
         title=""
         size="small"
         :hideIconClose="true"
-        @close="qrModal = false"
+        @close="closeModal"
     >
         <template #content>
             <div
@@ -766,7 +841,15 @@ export default {
         <!-- columns of page data ( document section ) - ( form section ) -->
         <BRow>
             <!-- Document section column -->
-            <BCol lg="4" md="12" sm="12">
+            <BCol
+                lg="4"
+                md="12"
+                sm="12"
+                @dragover.prevent="onDragOver"
+                @dragenter.prevent="onDragEnter"
+                @dragleave.prevent="onDragLeave"
+                @drop="onFileDrop"
+            >
                 <!-- {{ claimData }} -->
                 <BCard no-body>
                     <BCardHeader>
@@ -776,28 +859,41 @@ export default {
                             AGREGA ARCHIVO PARA RADICAR
                         </h5>
                     </BCardHeader>
-                    <BCardBody>
+                    <BCardBody v-if="!answered">
                         <div>
-                            <div class="mb-3">
-                                <label
-                                    for="formFile"
-                                    class="form-label fw-6 text-muted"
-                                    >Agregue archivos aquí</label
-                                >
+                            <div :class="classDropZone">
+                                <p>
+                                    <FileTextIcon size="28" />
+                                </p>
+                                <span> Arrastra el archivo para subirlo</span>
                                 <input
-                                    class="form-control"
                                     type="file"
+                                    name="formFile"
                                     id="formFile"
+                                    multiple
+                                    class="input-file"
                                     @change="selectedFile"
                                 />
+                                <label
+                                    for="formFile"
+                                    class="link-primary label-formFile"
+                                    >o Clic acá para selecciona un
+                                    archivo</label
+                                >
+                                <span class="text-success d-flex justify-content-center align-items-center gap-1" style="opacity: 0.8; font-size: 0.6rem;">
+                                    <AlertOctagonIcon size="10"/> Solo se analizará con la IA el primer archivo subido.
+                                </span>
                             </div>
-                            <div class="vstack gap-2">
+                            <div class="vstack gap-2 mt-2" v-if="files.length > 0">
                                 <div
                                     class="border rounded"
                                     v-for="(file, index) of files"
                                     :key="index"
                                 >
-                                    <div class="d-flex align-items-center p-2">
+                                    <div
+                                        class="d-flex align-items-center p-2"
+                                        v-if="file"
+                                    >
                                         <div class="flex-grow-1">
                                             <div class="pt-1">
                                                 <h5
@@ -826,7 +922,7 @@ export default {
                                                 variant="danger"
                                                 size="sm"
                                                 data-dz-remove=""
-                                                @click="deleteRecord"
+                                                @click="deleteRecord(file.name)"
                                             >
                                                 borrar
                                             </BButton>
@@ -836,6 +932,13 @@ export default {
                             </div>
                         </div>
                     </BCardBody>
+                    <BoCardBody v-else>
+                        <h3
+                            class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
+                        >
+                            Radicado Generado
+                        </h3>
+                    </BoCardBody>
                 </BCard>
                 <BCard no-body>
                     <BCardBody>
@@ -843,7 +946,7 @@ export default {
                             <label
                                 class="form-label fw-bold"
                                 for="project-title-input"
-                                >Asuntoss</label
+                                >Asuntos</label
                             >
                             <BSpinner
                                 v-if="loadingAI"
@@ -930,7 +1033,7 @@ export default {
                                     attribute="area"
                                 />
                             </BCol>
-                            <BCol lg="3">
+                            <BCol lg="3" style="cursor: no-drop;">
                                 <label
                                     for="datepicker-deadline-input"
                                     class="form-label fw-bold"
@@ -940,6 +1043,7 @@ export default {
                                     v-model="form.date"
                                     :config="rangeDateconfig"
                                     class="form-control flatpickr-input"
+                                    disabled
                                 ></flat-pickr>
                                 <ValidateLabel
                                     v-bind="{ v$ }"
@@ -1001,7 +1105,6 @@ export default {
                                     :create-option="true"
                                     placeholder="Seleccione"
                                     :options="series"
-                                    @change="clearInputSubSerie"
                                 />
                                 <ValidateLabel
                                     v-bind="{ v$ }"
@@ -1022,7 +1125,6 @@ export default {
                                     :create-option="true"
                                     placeholder="Seleccione"
                                     :options="subseries"
-                                    @change="clearInputDocType"
                                 />
                                 <ValidateLabel
                                     v-bind="{ v$ }"
@@ -1049,7 +1151,7 @@ export default {
                                     attribute="documentType"
                                 />
                             </BCol>
-                            <BCol lg="3">
+                            <BCol lg="3" v-if="showDeadLine">
                                 <label
                                     for="datepicker-deadline-input"
                                     class="form-label fw-bold"
@@ -1343,5 +1445,24 @@ export default {
     align-items: center;
     justify-content: center;
     gap: 10px;
+}
+
+.drop-area {
+    height: 20vh;
+    border: 2.5px dotted;
+    border-radius: 10px;
+}
+
+.input-file {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.label-formFile:hover {
+    cursor: pointer;
 }
 </style>

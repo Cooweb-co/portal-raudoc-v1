@@ -86,11 +86,12 @@ onMounted(async () => {
             "No definido";
         await getDocumentFilesUploads("BAQVERDE", id.value).then((data) => {
             if (Array.isArray(data)) {
+                console.log(data)
                 filesOut.value = data.filter(
-                    (element) => element.typeRadicate == "OUT"
+                    (element) => element.typeRadicate?.toUpperCase() == "OUT"
                 );
                 filesEntry.value = data.filter(
-                    (element) => element.typeRadicate != "OUT"
+                    (element) => element.typeRadicate?.toUpperCase() !== "OUT"
                 );
             } else {
                 filesOut.value = [];

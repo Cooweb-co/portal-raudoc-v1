@@ -6,21 +6,32 @@
 // import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 // import useVuelidate from "@vuelidate/core";
 import { toast } from "vue3-toastify";
-import { ref, watch, defineProps } from "vue";
+import { ref, watch, defineProps, computed } from "vue";
 import axios from "axios";
+import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
+// import { message } from "ant-design-vue";
 
 const props = defineProps(["loading", "data"]);
 const files = ref([]);
-const dropzoneFile = ref("");
+const dropzone = ref(false);
 const answered = ref(false);
 const documentNumber = ref("Número de radicado");
 
 const selectedFile = async () => {
-    dropzoneFile.value = document.getElementById("formFile").files[0];
-    files.value.push(dropzoneFile.value);
+    const newFiles = document.getElementById("formFile").files;
+    for (let i = 0; i < newFiles.length; i++) {
+        files.value.push(newFiles[i]);
+    }
     // const file = dropzoneFile.value;
     // console.log("file::::", file);
 };
+
+const classDropZone = computed(() => {
+    const styles =
+        "mt-4 w-100 d-flex flex-column justify-content-center align-items-center drop-area mb-5";
+    if (!dropzone.value) return styles + " border-secondary text-secondary";
+    return styles + " border-primary text-primary";
+});
 
 const uploadFile = async () => {
     let idLoadFile;
@@ -55,6 +66,7 @@ const uploadFile = async () => {
 
         const bodyFormData = new FormData();
         for (const file of files.value) {
+            console.log("Filer for::", file);
             bodyFormData.append("files", file);
         }
 
@@ -75,6 +87,7 @@ const uploadFile = async () => {
             isLoading: false,
             autoClose: 3000,
         });
+        setTimeout(() => location.reload(), 4000)
     } catch (error) {
         console.error("Error al subir el archivo:", error);
         toast.update(idLoadFile, {
@@ -107,16 +120,28 @@ const sendFile = () => {
     }
 };
 
-const deleteRecord = (ele) => {
-    ele.target.parentElement.parentElement.parentElement.remove();
+const deleteRecord = (name) => {
+    files.value = files.value.filter((file) => name != file.name);
 };
 
-watch(
-    () => [...files.value],
-    (currentValue) => {
-        return currentValue;
-    }
-);
+const onDragOver = () => {
+    dropzone.value = true;
+}
+
+const onDragEnter = () => {
+    dropzone.value = true;
+}
+
+const onDragLeave = () => {
+    dropzone.value = false;
+}
+
+const onFileDrop = (event) => {
+    event.preventDefault();
+    dropzone.value = false;
+    files.value = [...files.value, ...event.dataTransfer.files];
+}
+
 watch(
     () => props.data,
     (currentValue) => {
@@ -134,7 +159,14 @@ watch(
         </template>
         <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" active />
 
-        <main v-else>
+        <main
+            v-else
+            @dragover.prevent="onDragOver"
+            @dragenter.prevent="onDragEnter"
+            @dragleave.prevent="onDragLeave"
+            @drop="onFileDrop"
+            class="w-100 h-100"
+        >
             <!-- <BCardBody>
                 <div class="mb-3 mb-lg-0">
                             <label for="choices-priority-input" class="form-label">Prioridad</label>
@@ -256,18 +288,25 @@ watch(
                         </BCardHeader>
                         <BCardBody v-if="!answered">
                             <div>
-                                <div class="mb-3">
-                                    <label
-                                        for="formFile"
-                                        class="form-label fw-6 text-muted"
-                                        >Agregue archivos aquí</label
+                                <div :class="classDropZone">
+                                    <p>
+                                        <FileTextIcon size="28" />
+                                    </p>
+                                    <span>
+                                        Arrastra el archivo para subirlo</span
                                     >
                                     <input
-                                        class="form-control"
                                         type="file"
+                                        name="formFile"
                                         id="formFile"
+                                        multiple
+                                        class="input-file"
                                         @change="selectedFile"
                                     />
+                                    <label for="formFile" class="link-primary label-formFile"
+                                        >o Clic acá para selecciona un
+                                        archivo</label
+                                    >
                                 </div>
                                 <div class="vstack gap-2">
                                     <div
@@ -307,7 +346,9 @@ watch(
                                                     variant="danger"
                                                     size="sm"
                                                     data-dz-remove=""
-                                                    @click="deleteRecord"
+                                                    @click="
+                                                        deleteRecord(file.name)
+                                                    "
                                                 >
                                                     borrar
                                                 </BButton>
@@ -330,3 +371,24 @@ watch(
         </main>
     </BTab>
 </template>
+
+<style scoped>
+.drop-area {
+    height: 20vh;
+    border: 2.5px dotted;
+    border-radius: 10px;
+}
+
+.input-file {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.label-formFile:hover {
+    cursor: pointer;
+}
+</style>
