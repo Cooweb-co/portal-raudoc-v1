@@ -1,7 +1,6 @@
 <script setup>
 import { toast } from "vue3-toastify";
 import { onMounted, ref, computed, defineEmits } from "vue";
-import Recaptcha from "./Recaptcha.vue";
 const emit = defineEmits(["handleShowModal"]);
 onMounted(async () => {
     sendCodeToEmail();
@@ -19,7 +18,7 @@ const showCounter = ref(false);
 const intervalId = ref(null);
 const errorForm = ref(false);
 const counter = ref(0);
-const reCaptcha = ref(false);
+const reCaptcha = ref(true);
 
 const styleInputForm = computed(() => {
     const styleInput = "otp-letter-input border-bottom text-center";
@@ -237,14 +236,6 @@ const sendCodeToEmail = async () => {
                     Click acá para reenviar el código.
                 </button>
             </p>
-
-            <Recaptcha
-                @verified="
-                    (value) => {
-                        reCaptcha = value;
-                    }
-                "
-            />
 
             <div class="row pt-5">
                 <div class="col-6">

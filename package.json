@@ -64,6 +64,7 @@
     "vue-prismjs": "^1.2.0",
     "vue-request": "^2.0.4",
     "vue-router": "^4.2.5",
+    "vue-simple-acl": "^2.0.2",
     "vue3-apexcharts": "^1.4.4",
     "vue3-count-to": "^1.1.2",
     "vue3-echarts": "^1.1.0",

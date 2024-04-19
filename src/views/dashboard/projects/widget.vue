@@ -28,11 +28,8 @@ onMounted(async () => {
                 "Content-Type": "application/json",
             },
         };
-        const body = {
-            role: user.value.idRole,
-            areaId: user.value.areaId,
-        };
-        const dataForCard = await axios.post(url, body, config);
+       
+        const dataForCard = await axios.post(url, {}, config);
         if (dataForCard.data.length > 0) {
             loading.value = false;
             projectsWidgets.value = dataForCard.data;
@@ -83,6 +80,7 @@ onMounted(async () => {
 </script>
 
 <template>
+    <pre>{{ props }}</pre>
     <BRow v-if="loading">
         <BCol no-body class="card-animate">
             <a-skeleton :paragraph="{ rows: 2 }" active avatar />
@@ -175,43 +173,11 @@ onMounted(async () => {
                                 <span class="counter-value">{{
                                     item.count
                                 }}</span>
+                                
                             </h4>
                         </div>
                     </div>
                 </div>
-                <!-- <div class="d-flex align-items-center">
-          <div class="avatar-sm flex-shrink-0">
-            <span class="avatar-title rounded-2 fs-2" :class="{
-              'bg-primary-subtle text-primary': item.feaIconClass === 'primary',
-            }">
-              <template v-if="item.feaIcon == 'briefcase'">
-                <BriefcaseIcon size="24" class="text-primary"></BriefcaseIcon>
-              </template>
-
-              <template v-if="item.feaIcon == 'award'">
-                <AwardIcon size="24" ></AwardIcon>
-              </template>
-
-              <template v-if="item.feaIcon == 'clock'">
-                <ClockIcon size="24" ></ClockIcon>
-              </template>
-            </span>
-          </div>
-          <div class="flex-grow-1 overflow-hidden ms-3">
-            <p class="text-uppercase fw-medium text-muted text-truncate mb-3">
-              {{ item.label }}
-            </p>
-            <div class="d-flex align-items-center mb-3">
-              <h4 class="fs-4 flex-grow-1 mb-0">
-                <span class="counter-value">{{
-                  item.counter
-                }}</span>
-              </h4>
-              <span :class="{ 'badge bg-danger-subtle text-danger fs-12': item.icon == 'ri-arrow-down-s-line', 'badge bg-success-subtle text-success fs-12': item.icon == 'ri-arrow-up-s-line' }"><i :class="`${item.icon} fs-13 align-middle me-1`"></i>{{ item.percentage }}</span>
-            </div>
-            <p class="text-muted text-truncate mb-0">{{ item.caption }}</p>
-          </div>
-        </div> -->
             </BCardBody>
         </BCard>
     </BCol>

@@ -1,5 +1,8 @@
 <script>
 import { CountTo } from "vue3-count-to";
+import { ref, onMounted } from "vue";
+import { state } from "@/state/modules/auth";
+import axios from "axios";
 
 import getChartColorsArray from "@/common/getChartColorsArray";
 
@@ -8,24 +11,93 @@ export default {
     CountTo
   },
   setup() {
+    const user = ref(JSON.parse(state.currentUserInfo));
+    const loading = ref(false)
+    const projectsWidgets = ref();
+
+
+    onMounted(async () => {
+    try {
+        loading.value = true;
+        const url =
+            "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_COUNT_CLAIMS_BY_USER";
+        const config = {
+            params: {
+                uid: user.value.uid,
+            },
+            headers: {
+                company: "BAQVERDE",
+                "Content-Type": "application/json",
+            },
+        };
+       
+        const dataForCard = await axios.post(url, {}, config);
+        if (dataForCard.data.length > 0) {
+            loading.value = false;
+            projectsWidgets.value = dataForCard.data;
+        } else {
+            loading.value = false;
+            projectsWidgets.value = [
+                {
+                    value: "Peticiones Recibidas",
+                    count: 0,
+                },
+                {
+                    value: "Peticiones Respondidas",
+                    count: 0,
+                },
+                {
+                    value: "Peticiones por responder",
+                    count: 0,
+                },
+                {
+                    value: "Documentos Procesados",
+                    count: 0,
+                },
+            ];
+        }
+    } catch (error) {
+        console.error(error);
+        loading.value = false;
+        projectsWidgets.value = [
+            {
+                value: "Peticiones Recibidas",
+                count: 0,
+            },
+            {
+                value: "Peticiones Respondidas",
+                count: 0,
+            },
+            {
+                value: "Peticiones por responder",
+                count: 0,
+            },
+            {
+                value: "Documentos Procesados",
+                count: 0,
+            },
+        ];
+    }
+});
+
     return {
       series: [{
         name: "Peticiones",
         type: "bar",
-        data: [34, 65, 46, 68, 49, 61, 42, 44, 78, 52, 63, 67],
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       },
       {
         name: "Respuestas",
         type: "area",
         data: [
-          89.25, 98.58, 68.74, 108.87, 77.54, 84.03, 51.24, 28.57, 92.57,
-          42.36, 88.51, 36.57,
+          0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0,
         ],
       },
       {
         name: "Pendientes",
         type: "bar",
-        data: [8, 12, 7, 17, 21, 11, 5, 9, 7, 29, 12, 35],
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       },
       ],
       chartOptions: {
@@ -67,10 +139,10 @@ export default {
             "Dec",
           ],
           axisTicks: {
-            show: false,
+            show: true,
           },
           axisBorder: {
-            show: false,
+            show: true,
           },
         },
         grid: {
@@ -143,6 +215,7 @@ export default {
           ],
         },
       },
+      projectsWidgets
     };
   },
 };
@@ -162,36 +235,12 @@ export default {
 
     <BCardHeader class="p-0 border-0 bg-light-subtle">
       <BRow class="g-0 text-center">
-        <BCol cols="6" sm="3">
+        <BCol v-for="(item, idx) in projectsWidgets" :key="idx" cols="6" sm="3">
           <div class="p-3 border border-dashed border-start-0">
             <h5 class="mb-1">
-              <count-to :duration="1000" :startVal='0' :endVal="8250">PETICIONES</count-to>
+              <count-to :duration="1000" :startVal='0' :endVal="item.count">PETICIONES</count-to>
             </h5>
-            <p class="text-muted mb-0">Peticiones Recibidas</p>
-          </div>
-        </BCol>
-        <BCol cols="6" sm="3">
-          <div class="p-3 border border-dashed border-start-0">
-            <h5 class="mb-1">
-              <count-to :duration="1000" :startVal='0' :endVal="7522"></count-to>
-            </h5>
-            <p class="text-muted mb-0">Peticiones Respondidas</p>
-          </div>
-        </BCol>
-        <BCol cols="6" sm="3">
-          <div class="p-3 border border-dashed border-start-0">
-            <h5 class="mb-1">
-              <count-to :duration="1000" :startVal='0' :endVal="168"></count-to>
-            </h5>
-            <p class="text-muted mb-0">Peticiones por Responder</p>
-          </div>
-        </BCol>
-        <BCol cols="6" sm="3">
-          <div class="p-3 border border-dashed border-start-0 border-end-0">
-            <h5 class="mb-1 text-success">
-              <count-to :duration="1000" :startVal='0' :endVal="10589"></count-to>
-            </h5>
-            <p class="text-muted mb-0">Documentos Procesados</p>
+            <p class="text-muted mb-0">{{ item.value }}</p>
           </div>
         </BCol>
       </BRow>

@@ -582,8 +582,7 @@ export default {
                     days: this.getDocDays[0]?.days ?? null,
                     documentaryTypologyEntry: this.form.documentType,
                     entryDate: this.form.date,
-                    endDate:
-                        this.form.untilDate === null ? "" : this.form.untilDate,
+                    endDate: !this.form.untilDate ? null : this.form.untilDate,
                     assignedToUid: this.getAssignedUid[0]?.uid,
                     city: this.form.city,
                     folios: parseInt(this.form.folios),
