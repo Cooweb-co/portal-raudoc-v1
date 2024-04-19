@@ -16,11 +16,19 @@ const files = ref([]);
 const dropzone = ref(false);
 const answered = ref(false);
 const documentNumber = ref("Número de radicado");
+const maxSize = 10000000
 
 const selectedFile = async () => {
     const newFiles = document.getElementById("formFile").files;
     for (let i = 0; i < newFiles.length; i++) {
-        files.value.push(newFiles[i]);
+        if(newFiles[i].size > maxSize ){
+            toast.error("El archivo supera los 10 mb", {
+                autoClose: 3000,
+            });
+        }
+        else {
+            files.value = [...files.value, newFiles[i]];
+        }
     }
     // const file = dropzoneFile.value;
     // console.log("file::::", file);
@@ -138,8 +146,19 @@ const onDragLeave = () => {
 
 const onFileDrop = (event) => {
     event.preventDefault();
+    const newFiles = event.dataTransfer.files;
     dropzone.value = false;
-    files.value = [...files.value, ...event.dataTransfer.files];
+    for (let i = 0; i < newFiles.length; i++) {
+        if(newFiles[i].size > maxSize ){
+            toast.error("El archivo supera los 10 mb", {
+                autoClose: 3000,
+            });
+        }
+        else {
+            files.value = [...files.value, newFiles[i]];
+        }
+    }
+
 }
 
 watch(
