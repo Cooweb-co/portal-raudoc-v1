@@ -1033,21 +1033,23 @@ export default {
                                     attribute="area"
                                 />
                             </BCol>
-                            <BCol lg="3" style="cursor: no-drop;">
+                            <BCol lg="3">
                                 <label
                                     for="datepicker-deadline-input"
                                     class="form-label fw-bold"
                                     >Fecha</label
                                 >
-                                <flat-pickr
+                                <input
                                     v-model="form.date"
                                     :config="rangeDateconfig"
-                                    class="form-control flatpickr-input"
+                                    class="form-control"
+                                    style="cursor: no-drop !important;"
                                     disabled
-                                ></flat-pickr>
+                                >
                                 <ValidateLabel
                                     v-bind="{ v$ }"
                                     attribute="date"
+                                    style="cursor: no-drop !important;"
                                 />
                             </BCol>
                             <BCol lg="3" class="mb-3">
