@@ -15,6 +15,9 @@ import { vMaska } from "maska"
 import VueFeather from 'vue-feather';
 import VCalendar from 'v-calendar';
 
+//Vue simple acl
+import acl from './acl'
+
 // Use plugin with optional defaults
 
 import 'v-calendar/style.css';
@@ -65,6 +68,7 @@ app.use(  Vue3Toasity,
     } )
 
     app.use(store)
+    .use(acl)
     .use(router)
     .use(VueApexCharts)
     .use(BootstrapVueNext)
