@@ -1,4 +1,4 @@
 {
-  "title": "Raudoc Vue3 - Admin & Dashboard Template",
-  "description": "Raudoc is a fully featured premium Vuejs admin dashboard template built with Bootstrap 5.1.3"
+  "title": "Raudoc",
+  "description": "Raudoc is a platform where you can upload documents and it produces a summary using AI"
 }
