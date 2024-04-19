@@ -198,7 +198,7 @@ onMounted(() => {
 
                     <button
                         type="button"
-                        class="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger"
+                        class="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger d-none"
                         id="topnav-hamburger-icon"
                     >
                         <span class="hamburger-icon">
@@ -291,7 +291,7 @@ onMounted(() => {
           </form> -->
                 </div>
                 <picture
-                    class="d-flex justify-content-center align-items-end"
+                    class="d-none justify-content-center align-items-end"
                 >
                     <img src="/BAQVERDE.png" alt="BAQVERDE" style="width: 20%;"/>
                 </picture>
@@ -479,7 +479,7 @@ onMounted(() => {
                         <BButton
                             type="button"
                             variant="ghost-secondary"
-                            class="btn-icon btn-topbar rounded-circle"
+                            class="btn-icon btn-topbar rounded-circle d-none"
                             data-toggle="fullscreen"
                             @click="initFullScreen"
                         >
