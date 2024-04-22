@@ -79,6 +79,8 @@ onMounted(async () => {
             phoneNumber:
                 docData?.petitionerInformation?.phoneNumber || "No definido",
             address: docData?.petitionerInformation?.address || "No definido",
+            additionalInformation: docData?.additionalInformation,
+            legalBasis: docData?.legalBasis,
         };
         numberClaim.value =
             data.value.numberEntryClaim ||

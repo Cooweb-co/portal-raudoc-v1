@@ -43,7 +43,12 @@ const goToDocument = () => {
         <td>
             <a-tooltip>
                 <template #title>
-                    <a-button type="link" @click="showDrawer" style="color: #eee;">Ver resumen</a-button>
+                    <a-button
+                        type="link"
+                        @click="showDrawer"
+                        style="color: #eee"
+                        >Ver resumen</a-button
+                    >
                 </template>
                 <div class="d-flex align-items-center">
                     <div class="avatar-sm">
@@ -94,7 +99,26 @@ const goToDocument = () => {
         @close="onClose"
         style="z-index: 100000 !important;"
     >
-        <p>{{ file?.summary?.summary || 'No definido' }}</p>
+        <h5>Resumen</h5>
+        <p class="text-muted">{{ file?.summary?.summary || "No definido" }}</p>
+        <h5>Fundamentos legales:</h5>
+        <ol v-if="file?.summary?.legalBasis.length > 0">
+            <li v-for="item in file?.summary?.legalBasis" :key="item" class="text-muted">
+                {{ item }}
+            </li>
+        </ol>
+        <span v-else class="text-muted">No se encontraron fundamentos legales</span>
+        <h5>Información adicional:</h5>
+        <ul v-if="file?.summary?.additionalInformation.length > 0">
+            <li
+                v-for="item in file?.summary?.additionalInformation"
+                :key="item"
+                class="text-muted"
+            >
+                {{ item }}
+            </li>
+        </ul>
+        <span v-else class="text-muted">No hay información adicional</span>
     </a-drawer>
 </template>
 
