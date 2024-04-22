@@ -155,7 +155,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <header id="page-topbar">
+    <header id="page-topbar" style="z-index: 1000 !important;">
         <div class="layout-width">
             <div class="navbar-header">
                 <div class="d-flex">

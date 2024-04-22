@@ -129,7 +129,6 @@ export async function openDocument(fileName, filePath) {
 
 export async function getDocStatus(companyId, claimId) {
     try {
-        console.log('Llega')
         const collectionRef = collection(
             firestore,
             "Companies",

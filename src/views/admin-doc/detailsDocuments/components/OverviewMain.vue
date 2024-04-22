@@ -86,6 +86,7 @@ onMounted(async () => {
             "No definido";
         await getDocumentFilesUploads("BAQVERDE", id.value).then((data) => {
             if (Array.isArray(data)) {
+                console.log(data)
                 for (let i = 0; i < data.length; i++) {
                     const file = data[i];
                     if(file?.name?.includes('-out')) filesOut.value = [...filesOut.value, file]

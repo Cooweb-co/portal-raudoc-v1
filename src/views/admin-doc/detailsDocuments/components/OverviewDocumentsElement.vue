@@ -13,37 +13,65 @@ const props = defineProps({
 const name = ref(props.file?.name || "-");
 const extension = ref(props.file?.name.split(".").pop().toUpperCase() || "-");
 const fullNameClient = ref(props.file?.summary?.applicant?.fullName || "-");
-const startProccessAt = ref(transformDate(props.file?.startProccessAt?.seconds || props.file?.createdAt?.seconds));
+const startProccessAt = ref(
+    transformDate(
+        props.file?.startProccessAt?.seconds || props.file?.createdAt?.seconds
+    )
+);
+const placement = ref("left");
+const open = ref(false);
+
+const showDrawer = () => {
+    open.value = true;
+};
+const onClose = () => {
+    open.value = false;
+};
 
 const goToDocument = () => {
-    const year = props.file?.startProccessAt?.toDate().getFullYear() || props.file?.createdAt?.toDate().getFullYear();
+    const year =
+        props.file?.startProccessAt?.toDate().getFullYear() ||
+        props.file?.createdAt?.toDate().getFullYear();
     const path = `/Companies/BAQVERDE/${year}/Claims/${props.id}`;
     openDocument(props.file.name, path);
 };
+// const buttonWidth = 70;
 </script>
 
 <template>
     <tr>
         <td>
-            <div class="d-flex align-items-center">
-                <div class="avatar-sm">
-                    <div
-                        :class="`avatar-title bg-light ${'text-' + typeDocument} rounded fs-24`"
-                    >
-                        <i class="ri-folder-zip-line"></i>
+            <a-tooltip>
+                <template #title>
+                    <a-button type="link" @click="showDrawer" style="color: #eee;">Ver resumen</a-button>
+                </template>
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm">
+                        <div
+                            :class="`avatar-title bg-light ${
+                                'text-' + typeDocument
+                            } rounded fs-24`"
+                        >
+                            <i class="ri-folder-zip-line"></i>
+                        </div>
+                    </div>
+                    <div class="ms-3 flex-grow-1">
+                        <h5 class="fs-14 mb-0">
+                            <BLink href="javascript:void(0)" class="text-body">
+                                {{ name }}
+                            </BLink>
+                        </h5>
                     </div>
                 </div>
-                <div class="ms-3 flex-grow-1">
-                    <h5 class="fs-14 mb-0">
-                        <BLink href="javascript:void(0)" class="text-body">
-                            {{ name }}
-                        </BLink>
-                    </h5>
-                </div>
-            </div>
+            </a-tooltip>
         </td>
         <td>{{ extension }}</td>
-        <td>{{ fullNameClient }}</td>
+        <td>
+            <a-tooltip>
+                <template #title> prompt text </template>
+                {{ fullNameClient }}
+            </a-tooltip>
+        </td>
         <td>{{ startProccessAt }}</td>
         <td class="">
             <div class="d-flex justify-content-center">
@@ -58,4 +86,24 @@ const goToDocument = () => {
             </div>
         </td>
     </tr>
+    <a-drawer
+        :width="500"
+        :title="file?.summary?.subject || 'No definido'"
+        :placement="placement"
+        :open="open"
+        @close="onClose"
+        style="z-index: 100000 !important;"
+    >
+        <p>{{ file?.summary?.summary || 'No definido' }}</p>
+    </a-drawer>
 </template>
+
+<style scoped>
+:deep(#components-a-tooltip-demo-placement) .ant-btn {
+    width: 70px;
+    text-align: center;
+    padding: 0;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+</style>
