@@ -101,15 +101,15 @@ const goToDocument = () => {
     >
         <h5>Resumen</h5>
         <p class="text-muted">{{ file?.summary?.summary || "No definido" }}</p>
-        <h5>Fundamentos legales:</h5>
-        <ol v-if="file?.summary?.legalBasis.length > 0">
+        <h5 class="mt-2">Fundamentos legales:</h5>
+        <ol v-if="file?.summary?.legalBasis">
             <li v-for="item in file?.summary?.legalBasis" :key="item" class="text-muted">
                 {{ item }}
             </li>
         </ol>
         <span v-else class="text-muted">No se encontraron fundamentos legales</span>
-        <h5>Información adicional:</h5>
-        <ul v-if="file?.summary?.additionalInformation.length > 0">
+        <h5 class="mt-2">Información adicional:</h5>
+        <ul v-if="file?.summary?.additionalInformation">
             <li
                 v-for="item in file?.summary?.additionalInformation"
                 :key="item"

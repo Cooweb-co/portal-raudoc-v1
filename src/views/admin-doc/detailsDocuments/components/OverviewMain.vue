@@ -79,8 +79,8 @@ onMounted(async () => {
             phoneNumber:
                 docData?.petitionerInformation?.phoneNumber || "No definido",
             address: docData?.petitionerInformation?.address || "No definido",
-            additionalInformation: docData?.additionalInformation,
-            legalBasis: docData?.legalBasis,
+            additionalInformation: docData?.additionalInformation || [],
+            legalBasis: docData?.legalBasis || [],
         };
         numberClaim.value =
             data.value.numberEntryClaim ||
@@ -88,7 +88,6 @@ onMounted(async () => {
             "No definido";
         await getDocumentFilesUploads("BAQVERDE", id.value).then((data) => {
             if (Array.isArray(data)) {
-                console.log(data)
                 for (let i = 0; i < data.length; i++) {
                     const file = data[i];
                     if(file?.name?.includes('-out')) filesOut.value = [...filesOut.value, file]
