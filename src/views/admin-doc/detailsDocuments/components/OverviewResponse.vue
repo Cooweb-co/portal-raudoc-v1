@@ -16,17 +16,18 @@ const files = ref([]);
 const dropzone = ref(false);
 const answered = ref(false);
 const documentNumber = ref("Número de radicado");
-const maxSize = 10000000
-
+const maxSize = 10000000;
+const domain = window.location.origin;
+const company = "BAQVERDE";
+const pathname = window.location.pathname.split("/");
 const selectedFile = async () => {
     const newFiles = document.getElementById("formFile").files;
     for (let i = 0; i < newFiles.length; i++) {
-        if(newFiles[i].size > maxSize ){
+        if (newFiles[i].size > maxSize) {
             toast.error("El archivo supera los 10 mb", {
                 autoClose: 3000,
             });
-        }
-        else {
+        } else {
             files.value = [...files.value, newFiles[i]];
         }
     }
@@ -64,28 +65,30 @@ const uploadFile = async () => {
         });
 
         const headers = {
-            company: "BAQVERDE",
             "Content-Type": "multipart/form-data",
         };
 
-        const params = {
-            claimId: props.data.id,
-        };
-
         const bodyFormData = new FormData();
+        bodyFormData.append(
+            "url",
+            `${domain}/r/${company}/${pathname[pathname.length - 1]}`
+        );
+        bodyFormData.append("claimId", props.data.id);
+        bodyFormData.append("companyId", company);
         for (const file of files.value) {
             console.log("Filer for::", file);
-            bodyFormData.append("files", file);
+            bodyFormData.append("file", file);
         }
 
-        const res = await axios.post(
-            `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_GENERATE_RADICATE_OUT`,
-            bodyFormData,
-            {
-                headers,
-                params,
-            }
-        );
+        let config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/ADD_QR_IN_PDF",
+            headers: headers,
+            data: bodyFormData,
+        };
+
+        const res = await axios.request(config)
         answered.value = true;
         documentNumber.value = res.data.idRadicate;
         console.log(res.data);
@@ -95,7 +98,7 @@ const uploadFile = async () => {
             isLoading: false,
             autoClose: 3000,
         });
-        setTimeout(() => location.reload(), 4000)
+        setTimeout(() => location.reload(), 4000);
     } catch (error) {
         console.error("Error al subir el archivo:", error);
         toast.update(idLoadFile, {
@@ -134,32 +137,30 @@ const deleteRecord = (name) => {
 
 const onDragOver = () => {
     dropzone.value = true;
-}
+};
 
 const onDragEnter = () => {
     dropzone.value = true;
-}
+};
 
 const onDragLeave = () => {
     dropzone.value = false;
-}
+};
 
 const onFileDrop = (event) => {
     event.preventDefault();
     const newFiles = event.dataTransfer.files;
     dropzone.value = false;
     for (let i = 0; i < newFiles.length; i++) {
-        if(newFiles[i].size > maxSize ){
+        if (newFiles[i].size > maxSize) {
             toast.error("El archivo supera los 10 mb", {
                 autoClose: 3000,
             });
-        }
-        else {
+        } else {
             files.value = [...files.value, newFiles[i]];
         }
     }
-
-}
+};
 
 watch(
     () => props.data,
@@ -322,7 +323,9 @@ watch(
                                         class="input-file"
                                         @change="selectedFile"
                                     />
-                                    <label for="formFile" class="link-primary label-formFile"
+                                    <label
+                                        for="formFile"
+                                        class="link-primary label-formFile"
                                         >o Clic acá para selecciona un
                                         archivo</label
                                     >

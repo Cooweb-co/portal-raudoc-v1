@@ -9,7 +9,7 @@ const props = defineProps({
     data: Object,
     files: Array,
     loading: Boolean,
-    numberClaim: String
+    numberClaim: String,
 });
 
 const setVariantState = computed(() => {
@@ -34,9 +34,35 @@ const setVariantState = computed(() => {
                             </h6>
                             <p class="text-muted">{{ data.summary }}</p>
                             <h6 class="fw-semibold text-uppercase mb-3">
-                                Observaciones
+                                Fundamentos legales:
                             </h6>
-                            <p class="text-muted">{{ data.observations }}</p>
+                            <ol v-if="data?.legalBasis?.length > 0">
+                                <li
+                                    v-for="item in data.legalBasis"
+                                    :key="item"
+                                    class="text-muted"
+                                >
+                                    {{ item }}
+                                </li>
+                            </ol>
+                            <p v-else class="text-muted"
+                                >No se encontraron fundamentos legales</p
+                            >
+                            <h6 class="fw-semibold text-uppercase mb-3">
+                                Información adicional:
+                            </h6>
+                            <ul v-if="data?.additionalInformation?.length > 0">
+                                <li
+                                    v-for="information in data.additionalInformation"
+                                    :key="information"
+                                    class="text-muted"
+                                >
+                                    {{ information }}
+                                </li>
+                            </ul>
+                            <p v-else class="text-muted mb-3"
+                                >No hay información adicional</p
+                            >
 
                             <h6 class="fw-semibold text-uppercase mb-3">
                                 Información de contacto
@@ -64,7 +90,9 @@ const setVariantState = computed(() => {
                                 <BRow gy-3>
                                     <BCol lg="3" sm="6">
                                         <div>
-                                            <p class="mb-2 text-uppercase fw-medium">
+                                            <p
+                                                class="mb-2 text-uppercase fw-medium"
+                                            >
                                                 Fecha de Creación:
                                             </p>
                                             <h5 class="fs-15 mb-0">
@@ -74,7 +102,9 @@ const setVariantState = computed(() => {
                                     </BCol>
                                     <BCol lg="3" sm="6">
                                         <div>
-                                            <p class="mb-2 text-uppercase fw-medium">
+                                            <p
+                                                class="mb-2 text-uppercase fw-medium"
+                                            >
                                                 Fecha limite:
                                             </p>
                                             <h5 class="fs-15 mb-0">
@@ -98,10 +128,16 @@ const setVariantState = computed(() => {
                                     </BCol> -->
                                     <BCol lg="3" sm="6">
                                         <div>
-                                            <p class="mb-2 text-uppercase fw-medium">
+                                            <p
+                                                class="mb-2 text-uppercase fw-medium"
+                                            >
                                                 Estatus :
                                             </p>
-                                            <BBadge tag="div" :variant="setVariantState">{{ data.status }}</BBadge>
+                                            <BBadge
+                                                tag="div"
+                                                :variant="setVariantState"
+                                                >{{ data.status }}</BBadge
+                                            >
                                         </div>
                                     </BCol>
                                 </BRow>
@@ -112,10 +148,17 @@ const setVariantState = computed(() => {
                                     Adjuntos
                                 </h6>
                                 <BRow class="g-3" v-show="files">
-                                    <OverviewSummaryElement v-for="file in files" :key="file.name" :id="data.id"
-                                        :file="file" />
+                                    <OverviewSummaryElement
+                                        v-for="file in files"
+                                        :key="file.name"
+                                        :id="data.id"
+                                        :file="file"
+                                    />
                                 </BRow>
-                                <h6 class="mb-3 fw-semibold text-uppercase" v-show="!files">
+                                <h6
+                                    class="mb-3 fw-semibold text-uppercase"
+                                    v-show="!files"
+                                >
                                     No se adjuntaron archivos
                                 </h6>
                             </div>
@@ -255,7 +298,9 @@ const setVariantState = computed(() => {
                     </BCardHeader>
                     <BCardBody>
                         <div class="table-responsive table-card">
-                            <table class="table table-borderless align-middle mb-0">
+                            <table
+                                class="table table-borderless align-middle mb-0"
+                            >
                                 <tbody>
                                     <tr>
                                         <td class="fw-medium">
@@ -408,7 +453,9 @@ const setVariantState = computed(() => {
                 </BCard>
                 <a-skeleton v-if="loading" :paragraph="{ rows: 3 }" active />
                 <BCard no-body v-else>
-                    <BCardHeader class="align-items-center d-flex border-bottom-dashed">
+                    <BCardHeader
+                        class="align-items-center d-flex border-bottom-dashed"
+                    >
                         <BCardTitle class="mb-0 flex-grow-1">
                             <h5>Detalles del destinatario</h5>
                         </BCardTitle>
