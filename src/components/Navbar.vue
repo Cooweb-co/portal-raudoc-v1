@@ -76,7 +76,7 @@ const rol = computed(() => {
 
 function capitalizeFirstLetter(str) {
     return str?.charAt(0)?.toUpperCase() + str?.slice(1)?.toLowerCase() || "";
-    // return str;
+
 }
 
 const toggleHamburgerMenu = () => {
