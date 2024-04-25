@@ -573,10 +573,13 @@ export default {
                     },
                 };
 
+                console.log(this.getAreaId);
+
                 const body = {
                     subject: this.form.subject,
                     summary: this.form.description,
                     area: this.form.area,
+                    areaId: this.getAreaId,
                     serie: this.form.serie,
                     subSerie: this.form.subSerie,
                     days: this.getDocDays[0]?.days ?? null,
