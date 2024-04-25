@@ -88,7 +88,7 @@ export default {
                                 <BCol lg="6">
                                     <div class="p-lg-5 p-4">
                                         <h5 class="text-primary">Forgot Password?</h5>
-                                        <p class="text-muted">Reset password with velzon</p>
+                                        <p class="text-muted">Reset password with raudoc</p>
 
                                         <div class="mt-2 text-center">
                                             <lottie class="avatar-xl" colors="primary:#0ab39c,secondary:#405189"

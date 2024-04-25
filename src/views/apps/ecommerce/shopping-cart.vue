@@ -413,7 +413,7 @@ export default {
                     </tr>
                     <tr>
                       <td>
-                        Discount <span class="text-muted">(VELZON15)</span> :
+                        Discount <span class="text-muted">(raudoc15)</span> :
                       </td>
                       <td class="text-end" id="cart-discount">- $ 53.99</td>
                     </tr>

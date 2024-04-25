@@ -1,5 +1,5 @@
 <script>
-import NavBar from "@/components/nav-bar";
+import NavBar from "@/components/Navbar";
 import RightBar from "@/components/right-bar";
 import Footer from "@/components/footer";
 
@@ -135,7 +135,7 @@ export default {
     <div id="layout-wrapper">
       <NavBar />
       <!-- ========== App Menu ========== -->
-      <div class="app-menu navbar-menu">
+      <div class="app-menu navbar-menu" style="z-index: 1000 !important;">
         <!-- LOGO -->
         <div class="navbar-brand-box">
           <!-- Dark Logo-->
@@ -623,7 +623,7 @@ export default {
                             <div class="collapse menu-dropdown" id="sidebarcandidatelists">
                               <ul class="nav nav-sm flex-column">
                                 <li class="nav-item">
-                                  <router-link to="/jobs/candidate-lists" class="nav-link" data-key="t-list">
+                                  <router-link to="/administration/users" class="nav-link" data-key="t-list">
                                     {{ $t("t-list-view") }}
                                   </router-link>
                                 </li>

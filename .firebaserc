@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "raudoc-gestion-agil"
-  }
+  },
+  "targets": {
+    "raudoc-gestion-agil": {
+      "hosting": {
+        "prod": [
+          "portal-raudoc"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

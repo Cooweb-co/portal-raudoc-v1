@@ -21,6 +21,14 @@ export default [
     },
   },
   {
+    path: "/create-user",
+    name: "createUser",
+    component: () => import("../views/pages/create-user.vue"),
+    meta: {
+      title: "Create User"
+    },
+  },
+  {
     path: "/register",
     name: "Register",
     component: () => import("../views/account/register.vue"),
@@ -74,26 +82,26 @@ export default [
     meta: {
       title: "Consulta de radicado",
     },
-    component: () => import("../views/admin-doc/overview-without-sign"),
+    component: () => import("../views/admin-doc/OverviewWithoutSign"),
   },
 
   {
     path: "/gestion-documental/radicado/:documentID",
-    name: "projects Overview",
+    name: "projects-overview",
     meta: { title: "Projects Overview", authRequired: true },
-    component: () => import("../views/admin-doc/detailsDocuments/overview"),
+    component: () => import("../views/admin-doc/detailsDocuments/Overview"),
   },
 
   {
     path: "/gestion-documental/organigrama",
-    name: "organigrama",
+    name: "organization-chart",
     meta: { title: "Organigrama", authRequired: true },
     component: () => import("../views/admin-doc/sitemap"),
   },
 
   {
     path: "/radicacion/radicar-documento/:id?",
-    name: "radicacion",
+    name: "claim",
     meta: { title: "Radicación", authRequired: true },
     component: () => import("../views/admin-doc/create"),
   },
@@ -104,23 +112,18 @@ export default [
     meta: { title: "Document - List", authRequired: true },
     component: () => import("../views/admin-doc/document-list"),
   },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  {
+    path: "/gestion-documental/lista-radicados",
+    name: "list-claim",
+    meta: { title: "Lista de Radicados", authRequired: true },
+    component: () => import("../views/tickets/List"),
+  },
+  {
+    path: "/administration/users",
+    name: "administration-users",
+    meta: { title: "Administración de usuarios", authRequired: true },
+    component: () => import("../views/apps/jobs/candidate-lists.vue"),
+  },
   {
     path: "/dashboard/crypto",
     name: "dashboard-crypto",
@@ -289,7 +292,7 @@ export default [
     path: "/apps/projects-list",
     name: "projects-list",
     meta: { title: "Projects List", authRequired: true },
-    component: () => import("../views/admin-doc/detailsDocuments/list"),
+    component: () => import("../views/admin-doc/detailsDocuments/list.vue"),
   },
 
   {
@@ -327,12 +330,6 @@ export default [
     name: "tickets-details",
     meta: { title: "Ticket Details", authRequired: true },
     component: () => import("../views/tickets/details"),
-  },
-  {
-    path: "/apps/tickets-list",
-    name: "tickets-list",
-    meta: { title: "Tickets List", authRequired: true },
-    component: () => import("../views/tickets/list"),
   },
   {
     path: "/apps/crm-contacts",
@@ -484,12 +481,7 @@ export default [
     meta: { title: "Candidate Grid", authRequired: true },
     component: () => import("../views/apps/jobs/candidate-grid"),
   },
-  {
-    path: "/jobs/candidate-lists",
-    name: "job-candidate-lists",
-    meta: { title: "Candidate Lists", authRequired: true },
-    component: () => import("../views/apps/jobs/candidate-lists"),
-  },
+
   {
     path: "/jobs/categories",
     name: "job-categories",

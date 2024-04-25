@@ -182,7 +182,7 @@ export default {
                     <div class="d-flex align-items-center">
                         <h6 class="card-title mb-0 flex-grow-1">Popular Candidates</h6>
                         <div class="flex-shrink-0">
-                            <router-link to="/jobs/candidate-lists" class="link-primary">View All <i class="ri-arrow-right-line"></i></router-link>
+                            <router-link to="/administration/users" class="link-primary">View All <i class="ri-arrow-right-line"></i></router-link>
                         </div>
                     </div>
                 </BCardHeader>
@@ -267,7 +267,7 @@ export default {
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <h6 class="fs-16">Invite your friends to Velzon</h6>
+                            <h6 class="fs-16">Invite your friends to raudoc</h6>
                             <p class="text-muted mb-0">Nor again is there anyone who loves or pursues or desires to
                                 obtain pain of itself, because it is pain, but because occasionally.</p>
                         </div>

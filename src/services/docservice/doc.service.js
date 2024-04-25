@@ -1,9 +1,4 @@
 import { getFirebaseBackend } from "../../authUtils.js";
-
-// import { authHeader } from '../authservice/auth-header';
-
-const firestore = getFirebaseBackend().firestore;
-
 import {
     doc,
     onSnapshot,
@@ -12,10 +7,11 @@ import {
     collection,
 } from "firebase/firestore";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
-// import { getStorage } from 'firebase/storage';
 
-// const app = getFirebaseBackend().app
-// const firestore = getFirestore(app)
+
+import store from '@/state/store'
+
+const firestore = getFirebaseBackend().firestore;
 
 export const createClaimID = async (uid) => {
     // eslint-disable-next-line no-useless-catch
@@ -38,14 +34,18 @@ export const createClaimID = async (uid) => {
 };
 
 export const onListenClaimData = async (claimId, companyId, callback) => {
+    try {
+        return onSnapshot(
+            doc(firestore, "Companies", companyId, "Claims", claimId),
+            (doc) => {
+                console.log("onListenClaimData::::OnSnapshot", doc.data());
+                callback(doc.data());
+            }
+        );
+    } catch (error) {
+        console.log("error: ", error);
+    }
     // eslint-disable-next-line no-useless-catch
-    return onSnapshot(
-        doc(firestore, "Companies", companyId, "Claims", claimId),
-        (doc) => {
-            console.log("onListenClaimData::::OnSnapshot", doc.data());
-            callback(doc.data());
-        }
-    );
 };
 
 export const saveFile = async (pathDocument, urlPDF, fileName) => {
@@ -124,5 +124,30 @@ export async function openDocument(fileName, filePath) {
         window.open(url, "_blank");
     } catch (error) {
         console.error("Error al obtener URL del archivo:", error);
+    }
+}
+
+export async function getDocStatus(companyId, claimId) {
+    try {
+        const collectionRef = collection(
+            firestore,
+            "Companies",
+            companyId,
+            "Claims",
+            claimId,
+            "Files"
+        );
+
+        onSnapshot(collectionRef, (querySnapshot) => {
+            const querySnapshotUpdates = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data()
+                querySnapshotUpdates.push(data);
+                store.dispatch('createDocState/STATE_DOC', { newValue: data });
+            });
+        });
+        return
+    } catch (error) {
+        console.error("Error al obtener los documentos:", error);
     }
 }

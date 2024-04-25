@@ -313,7 +313,7 @@ export default {
                                 <BButton type="button" class="btn btn-icon active" data-bs-toggle="button" aria-pressed="true"><i class="mdi mdi-cards-heart fs-16"></i></BButton>
                             </div>
                             <div class="explore-place-bid-img">
-                                <img src="https://img.themesbrand.com/velzon/images/img-4.gif" alt="" class="card-img-top explore-img" />
+                                <img src="https://img.themesbrand.com/raudoc/images/img-4.gif" alt="" class="card-img-top explore-img" />
                                 <div class="bg-overlay"></div>
                                 <div class="place-bid-btn">
                                     <BLink href="#!" class="btn btn-primary"><i class="ri-auction-fill align-bottom me-1"></i> Place Bid</BLink>
@@ -522,10 +522,10 @@ export default {
                                             <BRow class="g-1 mb-3">
                                                 <BCol cols="6">
                                                     <img src="@/assets/images/nft/img-06.jpg" alt="" class="img-fluid rounded">
-                                                    <img src="https://img.themesbrand.com/velzon/images/img-2.gif" alt="" class="img-fluid rounded mt-1">
+                                                    <img src="https://img.themesbrand.com/raudoc/images/img-2.gif" alt="" class="img-fluid rounded mt-1">
                                                 </BCol>
                                                 <BCol cols="6">
-                                                    <img src="https://img.themesbrand.com/velzon/images/img-5.gif" alt="" class="img-fluid rounded mb-1">
+                                                    <img src="https://img.themesbrand.com/raudoc/images/img-5.gif" alt="" class="img-fluid rounded mb-1">
                                                     <img src="@/assets/images/nft/img-03.jpg" alt="" class="img-fluid rounded">
                                                 </BCol>
                                             </BRow>
@@ -543,10 +543,10 @@ export default {
                                             <BRow class="g-1 mb-3">
                                                 <BCol cols="6">
                                                     <img src="@/assets/images/nft/img-05.jpg" alt="" class="img-fluid rounded">
-                                                    <img src="https://img.themesbrand.com/velzon/images/img-1.gif" alt="" class="img-fluid rounded mt-1">
+                                                    <img src="https://img.themesbrand.com/raudoc/images/img-1.gif" alt="" class="img-fluid rounded mt-1">
                                                 </BCol>
                                                 <BCol cols="6">
-                                                    <img src="https://img.themesbrand.com/velzon/images/img-4.gif" alt="" class="img-fluid rounded mb-1">
+                                                    <img src="https://img.themesbrand.com/raudoc/images/img-4.gif" alt="" class="img-fluid rounded mb-1">
                                                     <img src="@/assets/images/nft/img-04.jpg" alt="" class="img-fluid rounded">
                                                 </BCol>
                                             </BRow>
@@ -565,10 +565,10 @@ export default {
                                                 <BRow class="g-1 mb-3">
                                                     <BCol cols="6">
                                                         <img src="@/assets/images/nft/img-02.jpg" alt="" class="img-fluid rounded">
-                                                        <img src="https://img.themesbrand.com/velzon/images/img-3.gif" alt="" class="img-fluid rounded mt-1">
+                                                        <img src="https://img.themesbrand.com/raudoc/images/img-3.gif" alt="" class="img-fluid rounded mt-1">
                                                     </BCol>
                                                     <BCol cols="6">
-                                                        <img src="https://img.themesbrand.com/velzon/images/img-1.gif" alt="" class="img-fluid rounded mb-1">
+                                                        <img src="https://img.themesbrand.com/raudoc/images/img-1.gif" alt="" class="img-fluid rounded mb-1">
                                                         <img src="@/assets/images/nft/img-01.jpg" alt="" class="img-fluid rounded">
                                                     </BCol>
                                                 </BRow>
@@ -587,10 +587,10 @@ export default {
                                             <BRow class="g-1 mb-3">
                                                 <BCol cols="6">
                                                     <img src="@/assets/images/nft/img-03.jpg" alt="" class="img-fluid rounded">
-                                                    <img src="https://img.themesbrand.com/velzon/images/img-5.gif" alt="" class="img-fluid rounded mt-1">
+                                                    <img src="https://img.themesbrand.com/raudoc/images/img-5.gif" alt="" class="img-fluid rounded mt-1">
                                                 </BCol>
                                                 <BCol cols="6">
-                                                    <img src="https://img.themesbrand.com/velzon/images/img-2.gif" alt="" class="img-fluid rounded mb-1">
+                                                    <img src="https://img.themesbrand.com/raudoc/images/img-2.gif" alt="" class="img-fluid rounded mb-1">
                                                     <img src="@/assets/images/nft/img-05.jpg" alt="" class="img-fluid rounded">
                                                 </BCol>
                                             </BRow>
@@ -608,10 +608,10 @@ export default {
                                             <BRow class="g-1 mb-3">
                                                 <BCol cols="6">
                                                     <img src="@/assets/images/nft/img-02.jpg" alt="" class="img-fluid rounded">
-                                                    <img src="https://img.themesbrand.com/velzon/images/img-3.gif" alt="" class="img-fluid rounded mt-1">
+                                                    <img src="https://img.themesbrand.com/raudoc/images/img-3.gif" alt="" class="img-fluid rounded mt-1">
                                                 </BCol>
                                                 <BCol cols="6">
-                                                    <img src="https://img.themesbrand.com/velzon/images/img-1.gif" alt="" class="img-fluid rounded mb-1">
+                                                    <img src="https://img.themesbrand.com/raudoc/images/img-1.gif" alt="" class="img-fluid rounded mb-1">
                                                     <img src="@/assets/images/nft/img-01.jpg" alt="" class="img-fluid rounded">
                                                 </BCol>
                                             </BRow>
@@ -725,7 +725,7 @@ export default {
                                     </div>
                                 </div>
                                 <div class="explore-place-bid-img overflow-hidden rounded">
-                                    <img src="https://img.themesbrand.com/velzon/images/img-1.gif" alt="" class="img-fluid explore-img">
+                                    <img src="https://img.themesbrand.com/raudoc/images/img-1.gif" alt="" class="img-fluid explore-img">
                                     <div class="bg-overlay"></div>
                                     <div class="place-bid-btn">
                                         <BLink href="#!" class="btn btn-primary"><i class="ri-auction-fill align-bottom me-1"></i> Place Bid</BLink>
@@ -839,7 +839,7 @@ export default {
                             <BCardBody>
                                 <div class="d-flex">
                                     <div class="flex-shrink-0">
-                                        <img src="https://img.themesbrand.com/velzon/images/img-5.gif" alt="" class="avatar-sm object-fit-cover rounded">
+                                        <img src="https://img.themesbrand.com/raudoc/images/img-5.gif" alt="" class="avatar-sm object-fit-cover rounded">
                                     </div>
                                     <div class="ms-3 flex-grow-1">
                                         <BLink href="pages-profile">
@@ -949,7 +949,7 @@ export default {
                                 <p>Premium Multipurpose Admin & Dashboard Template</p>
                                 <p>You can build any type of web application like eCommerce, CRM,
                                     CMS, Project
-                                    management apps, Admin Panels, etc using Velzon.</p>
+                                    management apps, Admin Panels, etc using raudoc.</p>
                             </div>
                         </div>
                     </BCol>
@@ -1019,7 +1019,7 @@ export default {
                     <BCol sm="6">
 
                         <div>
-                            <p class="copy-rights mb-0 currentyear">{{ new Date().getFullYear() }} © Velzon -
+                            <p class="copy-rights mb-0 currentyear">{{ new Date().getFullYear() }} © raudoc -
                                 Themesbrand
                             </p>
                         </div>

@@ -101,7 +101,7 @@ export default {
               <BCardBody class="p-4">
                 <div class="text-center mt-2">
                   <h5 class="text-primary">Forgot Password?</h5>
-                  <p class="text-muted">Reset password with velzon</p>
+                  <p class="text-muted">Reset password with Raudoc</p>
 
                   <lottie class="avatar-xl" colors="primary:#0ab39c,secondary:#405189" :options="defaultOptions"
                     :height="120" :width="120" />
@@ -149,7 +149,7 @@ export default {
           <BCol lg="12">
             <div class="text-center">
               <p class="mb-0 text-muted">
-                &copy; {{ new Date().getFullYear() }} RauDoc. Powered by
+                &copy; {{ new Date().getFullYear() }} Raudoc. Powered by
                 <i class="mdi mdi-heart text-danger"></i> by CooWeb
               </p>
             </div>

@@ -18,6 +18,7 @@ export default {
     // Task,
     // ActiveProjects,
   },
+
 };
 </script>
 
@@ -45,27 +46,6 @@ export default {
         <Schedules />
       </BCol>
     </BRow>
-
-    <!-- <BRow>
-      <BCol xl="7">
-        <ActiveProjects />
-      </BCol>
-      <BCol xl="5">
-        <Task />
-      </BCol>
-    </BRow> -->
-
-    <!-- <BRow>
-      <BCol xxl="4">
-        <Member />
-      </BCol>
-      <BCol xxl="4" lg="6">
-        <Chat />
-      </BCol>
-      <BCol xxl="4" lg="6">
-        <Status />
-      </BCol>
-    </BRow> -->
 
   </Layout>
 </template>

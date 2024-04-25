@@ -584,7 +584,7 @@ export default {
                           <tr>
                             <th scope="row">
                               Discount
-                              <small class="text-muted">(VELZON15)</small>
+                              <small class="text-muted">(raudoc15)</small>
                             </th>
                             <td>
                               <input type="text" class="form-control bg-light border-0" id="cart-discount"

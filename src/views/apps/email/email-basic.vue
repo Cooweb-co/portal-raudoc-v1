@@ -102,7 +102,7 @@ export default {
                                         </li>
                                     </ul>
                                     <p style="font-family: 'Roboto', sans-serif; font-size: 14px;color: #98a6ad; margin: 0px;">
-                                        2022 Velzon. Design & Develop by CooWeb</p>
+                                        2022 raudoc. Design & Develop by CooWeb</p>
                                 </div>
                             </div>
                         </td>
@@ -177,7 +177,7 @@ export default {
                                         </li>
                                     </ul>
                                     <p style="font-family: 'Roboto', sans-serif; font-size: 14px;color: #98a6ad; margin: 0px;">
-                                        2022 Velzon. Design & Develop by CooWeb</p>
+                                        2022 raudoc. Design & Develop by CooWeb</p>
                                 </div>
                             </div>
                         </td>
@@ -234,8 +234,8 @@ export default {
                                                 <tr style="font-family: 'Roboto', sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                                     <td class="content-block" style="color: #878a99; text-align: center;font-family: 'Roboto', sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0; padding-top: 5px" valign="top">
                                                         <p style="margin-bottom: 10px;">Or verify using this link: </p>
-                                                        <BLink href="https://themesbrand.com/velzon/" target="_blank">
-                                                            https://themesbrand.com/velzon/</BLink>
+                                                        <BLink href="https://themesbrand.com/raudoc/" target="_blank">
+                                                            https://themesbrand.com/raudoc/</BLink>
                                                     </td>
                                                 </tr>
                                             </table>
@@ -246,10 +246,10 @@ export default {
                                     <h4 style="font-weight: 500; line-height: 1.5;font-family: 'Roboto', sans-serif;">
                                         Need Help ?</h4>
                                     <p style="color: #878a99; line-height: 1.5;">Please send and feedback or bug info to
-                                        <BLink href="" style="font-weight: 500;">info@velzon.com</BLink>
+                                        <BLink href="" style="font-weight: 500;">info@raudoc.com</BLink>
                                     </p>
                                     <p style="font-family: 'Roboto', sans-serif; font-size: 14px;color: #98a6ad; margin: 0px;">
-                                        2022 Velzon. Design & Develop by CooWeb</p>
+                                        2022 raudoc. Design & Develop by CooWeb</p>
                                 </div>
                             </div>
                         </td>
@@ -330,10 +330,10 @@ export default {
                                 </table>
                                 <div style="text-align: center; margin: 28px auto 0px auto;">
                                     <h4>Need Help ?</h4>
-                                    <p style="color: #878a99;">Please send and feedback or bug info to <BLink href="" style="font-weight: 500px;">info@velzon.com</BLink>
+                                    <p style="color: #878a99;">Please send and feedback or bug info to <BLink href="" style="font-weight: 500px;">info@raudoc.com</BLink>
                                     </p>
                                     <p style="font-family: 'Roboto', sans-serif; font-size: 14px;color: #98a6ad; margin: 0px;">
-                                        2022 Velzon. Design & Develop by CooWeb</p>
+                                        2022 raudoc. Design & Develop by CooWeb</p>
                                 </div>
                             </div>
                         </td>

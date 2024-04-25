@@ -246,7 +246,7 @@ export default {
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img src="https://img.themesbrand.com/velzon/images/img-5.gif" alt=""
+                                            <img src="https://img.themesbrand.com/raudoc/images/img-5.gif" alt=""
                                                 class="avatar-sm rounded-circle">
                                             <div class="ms-3">
                                                 <BLink href="#!">

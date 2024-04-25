@@ -168,7 +168,7 @@ export default {
                                     <div class="p-lg-5 p-4">
                                         <div>
                                             <h5 class="text-primary">Register Account</h5>
-                                            <p class="text-muted">Get your Free Velzon account now.</p>
+                                            <p class="text-muted">Get your Free raudoc account now.</p>
                                         </div>
 
                                         <div class="mt-4">
@@ -212,7 +212,7 @@ export default {
 
                                                 <div class="mb-4">
                                                     <p class="mb-0 fs-12 text-muted fst-italic">By registering you agree
-                                                        to the Velzon <BLink href="#"
+                                                        to the raudoc <BLink href="#"
                                                             class="text-primary text-decoration-underline fst-normal fw-medium">
                                                             Terms
                                                             of Use</BLink>

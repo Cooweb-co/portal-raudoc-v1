@@ -580,7 +580,7 @@ export default {
                   </tr>
                   <tr>
                     <td class="fw-medium" scope="row">Email ID</td>
-                    <td id="email">tonyanoble@velzon.com</td>
+                    <td id="email">tonyanoble@raudoc.com</td>
                   </tr>
                   <tr>
                     <td class="fw-medium" scope="row">Phone No</td>

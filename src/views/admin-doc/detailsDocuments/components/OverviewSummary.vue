@@ -1,17 +1,26 @@
-<script>
-import overview_summary_element from "./overview_summary_element.vue";
-export default {
-    props: {
-        data: Object,
-        files: Array,
-        loading: Boolean,
-    },
-    components: {
-        // simplebar,
-        overview_summary_element,
-    },
-};
+<script setup>
+import OverviewSummaryElement from "./OverviewSummaryElement.vue";
+import { computed, defineProps } from "vue";
+
+import setVariantStateInfo from "@/helpers/setVariantStateInfo.js";
+// import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
+
+const props = defineProps({
+    data: Object,
+    files: Array,
+    loading: Boolean,
+    numberClaim: String,
+});
+
+const setVariantState = computed(() => {
+    return setVariantStateInfo(props.data.status);
+});
+
+// const setVariantPriority = computed(() => {
+//     return setVariantPriorityInfo(data.value.status);
+// });
 </script>
+
 <template>
     <BTab title="Resumen" active class="fw-semibold pt-2">
         <BRow>
@@ -25,9 +34,35 @@ export default {
                             </h6>
                             <p class="text-muted">{{ data.summary }}</p>
                             <h6 class="fw-semibold text-uppercase mb-3">
-                                Observaciones
+                                Fundamentos legales:
                             </h6>
-                            <p class="text-muted">{{ data.observations }}</p>
+                            <ol v-if="data?.legalBasis?.length > 0">
+                                <li
+                                    v-for="item in data.legalBasis"
+                                    :key="item"
+                                    class="text-muted"
+                                >
+                                    {{ item }}
+                                </li>
+                            </ol>
+                            <p v-else class="text-muted"
+                                >No se encontraron fundamentos legales</p
+                            >
+                            <h6 class="fw-semibold text-uppercase mb-3">
+                                Información adicional:
+                            </h6>
+                            <ul v-if="data?.additionalInformation?.length > 0">
+                                <li
+                                    v-for="information in data.additionalInformation"
+                                    :key="information"
+                                    class="text-muted"
+                                >
+                                    {{ information }}
+                                </li>
+                            </ul>
+                            <p v-else class="text-muted mb-3"
+                                >No hay información adicional</p
+                            >
 
                             <h6 class="fw-semibold text-uppercase mb-3">
                                 Información de contacto
@@ -77,7 +112,7 @@ export default {
                                             </h5>
                                         </div>
                                     </BCol>
-                                    <BCol lg="3" sm="6">
+                                    <!-- <BCol lg="3" sm="6">
                                         <div>
                                             <p
                                                 class="mb-2 text-uppercase fw-medium"
@@ -86,21 +121,11 @@ export default {
                                             </p>
                                             <BBadge
                                                 tag="div"
-                                                :variant="
-                                                    data?.priority?.toLowerCase() ==
-                                                    'alta'
-                                                        ? 'danger'
-                                                        : data?.priority?.toLowerCase() ==
-                                                              'media' ||
-                                                          data?.priority?.toLowerCase() ==
-                                                              'no definido'
-                                                        ? 'warning'
-                                                        : 'info'
-                                                "
+                                                :variant="setVariantPriority"
                                                 >{{ data.priority }}</BBadge
                                             >
                                         </div>
-                                    </BCol>
+                                    </BCol> -->
                                     <BCol lg="3" sm="6">
                                         <div>
                                             <p
@@ -110,21 +135,7 @@ export default {
                                             </p>
                                             <BBadge
                                                 tag="div"
-                                                :variant="
-                                                    data?.status?.toLowerCase() ==
-                                                    'vencido'
-                                                        ? 'danger'
-                                                        : data?.status?.toLowerCase() ==
-                                                          'por vencer'
-                                                        ? 'warning'
-                                                        : data?.status?.toLowerCase() ==
-                                                          'en termino'
-                                                        ? 'success'
-                                                        : data?.status?.toLowerCase() ==
-                                                          'respondido'
-                                                        ? 'primary'
-                                                        : 'secondary'
-                                                "
+                                                :variant="setVariantState"
                                                 >{{ data.status }}</BBadge
                                             >
                                         </div>
@@ -137,7 +148,7 @@ export default {
                                     Adjuntos
                                 </h6>
                                 <BRow class="g-3" v-show="files">
-                                    <overview_summary_element
+                                    <OverviewSummaryElement
                                         v-for="file in files"
                                         :key="file.name"
                                         :id="data.id"
@@ -165,134 +176,118 @@ export default {
                           <template #button-content> <span class="text-muted">Recent<i
                                       class="mdi mdi-chevron-down ms-1"></i></span>
                           </template>
-                          <BDropdownItem>Recent</BDropdownItem>
-                          <BDropdownItem>Top Rated</BDropdownItem>
-                          <BDropdownItem>Last 7 DaysPrevious</BDropdownItem>
-                      </BDropdown>
-                  </div>
-              </BCardHeader>
+<BDropdownItem>Recent</BDropdownItem>
+<BDropdownItem>Top Rated</BDropdownItem>
+<BDropdownItem>Last 7 DaysPrevious</BDropdownItem>
+</BDropdown>
+</div>
+</BCardHeader>
 
-              <BCardBody>
+<BCardBody>
 
-                  <simplebar data-simplebar style="height: 300px;" class="px-3 mx-n3 mb-2">
-                      <div class="d-flex mb-4">
-                          <div class="flex-shrink-0">
-                              <img src="@/assets/images/users/avatar-8.jpg" alt=""
-                                  class="avatar-xs rounded-circle" />
-                          </div>
-                          <div class="flex-grow-1 ms-3">
-                              <h5 class="fs-13">Joseph Parker <small class="text-muted ms-2">20
-                                      Dec 2021 - 05:47AM</small></h5>
-                              <p class="text-muted">I am getting message from customers that when
-                                  they place order always get error message .</p>
-                              <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i
-                                      class="mdi mdi-reply"></i>
-                                  Reply</BLink>
-                              <div class="d-flex mt-4">
-                                  <div class="flex-shrink-0">
-                                      <img src="@/assets/images/users/avatar-10.jpg" alt=""
-                                          class="avatar-xs rounded-circle" />
-                                  </div>
-                                  <div class="flex-grow-1 ms-3">
-                                      <h5 class="fs-13">Alexis Clarke <small
-                                              class="text-muted ms-2">22 Dec 2021 -
-                                              02:32PM</small></h5>
-                                      <p class="text-muted">Please be sure to check your Spam
-                                          mailbox to see if your email filters have identified the
-                                          email from Dell as spam.</p>
-                                      <BLink href="javascript: void(0);"
-                                          class="badge text-muted bg-light"><i
-                                              class="mdi mdi-reply"></i> Reply</BLink>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                      <div class="d-flex mb-4">
-                          <div class="flex-shrink-0">
-                              <img src="@/assets/images/users/avatar-6.jpg" alt=""
-                                  class="avatar-xs rounded-circle" />
-                          </div>
-                          <div class="flex-grow-1 ms-3">
-                              <h5 class="fs-13">Donald Palmer <small class="text-muted ms-2">24
-                                      Dec 2021 - 05:20PM</small></h5>
-                              <p class="text-muted">If you have further questions, please contact
-                                  Customer Support from the “Action Menu” on your <BLink
-                                      href="javascript:void(0);" class="text-decoration-underline">
-                                      Online Order Support
-                                  </BLink>.
-                              </p>
-                              <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i
-                                      class="mdi mdi-reply"></i>
-                                  Reply</BLink>
-                          </div>
-                      </div>
-                      <div class="d-flex">
-                          <div class="flex-shrink-0">
-                              <img src="@/assets/images/users/avatar-10.jpg" alt=""
-                                  class="avatar-xs rounded-circle" />
-                          </div>
-                          <div class="flex-grow-1 ms-3">
-                              <h5 class="fs-13">Alexis Clarke <small class="text-muted ms-2">26
-                                      min ago</small></h5>
-                              <p class="text-muted">Your <BLink href="javascript:void(0)"
-                                      class="text-decoration-underline">Online Order Support
-                                  </BLink>
-                                  provides you with the most current status of your order. To help
-                                  manage your order refer to the “Action Menu” to initiate return,
-                                  contact Customer Support and more.</p>
-                              <BRow class="g-2 mb-3">
-                                  <BCol lg="1" sm="2" cols="6">
-                                      <img src="@/assets/images/small/img-4.jpg" alt=""
-                                          class="img-fluid rounded">
-                                  </BCol>
-                                  <BCol lg="1" sm="2" cols="6">
-                                      <img src="@/assets/images/small/img-5.jpg" alt=""
-                                          class="img-fluid rounded">
-                                  </BCol>
-                              </BRow>
-                              <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i
-                                      class="mdi mdi-reply"></i>
-                                  Reply</BLink>
-                              <div class="d-flex mt-4">
-                                  <div class="flex-shrink-0">
-                                      <img src="@/assets/images/users/avatar-6.jpg" alt=""
-                                          class="avatar-xs rounded-circle" />
-                                  </div>
-                                  <div class="flex-grow-1 ms-3">
-                                      <h5 class="fs-13">Donald Palmer <small class="text-muted ms-2">8
-                                              sec ago</small></h5>
-                                      <p class="text-muted">Other shipping methods are available
-                                          at checkout if you want your purchase delivered faster.
-                                      </p>
-                                      <BLink href="javascript: void(0);"
-                                          class="badge text-muted bg-light"><i
-                                              class="mdi mdi-reply"></i> Reply</BLink>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </simplebar>
-                  <form class="mt-4">
-                      <BRow class="g-3">
-                          <BCol cols="12">
-                              <label for="exampleFormControlTextarea1"
-                                  class="form-label text-body">Dejar un comentario</label>
-                              <textarea class="form-control bg-light border-light"
-                                  id="exampleFormControlTextarea1" rows="3"
-                                  placeholder="Enter your comment..."></textarea>
-                          </BCol>
-                          <BCol cols="12" class="text-end">
-                              <BButton type="button" variant="ghost-primary"
-                                  class="btn-icon waves-effect me-1">
-                                  <i class="ri-attachment-line fs-16"></i>
-                              </BButton>
-                              <BLink href="javascript:void(0);" class="btn btn-primary">Post
-                                  Comments</BLink>
-                          </BCol>
-                      </BRow>
-                  </form>
-              </BCardBody>
-          </BCard> -->
+    <simplebar data-simplebar style="height: 300px;" class="px-3 mx-n3 mb-2">
+        <div class="d-flex mb-4">
+            <div class="flex-shrink-0">
+                <img src="@/assets/images/users/avatar-8.jpg" alt="" class="avatar-xs rounded-circle" />
+            </div>
+            <div class="flex-grow-1 ms-3">
+                <h5 class="fs-13">Joseph Parker <small class="text-muted ms-2">20
+                        Dec 2021 - 05:47AM</small></h5>
+                <p class="text-muted">I am getting message from customers that when
+                    they place order always get error message .</p>
+                <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i class="mdi mdi-reply"></i>
+                    Reply</BLink>
+                <div class="d-flex mt-4">
+                    <div class="flex-shrink-0">
+                        <img src="@/assets/images/users/avatar-10.jpg" alt="" class="avatar-xs rounded-circle" />
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="fs-13">Alexis Clarke <small class="text-muted ms-2">22 Dec 2021 -
+                                02:32PM</small></h5>
+                        <p class="text-muted">Please be sure to check your Spam
+                            mailbox to see if your email filters have identified the
+                            email from Dell as spam.</p>
+                        <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i
+                                class="mdi mdi-reply"></i> Reply</BLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex mb-4">
+            <div class="flex-shrink-0">
+                <img src="@/assets/images/users/avatar-6.jpg" alt="" class="avatar-xs rounded-circle" />
+            </div>
+            <div class="flex-grow-1 ms-3">
+                <h5 class="fs-13">Donald Palmer <small class="text-muted ms-2">24
+                        Dec 2021 - 05:20PM</small></h5>
+                <p class="text-muted">If you have further questions, please contact
+                    Customer Support from the “Action Menu” on your <BLink href="javascript:void(0);"
+                        class="text-decoration-underline">
+                        Online Order Support
+                    </BLink>.
+                </p>
+                <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i class="mdi mdi-reply"></i>
+                    Reply</BLink>
+            </div>
+        </div>
+        <div class="d-flex">
+            <div class="flex-shrink-0">
+                <img src="@/assets/images/users/avatar-10.jpg" alt="" class="avatar-xs rounded-circle" />
+            </div>
+            <div class="flex-grow-1 ms-3">
+                <h5 class="fs-13">Alexis Clarke <small class="text-muted ms-2">26
+                        min ago</small></h5>
+                <p class="text-muted">Your <BLink href="javascript:void(0)" class="text-decoration-underline">Online
+                        Order Support
+                    </BLink>
+                    provides you with the most current status of your order. To help
+                    manage your order refer to the “Action Menu” to initiate return,
+                    contact Customer Support and more.</p>
+                <BRow class="g-2 mb-3">
+                    <BCol lg="1" sm="2" cols="6">
+                        <img src="@/assets/images/small/img-4.jpg" alt="" class="img-fluid rounded">
+                    </BCol>
+                    <BCol lg="1" sm="2" cols="6">
+                        <img src="@/assets/images/small/img-5.jpg" alt="" class="img-fluid rounded">
+                    </BCol>
+                </BRow>
+                <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i class="mdi mdi-reply"></i>
+                    Reply</BLink>
+                <div class="d-flex mt-4">
+                    <div class="flex-shrink-0">
+                        <img src="@/assets/images/users/avatar-6.jpg" alt="" class="avatar-xs rounded-circle" />
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="fs-13">Donald Palmer <small class="text-muted ms-2">8
+                                sec ago</small></h5>
+                        <p class="text-muted">Other shipping methods are available
+                            at checkout if you want your purchase delivered faster.
+                        </p>
+                        <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i
+                                class="mdi mdi-reply"></i> Reply</BLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </simplebar>
+    <form class="mt-4">
+        <BRow class="g-3">
+            <BCol cols="12">
+                <label for="exampleFormControlTextarea1" class="form-label text-body">Dejar un comentario</label>
+                <textarea class="form-control bg-light border-light" id="exampleFormControlTextarea1" rows="3"
+                    placeholder="Enter your comment..."></textarea>
+            </BCol>
+            <BCol cols="12" class="text-end">
+                <BButton type="button" variant="ghost-primary" class="btn-icon waves-effect me-1">
+                    <i class="ri-attachment-line fs-16"></i>
+                </BButton>
+                <BLink href="javascript:void(0);" class="btn btn-primary">Post
+                    Comments</BLink>
+            </BCol>
+        </BRow>
+    </form>
+</BCardBody>
+</BCard> -->
             </BCol>
 
             <BCol xl="3" lg="4">
@@ -311,7 +306,7 @@ export default {
                                         <td class="fw-medium">
                                             Número de Radicación
                                         </td>
-                                        <td>{{ data.numberEntryClaim }}</td>
+                                        <td>{{ numberClaim }}</td>
                                     </tr>
                                     <tr>
                                         <td class="fw-medium">Area</td>
@@ -396,7 +391,7 @@ export default {
                                         </td>
                                     </tr>
 
-                                    <tr>
+                                    <!-- <tr>
                                         <td class="fw-medium">Prioridad</td>
                                         <td>
                                             <BBadge
@@ -414,7 +409,7 @@ export default {
                                                 >{{ data.priority }}</BBadge
                                             >
                                         </td>
-                                    </tr>
+                                    </tr> -->
                                     <tr>
                                         <td class="fw-medium">
                                             Fecha de Creación
@@ -461,9 +456,9 @@ export default {
                     <BCardHeader
                         class="align-items-center d-flex border-bottom-dashed"
                     >
-                        <BCardTitle class="mb-0 flex-grow-1"
-                            ><h5>Detalles del destinatario</h5></BCardTitle
-                        >
+                        <BCardTitle class="mb-0 flex-grow-1">
+                            <h5>Detalles del destinatario</h5>
+                        </BCardTitle>
                     </BCardHeader>
 
                     <BCardBody>
