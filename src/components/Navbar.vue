@@ -19,8 +19,6 @@ const notifications = ref([
     },
 ]);
 
-
-
 // const languages = ref([
 //   {
 //     flag: require('@/assets/images/flags/us.svg'),
@@ -46,25 +44,44 @@ const flag = ref(null);
 // });
 
 const user = computed(() => {
-  return JSON.parse(state.currentUserInfo)
+    return JSON.parse(state.currentUserInfo);
 });
 
+const name = computed(() => {
+    const namesToArray = user?.value?.name?.split(" ");
+    if (!user?.value?.name) return "-";
+    return (
+        capitalizeFirstLetter(namesToArray[0]) +
+        " " +
+        capitalizeFirstLetter(namesToArray[namesToArray.length - 2])
+    );
+});
 
-const name = computed(()=> {
-  const namesToArray = user?.value?.name?.split(' ');
-  if(!user?.value?.name) return '-'
-  return capitalizeFirstLetter(namesToArray[0]) +  ' ' + capitalizeFirstLetter(namesToArray[namesToArray.length - 2])
+const rol = computed(() => {
+    switch (user.value.idRole) {
+        case "FUNCTIONARY":
+            return "Funcionario";
+        case "ADMIN":
+            return "Administrador";
+        case "BOSS_OF_AREA":
+            return "Jefe de area";
+        case "DIRECTOR":
+            return "Director";
+        case "RADICATOR":
+            return "Radicador";
+        default:
+            return "Indefinido";
+    }
 });
 
 function capitalizeFirstLetter(str) {
-  return str?.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
+    return str?.charAt(0)?.toUpperCase() + str?.slice(1)?.toLowerCase() || "";
+
 }
 
 const toggleHamburgerMenu = () => {
     // Aquí va tu lógica de toggleHamburgerMenu
 };
-
-
 
 // const toggleMenu = () => {
 //   $parent.toggleMenu();
@@ -120,14 +137,16 @@ const deselectNotifications = (id) => {
 };
 
 const deleteNotification = () => {
-  for (let i = 0; i < selectNotifications.value.length; i++) {
-    notifications.value = notifications.value.filter(element => element.id != selectNotifications.value[i]);
-  }
-}
+    for (let i = 0; i < selectNotifications.value.length; i++) {
+        notifications.value = notifications.value.filter(
+            (element) => element.id != selectNotifications.value[i]
+        );
+    }
+};
 
 const markAsRead = () => {
-    selectNotifications.value = []
-    notifications.value = []
+    selectNotifications.value = [];
+    notifications.value = [];
 };
 
 onMounted(() => {
@@ -155,7 +174,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <header id="page-topbar" style="z-index: 1000 !important;">
+    <header id="page-topbar" style="z-index: 1000 !important">
         <div class="layout-width">
             <div class="navbar-header">
                 <div class="d-flex">
@@ -290,10 +309,12 @@ onMounted(() => {
             </div>
           </form> -->
                 </div>
-                <picture
-                    class="d-none justify-content-center align-items-end"
-                >
-                    <img src="/BAQVERDE.png" alt="BAQVERDE" style="width: 20%;"/>
+                <picture class="d-none justify-content-center align-items-end">
+                    <img
+                        src="/BAQVERDE.png"
+                        alt="BAQVERDE"
+                        style="width: 20%"
+                    />
                 </picture>
                 <div class="d-flex align-items-center">
                     <BDropdown
@@ -549,9 +570,23 @@ onMounted(() => {
                         <BTabs
                             nav-class="dropdown-tabs nav-tab-custom bg-primary px-2 pt-2"
                         >
-                            <div class="d-flex justify-content-between align-items-center w-100">
-                              <BButton variant="outline-success" size="sm" class=" m-2 mb-0" @click="markAsRead">Marcar como leídas todas</BButton>
-                              <BButton variant="outline-danger" size="sm" class=" m-2 mb-0" @click="deleteNotification"><Trash2Icon /></BButton>
+                            <div
+                                class="d-flex justify-content-between align-items-center w-100"
+                            >
+                                <BButton
+                                    variant="outline-success"
+                                    size="sm"
+                                    class="m-2 mb-0"
+                                    @click="markAsRead"
+                                    >Marcar como leídas todas</BButton
+                                >
+                                <BButton
+                                    variant="outline-danger"
+                                    size="sm"
+                                    class="m-2 mb-0"
+                                    @click="deleteNotification"
+                                    ><Trash2Icon
+                                /></BButton>
                             </div>
                             <!-- <BTab title=" All (4) " class="tab-pane fade py-2 ps-2 show" id="all-noti-tab" role="tabpanel">
                 <simplebar data-simplebar style="max-height: 300px" class="pe-2">
@@ -784,9 +819,7 @@ onMounted(() => {
 
                             <BTab title="Notificaciones" class="p-3 pt-2">
                                 <Notification
-                                    v-for="(
-                                        notification
-                                    ) in notifications"
+                                    v-for="notification in notifications"
                                     :key="notification.id"
                                     :notification="notification"
                                     @setSelectNotifications="
@@ -843,15 +876,13 @@ onMounted(() => {
                                         >{{ name }}</span
                                     >
                                     <span
-                                        class="d-none d-xl-block ms-1 fs-12 user-name-sub-text"
-                                        >Administrador</span
+                                        class="d-none d-xl-block ms-1 fs-13 user-name-sub-text"
+                                        >{{ rol }}</span
                                     >
                                 </span>
                             </span>
                         </template>
-                        <h6 class="dropdown-header">
-                            Hola {{ name }}!
-                        </h6>
+                        <h6 class="dropdown-header">Hola {{ name }}!</h6>
                         <router-link class="dropdown-item" to="/pages/profile"
                             ><i
                                 class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"
