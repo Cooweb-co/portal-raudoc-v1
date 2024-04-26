@@ -354,7 +354,7 @@ export default {
 
         const showDeadLine = computed(() => {
             if (form.documentType?.toLocaleLowerCase() == "demanda") {
-                console.log("ShowDeadline true");
+                // console.log("ShowDeadline true");
                 return true;
             }
             return false;
@@ -573,7 +573,7 @@ export default {
                     },
                 };
 
-                console.log(this.getAreaId);
+                // console.log(this.getAreaId);
 
                 const body = {
                     subject: this.form.subject,
@@ -725,7 +725,7 @@ export default {
                 " #" +
                 place.address_components[0].long_name;
             this.form.city = place.address_components[4].long_name;
-            console.log("place", place);
+            // console.log("place", place);
         });
     },
     computed: {

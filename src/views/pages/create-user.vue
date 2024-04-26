@@ -60,7 +60,7 @@ const createUser = () => {
         })
     })
     .then((response) => {
-        console.log(response.data);
+        // console.log(response.data);
         if(response.status == 200) {
             toast("Usuario creado exitosamente...", {
                 "type": "success",

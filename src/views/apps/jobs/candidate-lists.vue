@@ -93,7 +93,7 @@ export default {
       return candidatelist.slice(from, to);
     },
     fetchUsers(selectedRole) {
-      console.log(this.candidatelist.length);
+      // console.log(this.candidatelist.length);
       if (selectedRole != "TODOS") {
         this.candidatelist = this.originalCandidatelist.filter(
           (user) => user.idRole == selectedRole

@@ -76,7 +76,7 @@ const uploadFile = async () => {
         bodyFormData.append("claimId", props.data.id);
         bodyFormData.append("companyId", company);
         for (const file of files.value) {
-            console.log("Filer for::", file);
+            // console.log("Filer for::", file);
             bodyFormData.append("file", file);
         }
 
@@ -91,7 +91,7 @@ const uploadFile = async () => {
         const res = await axios.request(config)
         answered.value = true;
         documentNumber.value = res.data.idRadicate;
-        console.log(res.data);
+        // console.log(res.data);
         toast.update(idLoadFile, {
             render: "Archivo cargado con éxito",
             type: "success",
