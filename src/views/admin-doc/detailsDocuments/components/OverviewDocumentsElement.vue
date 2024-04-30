@@ -19,6 +19,10 @@ const startProccessAt = ref(
     )
 );
 const placement = ref("left");
+const summary = ref(props.file?.summary?.summary || "No definido");
+const legalBasis = ref(props.file?.summary?.legalBasis || false);
+const additionalInformation = ref(props.file?.summary?.additionalInformation || false);
+
 const open = ref(false);
 
 const showDrawer = () => {
@@ -100,18 +104,19 @@ const goToDocument = () => {
         style="z-index: 100000 !important;"
     >
         <h5>Resumen</h5>
-        <p class="text-muted">{{ file?.summary?.summary || "No definido" }}</p>
+        {{ console.log(file) }}
+        <p class="text-muted">{{ summary }}</p>
         <h5 class="mt-2">Fundamentos legales:</h5>
-        <ol v-if="file?.summary?.legalBasis">
-            <li v-for="item in file?.summary?.legalBasis" :key="item" class="text-muted">
-                {{ item }}
+        <ol v-if="legalBasis.value">
+            <li v-for="item in legalBasis.value" :key="item" class="text-muted">
+                {{ item || "No se encontraron fundamentos legales" }}
             </li>
         </ol>
         <span v-else class="text-muted">No se encontraron fundamentos legales</span>
         <h5 class="mt-2">Información adicional:</h5>
-        <ul v-if="file?.summary?.additionalInformation">
+        <ul v-if="additionalInformation.value">
             <li
-                v-for="item in file?.summary?.additionalInformation"
+                v-for="item in additionalInformation.value"
                 :key="item"
                 class="text-muted"
             >
