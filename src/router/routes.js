@@ -89,7 +89,7 @@ export default [
     path: "/gestion-documental/radicado/:documentID",
     name: "projects-overview",
     meta: { title: "Projects Overview", authRequired: true },
-    component: () => import("../views/admin-doc/detailsDocuments/overview"),
+    component: () => import("../views/admin-doc/detailsDocuments/Overview"),
   },
 
   {

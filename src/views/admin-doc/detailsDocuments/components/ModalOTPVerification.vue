@@ -80,7 +80,15 @@ const clearAllInputs = () => {
     code5.value = "";
     code6.value = "";
 };
-const moveToNext = (index) => {
+const moveToNext = (index, event) => {
+    console.log(event.which);
+    if (event.which == 8) {
+        if (index !== 1) {
+            const previousInput = getInputElement(index - 1);
+            previousInput.value = ""
+            previousInput.focus()
+        }
+    }
     if (getInputElement(index).value.length === 1) {
         if (index !== 6) {
             getInputElement(index + 1).focus();
@@ -166,7 +174,7 @@ const sendCodeToEmail = async () => {
                 <input
                     type="text"
                     :class="styleInputForm"
-                    v-on:keyup="moveToNext(1)"
+                    v-on:keyup="moveToNext(1, $event)"
                     v-model="code1"
                     maxLength="1"
                     id="digit-1-input"
@@ -175,7 +183,7 @@ const sendCodeToEmail = async () => {
                 <input
                     type="text"
                     :class="styleInputForm"
-                    v-on:keyup="moveToNext(2)"
+                    v-on:keyup="moveToNext(2, $event)"
                     v-model="code2"
                     maxLength="1"
                     id="digit-2-input"
@@ -184,7 +192,7 @@ const sendCodeToEmail = async () => {
                 <input
                     type="text"
                     :class="styleInputForm"
-                    v-on:keyup="moveToNext(3)"
+                    v-on:keyup="moveToNext(3, $event)"
                     v-model="code3"
                     maxLength="1"
                     id="digit-3-input"
@@ -193,7 +201,7 @@ const sendCodeToEmail = async () => {
                 <input
                     type="text"
                     :class="styleInputForm"
-                    v-on:keyup="moveToNext(4)"
+                    v-on:keyup="moveToNext(4, $event)"
                     v-model="code4"
                     maxLength="1"
                     id="digit-4-input"
@@ -202,7 +210,7 @@ const sendCodeToEmail = async () => {
                 <input
                     type="text"
                     :class="styleInputForm"
-                    v-on:keyup="moveToNext(5)"
+                    v-on:keyup="moveToNext(5, $event)"
                     v-model="code5"
                     maxLength="1"
                     id="digit-5-input"
@@ -211,7 +219,7 @@ const sendCodeToEmail = async () => {
                 <input
                     type="text"
                     :class="styleInputForm"
-                    v-on:keyup="moveToNext(6)"
+                    v-on:keyup="moveToNext(6, $event)"
                     v-model="code6"
                     maxLength="1"
                     id="digit-6-input"
