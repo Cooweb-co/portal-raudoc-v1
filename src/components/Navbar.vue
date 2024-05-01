@@ -58,7 +58,7 @@ const name = computed(() => {
 });
 
 const rol = computed(() => {
-    switch (user.value.idRole) {
+    switch (user?.value?.idRole) {
         case "FUNCTIONARY":
             return "Funcionario";
         case "ADMIN":
