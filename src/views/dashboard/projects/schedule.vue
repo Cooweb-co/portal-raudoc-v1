@@ -26,7 +26,7 @@ export default defineComponent({
                 };
 
                 const records = await axios.post(
-                    `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_LATEST_CLAIM_BY_ROLE_USER?uid=${user.value?.uid}`,
+                    `${process.env.VUE_APP_CF_BASE_URL}/GET_LATEST_CLAIM_BY_ROLE_USER?uid=${user.value?.uid}`,
                     {},
                     recordsConfig
                 );

@@ -13,7 +13,7 @@ onMounted(async () => {
             "Content-Type": "application/json",
         };
         const res = await axios.get(
-            "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_COUNT_CLAIMS",
+            `${process.env.VUE_APP_CF_BASE_URL}/GET_COUNT_CLAIMS`,
             { headers }
         );
         cardsData.value = res.data;

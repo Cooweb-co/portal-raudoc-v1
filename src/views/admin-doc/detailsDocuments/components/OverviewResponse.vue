@@ -83,7 +83,7 @@ const uploadFile = async () => {
         let config = {
             method: "post",
             maxBodyLength: Infinity,
-            url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/ADD_QR_IN_PDF",
+            url: `${process.env.VUE_APP_CF_BASE_URL}/ADD_QR_IN_PDF`,
             headers: headers,
             data: bodyFormData,
         };

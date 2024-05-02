@@ -8,7 +8,7 @@ export default {
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
-      url: 'https://us-central1-raudoc-gestion-agil.cloudfunctions.net/USERS_LIST_V1',
+      url: `${process.env.VUE_APP_CF_BASE_URL}/USERS_LIST_V1`,
       headers: {
         'company': 'BAQVERDE'
       }

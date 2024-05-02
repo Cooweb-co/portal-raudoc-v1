@@ -75,7 +75,7 @@ export default {
         let config = {
             method: "get",
             maxBodyLength: Infinity,
-            url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/TDRS_LIST_V1",
+            url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
             headers: {
                 company: "BAQVERDE",
             },
@@ -303,7 +303,7 @@ export default {
             const config = {
                 method: "get",
                 maxBodyLength: Infinity,
-                url: `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_USERS_BY_AREA_ID?areaId=${getAreaId.value}`,
+                url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaId.value}`,
                 headers: {
                     company: "BAQVERDE",
                 },
@@ -605,7 +605,7 @@ export default {
                     },
                 };
                 const response = await axios.post(
-                    `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`,
+                    `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`,
                     body,
                     config
                 );
@@ -636,7 +636,7 @@ export default {
                 };
 
                 const response = await axios.post(
-                    `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_GENERATE_RADICATE_V1?claimId=${this.documentID}`,
+                    `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_GENERATE_RADICATE_V1?claimId=${this.documentID}`,
                     body,
                     config
                 );
