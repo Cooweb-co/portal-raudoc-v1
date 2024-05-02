@@ -4,6 +4,7 @@ import axios from "axios";
 import { defineComponent, onMounted, ref } from "vue";
 import moment from "moment";
 import { useRouter } from "vue-router";
+import setState from "../../../helpers/setState";
 
 export default defineComponent({
     name: "",
@@ -78,6 +79,7 @@ export default defineComponent({
             goToClaims,
             onChangeDate,
             clearFilter,
+            setState
         };
     },
     components: {
@@ -142,7 +144,7 @@ export default defineComponent({
                                         ? 'bg-warning'
                                         : '',
                                 ]"
-                                >{{ item?.status }}</span
+                                >{{ setState(item?.status) }}</span
                             >
                         </div>
                     </div>
@@ -157,7 +159,7 @@ export default defineComponent({
 
             <div class="mt-3 text-center">
                 <BLink
-                    href="javascript:void(0);"
+                    href="/gestion-documental/lista-radicados"
                     class="text-muted text-decoration-underline"
                     >Ver todos los pendientes</BLink
                 >
