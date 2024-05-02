@@ -137,15 +137,6 @@ export default defineComponent({
                             <p class="text-muted mb-0">
                                 {{ item?.documentaryTypologyEntry ?? " - " }}
                             </p>
-                            <span
-                                class="badge text-uppercase"
-                                :class="[
-                                    item?.status === 'IN_TERM'
-                                        ? 'bg-warning'
-                                        : '',
-                                ]"
-                                >{{ setState(item?.status) }}</span
-                            >
                         </div>
                     </div>
                     <div class="flex-shrink-0">
