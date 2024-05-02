@@ -25,7 +25,7 @@ axios
   .request({
         method: "get",
         maxBodyLength: Infinity,
-        url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/TDRS_LIST_V1",
+        url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
         headers: {
             company: "BAQVERDE",
         }
@@ -45,7 +45,7 @@ const createUser = () => {
   .request({
         method: "post",
         maxBodyLength: Infinity,
-        url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CREATE_USER_V1",
+        url: `${process.env.VUE_APP_CF_BASE_URL}/CREATE_USER_V1`,
         headers: {
             company: "BAQVERDE",
             'Content-Type': 'application/json'

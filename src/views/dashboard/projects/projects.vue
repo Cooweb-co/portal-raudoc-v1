@@ -20,7 +20,7 @@ export default {
     try {
         loading.value = true;
         const url =
-            "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_COUNT_CLAIMS_BY_USER";
+            `${process.env.VUE_APP_CF_BASE_URL}/GET_COUNT_CLAIMS_BY_USER`;
         const config = {
             params: {
                 uid: user.value.uid,

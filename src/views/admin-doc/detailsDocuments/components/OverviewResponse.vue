@@ -17,9 +17,9 @@ const dropzone = ref(false);
 const answered = ref(false);
 const documentNumber = ref("Número de radicado");
 const maxSize = 10000000;
-const domain = window.location.origin;
-const company = "BAQVERDE";
-const pathname = window.location.pathname.split("/");
+// const domain = window.location.origin;
+// const company = "BAQVERDE";
+// const pathname = window.location.pathname.split("/");
 const selectedFile = async () => {
     const newFiles = document.getElementById("formFile").files;
     for (let i = 0; i < newFiles.length; i++) {
@@ -41,6 +41,16 @@ const classDropZone = computed(() => {
     if (!dropzone.value) return styles + " border-secondary text-secondary";
     return styles + " border-primary text-primary";
 });
+
+// Función para convertir una cadena Base64 que representa un PDF en un objeto File
+// async function base64toBlog(base64Data) {
+//     try {
+//         const blog = await fetch(`data:application/pdf;base64,${base64Data}`);
+//         console.log(blog);
+//     } catch (error) {
+//         console.error(error);
+//     }
+// }
 
 const uploadFile = async () => {
     let idLoadFile;
@@ -64,34 +74,62 @@ const uploadFile = async () => {
             closeOnClick: false,
         });
 
-        const headers = {
+        // Upload first file for add it QR
+
+        // const headersAddQR = {
+        //     "Content-Type": "multipart/form-data",
+        // };
+
+        // const bodyFormDataAddQR = new FormData();
+        // bodyFormDataAddQR.append(
+        //     "url",
+        //     `${domain}/r/${company}/${pathname[pathname.length - 1]}`
+        // );
+        // bodyFormDataAddQR.append("file", files.value[0]);
+
+        // let config = {
+        //     method: "post",
+        //     maxBodyLength: Infinity,
+        //     url: `${process.env.VUE_APP_CF_BASE_URL}/ADD_QR_IN_PDF`,
+        //     headers: headersAddQR,
+        //     data: bodyFormDataAddQR,
+        // };
+
+        // const base64WithQr = (await axios.request(config))?.data;
+        // const fileWithQr = base64toBlog(base64WithQr);
+        // files.value[0] = fileWithQr;
+        // console.log(fileWithQr);
+        // console.log(files.value);
+
+        // Upload files for response
+
+        const headersGenerateRadicateOut = {
+            company: "BAQVERDE",
             "Content-Type": "multipart/form-data",
         };
 
-        const bodyFormData = new FormData();
-        bodyFormData.append(
-            "url",
-            `${domain}/r/${company}/${pathname[pathname.length - 1]}`
-        );
-        bodyFormData.append("claimId", props.data.id);
-        bodyFormData.append("companyId", company);
-        for (const file of files.value) {
-            // console.log("Filer for::", file);
-            bodyFormData.append("file", file);
-        }
-
-        let config = {
-            method: "post",
-            maxBodyLength: Infinity,
-            url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/ADD_QR_IN_PDF",
-            headers: headers,
-            data: bodyFormData,
+        const paramsGenerateRadicateOut = {
+            claimId: props.data.id,
         };
 
-        const res = await axios.request(config)
+        const bodyFormDataGenerateRadicateOut = new FormData();
+        for (const file of files.value) {
+            console.log("Filer for::", file);
+            bodyFormDataGenerateRadicateOut.append("files", file);
+        }
+
+        const resGenerateRadicateOut = await axios.post(
+            `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_GENERATE_RADICATE_OUT`,
+            bodyFormDataGenerateRadicateOut,
+            {
+                headers: headersGenerateRadicateOut,
+                params: paramsGenerateRadicateOut,
+            }
+        );
         answered.value = true;
-        documentNumber.value = res.data.idRadicate;
-        // console.log(res.data);
+        documentNumber.value = resGenerateRadicateOut.data.idRadicate;
+        console.log(resGenerateRadicateOut.data);
+
         toast.update(idLoadFile, {
             render: "Archivo cargado con éxito",
             type: "success",

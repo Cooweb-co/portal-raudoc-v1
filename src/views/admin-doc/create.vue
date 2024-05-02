@@ -72,14 +72,14 @@ export default {
     const timerAI = ref([]);
     const dropzone = ref(false);
 
-    let config = {
-      method: "get",
-      maxBodyLength: Infinity,
-      url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/TDRS_LIST_V1",
-      headers: {
-        company: "BAQVERDE",
-      },
-    };
+        let config = {
+            method: "get",
+            maxBodyLength: Infinity,
+            url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
+            headers: {
+                company: "BAQVERDE",
+            },
+        };
 
     // controlador de variables para el formulario de radicacion
     const form = reactive({
@@ -299,35 +299,35 @@ export default {
         });
     }
 
-    // obtener listado de usuarios activos por areas
-    async function getPeople() {
-      const config = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url: `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_USERS_BY_AREA_ID?areaId=${getAreaId.value}`,
-        headers: {
-          company: "BAQVERDE",
-        },
-      };
-      var auxPeople = [];
-      axios
-        .request(config)
-        .then((response) => {
-          response.data.forEach((element) => {
-            auxPeople.push({
-              label: element.name,
-              value: element.name,
-              area: element.area,
-              role: element.role,
-              uid: element.uid,
-            });
-          });
-          peopleList.value = auxPeople;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
+        // obtener listado de usuarios activos por areas
+        async function getPeople() {
+            const config = {
+                method: "get",
+                maxBodyLength: Infinity,
+                url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaId.value}`,
+                headers: {
+                    company: "BAQVERDE",
+                },
+            };
+            var auxPeople = [];
+            axios
+                .request(config)
+                .then((response) => {
+                    response.data.forEach((element) => {
+                        auxPeople.push({
+                            label: element.name,
+                            value: element.name,
+                            area: element.area,
+                            role: element.role,
+                            uid: element.uid,
+                        });
+                    });
+                    peopleList.value = auxPeople;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        }
 
     //obtener dias segun tipologia documental
     const getDocDays = computed(() => {
@@ -580,50 +580,50 @@ export default {
 
         // console.log(this.getAreaId);
 
-        const body = {
-          subject: this.form.subject,
-          summary: this.form.description,
-          area: this.form.area,
-          areaId: this.getAreaId,
-          serie: this.form.serie,
-          subSerie: this.form.subSerie,
-          days: this.getDocDays[0]?.days ?? null,
-          documentaryTypologyEntry: this.form.documentType,
-          entryDate: this.form.date,
-          endDate: !this.form.untilDate ? null : this.form.untilDate,
-          assignedToUid: this.getAssignedUid[0]?.uid,
-          city: this.form.city,
-          folios: parseInt(this.form.folios),
-          assignedTo: this.form.assignedTo,
-          observations: this.form.observations,
-          externalRadicate: this.form.externalFiling,
-          inputMethod: this.form.inputMethod,
-          petitionerInformation: {
-            personType: this.form.personType,
-            identificationType: this.form.idType,
-            identificationNumber: this.form.idNumber,
-            firstNames: this.form.names,
-            lastNames: this.form.lastNames,
-            address: this.form.address,
-            phoneNumber: this.form.contactPhone,
-            email: this.form.email,
-          },
-        };
-        const response = await axios.post(
-          `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`,
-          body,
-          config
-        );
-        if (response.data.message) {
-          this.saveLoading = false;
-          this.showRadicationButton = true;
-        }
-      } catch (error) {
-        this.saveLoading = false;
-        this.showRadicationButton = false;
-        console.log(error);
-      }
-    },
+                const body = {
+                    subject: this.form.subject,
+                    summary: this.form.description,
+                    area: this.form.area,
+                    areaId: this.getAreaId,
+                    serie: this.form.serie,
+                    subSerie: this.form.subSerie,
+                    days: this.getDocDays[0]?.days ?? null,
+                    documentaryTypologyEntry: this.form.documentType,
+                    entryDate: this.form.date,
+                    endDate: !this.form.untilDate ? null : this.form.untilDate,
+                    assignedToUid: this.getAssignedUid[0]?.uid,
+                    city: this.form.city,
+                    folios: parseInt(this.form.folios),
+                    assignedTo: this.form.assignedTo,
+                    observations: this.form.observations,
+                    externalRadicate: this.form.externalFiling,
+                    inputMethod: this.form.inputMethod,
+                    petitionerInformation: {
+                        personType: this.form.personType,
+                        identificationType: this.form.idType,
+                        identificationNumber: this.form.idNumber,
+                        firstNames: this.form.names,
+                        lastNames: this.form.lastNames,
+                        address: this.form.address,
+                        phoneNumber: this.form.contactPhone,
+                        email: this.form.email,
+                    },
+                };
+                const response = await axios.post(
+                    `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`,
+                    body,
+                    config
+                );
+                if (response.data.message) {
+                    this.saveLoading = false;
+                    this.showRadicationButton = true;
+                }
+            } catch (error) {
+                this.saveLoading = false;
+                this.showRadicationButton = false;
+                console.log(error);
+            }
+        },
 
     async handleSubmitDocument() {
       try {
@@ -640,11 +640,11 @@ export default {
           typeRadicate: this.mode,
         };
 
-        const response = await axios.post(
-          `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_GENERATE_RADICATE_V1?claimId=${this.documentID}`,
-          body,
-          config
-        );
+                const response = await axios.post(
+                    `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_GENERATE_RADICATE_V1?claimId=${this.documentID}`,
+                    body,
+                    config
+                );
 
         if (response) {
           this.submitLoading = false;

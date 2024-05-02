@@ -8,11 +8,12 @@ export default {
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
-      url: 'https://us-central1-raudoc-gestion-agil.cloudfunctions.net/USERS_LIST_V1',
+      url: `${process.env.VUE_APP_CF_BASE_URL}/USERS_LIST_V1`,
       headers: {
         'company': 'BAQVERDE'
       }
     };
+    const data = sessionStorage.getItem("tdrs");
     return {
       searchQuery: null,
       page: 1,
@@ -22,7 +23,8 @@ export default {
       originalCandidatelist: [],
       config: config,
       loading: false,
-      selectRole: ''
+      selectRole: '',
+      trds: JSON.parse(data),
     };
   },
   computed: {
@@ -102,7 +104,12 @@ export default {
         // Si el rol seleccionado es "TODOS", simplemente copia de nuevo todos los datos originales
         this.candidatelist = [...this.originalCandidatelist];
       }
-    }
+    },
+    setArea(areaId) {
+      console.log(areaId)
+      const areaName = this.trds.find(item => item.id == areaId)?.name
+      return areaName
+    },
   },
   components: {
     Layout,
@@ -149,11 +156,15 @@ export default {
               <th scope="col">USUARIO</th>
               <th scope="col">NOMBRE COMPLETO</th>
               <th scope="col">PERFIL</th>
+              <th scope="col">AREA</th>
               <th scope="col">CORREO</th>
             </tr>
           </thead>
           <tbody v-if="loading">
             <tr>
+              <td>
+                <a-skeleton :loading="loading" :active="loading" />
+              </td>
               <td>
                 <a-skeleton :loading="loading" :active="loading" />
               </td>
@@ -182,6 +193,7 @@ export default {
                     'bg-info-subtle text-info': data.idRole == 'SUPERVISOR DE SISTEMA',
                   }">{{ data.role }}</span></h5>
                 </td>
+                <td>{{ this.setArea(data.areaId) }}</td>
                 <td>{{ data.email }}</td>
               </tr>
             </tbody>

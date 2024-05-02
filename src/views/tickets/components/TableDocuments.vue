@@ -30,7 +30,7 @@ onBeforeMount(async () => {
     };
     await axios
         .get(
-            "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_LIST_V1",
+            `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_LIST_V1`,
             { headers }
         )
         .then((response) => {

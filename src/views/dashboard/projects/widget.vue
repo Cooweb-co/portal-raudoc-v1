@@ -15,67 +15,67 @@ const loading = ref(false);
 const projectsWidgets = ref();
 
 onMounted(async () => {
-  try {
-    loading.value = true;
-    const url =
-      "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_COUNT_CLAIMS_BY_USER";
-    const config = {
-      params: {
-        uid: user.value.uid,
-      },
-      headers: {
-        company: "BAQVERDE",
-        "Content-Type": "application/json",
-      },
-    };
-
-    const dataForCard = await axios.post(url, {}, config);
-    if (dataForCard.data.length > 0) {
-      loading.value = false;
-      projectsWidgets.value = dataForCard.data;
-    } else {
-      loading.value = false;
-      projectsWidgets.value = [
-        {
-          value: "Peticiones Recibidas",
-          count: 0,
-        },
-        {
-          value: "Peticiones Respondidas",
-          count: 0,
-        },
-        {
-          value: "Peticiones por responder",
-          count: 0,
-        },
-        {
-          value: "Documentos Procesados",
-          count: 0,
-        },
-      ];
+    try {
+        loading.value = true;
+        const url =
+            `${process.env.VUE_APP_CF_BASE_URL}/GET_COUNT_CLAIMS_BY_USER`;
+        const config = {
+            params: {
+                uid: user.value.uid,
+            },
+            headers: {
+                company: "BAQVERDE",
+                "Content-Type": "application/json",
+            },
+        };
+       
+        const dataForCard = await axios.post(url, {}, config);
+        if (dataForCard.data.length > 0) {
+            loading.value = false;
+            projectsWidgets.value = dataForCard.data;
+        } else {
+            loading.value = false;
+            projectsWidgets.value = [
+                {
+                    value: "Peticiones Recibidas",
+                    count: 0,
+                },
+                {
+                    value: "Peticiones Respondidas",
+                    count: 0,
+                },
+                {
+                    value: "Peticiones por responder",
+                    count: 0,
+                },
+                {
+                    value: "Documentos Procesados",
+                    count: 0,
+                },
+            ];
+        }
+    } catch (error) {
+        console.error(error);
+        loading.value = false;
+        projectsWidgets.value = [
+            {
+                value: "Peticiones Recibidas",
+                count: 0,
+            },
+            {
+                value: "Peticiones Respondidas",
+                count: 0,
+            },
+            {
+                value: "Peticiones por responder",
+                count: 0,
+            },
+            {
+                value: "Documentos Procesados",
+                count: 0,
+            },
+        ];
     }
-  } catch (error) {
-    console.error(error);
-    loading.value = false;
-    projectsWidgets.value = [
-      {
-        value: "Peticiones Recibidas",
-        count: 0,
-      },
-      {
-        value: "Peticiones Respondidas",
-        count: 0,
-      },
-      {
-        value: "Peticiones por responder",
-        count: 0,
-      },
-      {
-        value: "Documentos Procesados",
-        count: 0,
-      },
-    ];
-  }
 });
 </script>
 
