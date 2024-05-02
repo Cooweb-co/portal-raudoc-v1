@@ -80,12 +80,35 @@ const clearAllInputs = () => {
     code5.value = "";
     code6.value = "";
 };
+
+const clearPreviousVModelInput = (index) => {
+    switch (index) {
+        case 2:
+            code1.value = "";
+            break;
+        case 3:
+            code2.value = "";
+            break;
+        case 4:
+            code3.value = "";
+            break;
+        case 5:
+            code4.value = "";
+            break;
+        case 6:
+            code5.value = "";
+            break;
+        default:
+            break;
+    }
+};
 const moveToNextOrPrevious = (index, event) => {
     if (event.which == 8) {
         if (index !== 1) {
             const previousInput = getInputElement(index - 1);
-            previousInput.value = ""
-            previousInput.focus()
+            clearPreviousVModelInput(index)
+            previousInput.value = "";
+            previousInput.focus();
         }
     }
     if (getInputElement(index).value.length === 1) {
