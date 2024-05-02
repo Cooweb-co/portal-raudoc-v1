@@ -1,29 +1,16 @@
 <script setup>
 import Layout from "@/layouts/main.vue";
 import PageHeader from "@/components/page-header";
-import axios from "axios";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 
 const trds = ref({});
 const loading = ref(true);
-let config = {
-  method: "get",
-  maxBodyLength: Infinity,
-  url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
-  headers: {
-    company: "BAQVERDE",
-  },
-};
+onMounted(() => {
+  let data = sessionStorage.getItem("tdrs")
+  trds.value = JSON.parse(data);
+  loading.value = false;
+})
 
-axios
-  .request(config)
-  .then((response) => {
-    trds.value = response.data;
-    loading.value= false;
-  })
-  .catch((error) => {
-    console.log(error);
-  });
 </script>
 
 <template>
