@@ -58,7 +58,7 @@ const name = computed(() => {
 });
 
 const rol = computed(() => {
-    switch (user.value.idRole) {
+    switch (user?.value?.idRole) {
         case "FUNCTIONARY":
             return "Funcionario";
         case "ADMIN":
@@ -387,7 +387,7 @@ onMounted(() => {
             </div>
           </form> -->
                 </div>
-                <picture class="d-flex justify-content-center align-items-end">
+                <picture class="d-none justify-content-center align-items-end">
                     <img
                         src="/BAQVERDE.png"
                         alt="BAQVERDE"

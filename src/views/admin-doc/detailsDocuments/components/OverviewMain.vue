@@ -3,7 +3,7 @@ import {
     getDocument,
     getDocumentFilesUploads,
 } from "@/services/docservice/doc.service";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, defineProps } from "vue";
 import { useRoute } from "vue-router";
 import OverviewSummary from "./OverviewSummary.vue";
 import OverviewDocuments from "./OverviewDocuments.vue";
@@ -24,6 +24,13 @@ const expirationDate = ref("");
 const numberClaim = ref("");
 const loading = ref(false);
 const router = useRoute();
+
+const props = defineProps({
+    showOverviewResponse: {
+        type: Boolean,
+        required: true
+    }
+})
 
 onMounted(async () => {
     try {
@@ -234,7 +241,7 @@ const isClaimOut = () => {
 
                     </BTab>
                     <OverviewResponse :loading="loading" :data="data"
-                        v-if="!numberClaim.startsWith('BV-')" />
+                        v-if="!numberClaim.startsWith('BV-') && props.showOverviewResponse" />
                 </BTabs>
             </BCol>
         </BRow>
