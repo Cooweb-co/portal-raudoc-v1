@@ -1,6 +1,7 @@
 <script setup>
 import { toast } from "vue3-toastify";
 import { onMounted, ref, computed, defineEmits } from "vue";
+import { useRouter } from "vue-router";
 const emit = defineEmits(["handleShowModal"]);
 onMounted(async () => {
     sendCodeToEmail();
@@ -19,6 +20,7 @@ const intervalId = ref(null);
 const errorForm = ref(false);
 const counter = ref(0);
 const reCaptcha = ref(true);
+const router = useRouter()
 
 const styleInputForm = computed(() => {
     const styleInput = "otp-letter-input border-bottom text-center";
@@ -131,7 +133,7 @@ const moveToNextOrPrevious = (index, event) => {
 const handleCancelButton = () => {
     clearAllInputs();
     clearInterval(intervalId.value);
-    this.$router.push({ path: "/login" });
+    router.push({ path: "/login" });
 };
 const getEmail = async () => {
     try {
