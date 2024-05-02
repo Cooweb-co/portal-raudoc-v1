@@ -125,7 +125,7 @@ export default {
 </script>
 
 <template>
-    <div id="layout-wrapper">
+    <div id="layout-wrapper" style="overflow-x: hidden;">
         <NavBar />
         <div>
             <!-- ========== Left Sidebar Start ========== -->
