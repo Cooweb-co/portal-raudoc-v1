@@ -174,6 +174,9 @@ export default {
               <td>
                 <a-skeleton :loading="loading" :active="loading" />
               </td>
+              <td>
+                <a-skeleton :loading="loading" :active="loading" />
+              </td>
             </tr>
           </tbody>
           <tbody v-else v-for="(data, index) of resultQuery" :key="index">
