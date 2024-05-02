@@ -84,20 +84,17 @@ export default {
       series: [{
         name: "Peticiones",
         type: "bar",
-        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        data: [27, 35, 31, 23, 15, 20, 10, 20, 40, 50, 60, 70],
       },
       {
         name: "Respuestas",
         type: "area",
-        data: [
-          0, 0, 0, 0, 0, 0, 0, 0, 0,
-          0, 0, 0,
-        ],
+        data: [27, 35, 30, 19, 15, 18, 10, 18, 40, 45, 60, 70],
       },
       {
         name: "Pendientes",
         type: "bar",
-        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        data: [0, 0, 1, 4, 0, 2, 0, 2, 0, 5, 0, 0],
       },
       ],
       chartOptions: {
@@ -125,14 +122,14 @@ export default {
         },
         xaxis: {
           categories: [
-            "Jan",
+            "Ene",
             "Feb",
             "Mar",
-            "Apr",
+            "Abr",
             "May",
             "Jun",
             "Jul",
-            "Aug",
+            "Ago",
             "Sep",
             "Oct",
             "Nov",
@@ -199,7 +196,7 @@ export default {
           {
             formatter: function (y) {
               if (typeof y !== "undefined") {
-                return "$" + y.toFixed(2) + "k";
+                return + y.toFixed(0);
               }
               return y;
             },
