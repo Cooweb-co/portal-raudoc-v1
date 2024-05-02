@@ -1,6 +1,7 @@
 <script setup>
 import { toast } from "vue3-toastify";
 import { onMounted, ref, computed, defineEmits } from "vue";
+import { useRouter } from "vue-router";
 const emit = defineEmits(["handleShowModal"]);
 onMounted(async () => {
     sendCodeToEmail();
@@ -19,6 +20,7 @@ const intervalId = ref(null);
 const errorForm = ref(false);
 const counter = ref(0);
 const reCaptcha = ref(true);
+const router = useRouter()
 
 const styleInputForm = computed(() => {
     const styleInput = "otp-letter-input border-bottom text-center";
@@ -80,12 +82,35 @@ const clearAllInputs = () => {
     code5.value = "";
     code6.value = "";
 };
+
+const clearPreviousVModelInput = (index) => {
+    switch (index) {
+        case 2:
+            code1.value = "";
+            break;
+        case 3:
+            code2.value = "";
+            break;
+        case 4:
+            code3.value = "";
+            break;
+        case 5:
+            code4.value = "";
+            break;
+        case 6:
+            code5.value = "";
+            break;
+        default:
+            break;
+    }
+};
 const moveToNextOrPrevious = (index, event) => {
     if (event.which == 8) {
         if (index !== 1) {
             const previousInput = getInputElement(index - 1);
-            previousInput.value = ""
-            previousInput.focus()
+            clearPreviousVModelInput(index)
+            previousInput.value = "";
+            previousInput.focus();
         }
     }
     if (getInputElement(index).value.length === 1) {
@@ -108,7 +133,7 @@ const moveToNextOrPrevious = (index, event) => {
 const handleCancelButton = () => {
     clearAllInputs();
     clearInterval(intervalId.value);
-    this.$router.push({ path: "/login" });
+    router.push({ path: "/login" });
 };
 const getEmail = async () => {
     try {
