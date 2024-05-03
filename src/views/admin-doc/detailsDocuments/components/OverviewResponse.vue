@@ -17,9 +17,9 @@ const dropzone = ref(false);
 const answered = ref(false);
 const documentNumber = ref("Número de radicado");
 const maxSize = 10000000;
-// const domain = window.location.origin;
-// const company = "BAQVERDE";
-// const pathname = window.location.pathname.split("/");
+const domain = window.location.origin;
+const company = "BAQVERDE";
+const pathname = window.location.pathname.split("/");
 const selectedFile = async () => {
     const newFiles = document.getElementById("formFile").files;
     for (let i = 0; i < newFiles.length; i++) {
@@ -31,8 +31,6 @@ const selectedFile = async () => {
             files.value = [...files.value, newFiles[i]];
         }
     }
-    // const file = dropzoneFile.value;
-    // console.log("file::::", file);
 };
 
 const classDropZone = computed(() => {
@@ -41,16 +39,6 @@ const classDropZone = computed(() => {
     if (!dropzone.value) return styles + " border-secondary text-secondary";
     return styles + " border-primary text-primary";
 });
-
-// Función para convertir una cadena Base64 que representa un PDF en un objeto File
-// async function base64toBlog(base64Data) {
-//     try {
-//         const blog = await fetch(`data:application/pdf;base64,${base64Data}`);
-//         console.log(blog);
-//     } catch (error) {
-//         console.error(error);
-//     }
-// }
 
 const uploadFile = async () => {
     let idLoadFile;
@@ -76,30 +64,32 @@ const uploadFile = async () => {
 
         // Upload first file for add it QR
 
-        // const headersAddQR = {
-        //     "Content-Type": "multipart/form-data",
-        // };
+        const headersAddQR = {
+            "Content-Type": "multipart/form-data",
+        };
 
-        // const bodyFormDataAddQR = new FormData();
-        // bodyFormDataAddQR.append(
-        //     "url",
-        //     `${domain}/r/${company}/${pathname[pathname.length - 1]}`
-        // );
-        // bodyFormDataAddQR.append("file", files.value[0]);
+        const bodyFormDataAddQR = new FormData();
+        bodyFormDataAddQR.append(
+            "url",
+            `${domain}/r/${company}/${pathname[pathname.length - 1]}`
+        );
+        bodyFormDataAddQR.append("file", files.value[0], files.value[0]?.name || "pdfWithQR.pdf");
 
-        // let config = {
-        //     method: "post",
-        //     maxBodyLength: Infinity,
-        //     url: `${process.env.VUE_APP_CF_BASE_URL}/ADD_QR_IN_PDF`,
-        //     headers: headersAddQR,
-        //     data: bodyFormDataAddQR,
-        // };
+        let config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: `${process.env.VUE_APP_CF_BASE_URL}/ADD_QR_IN_PDF`,
+            headers: headersAddQR,
+            data: bodyFormDataAddQR,
+            responseType: "blob",
+        };
 
-        // const base64WithQr = (await axios.request(config))?.data;
-        // const fileWithQr = base64toBlog(base64WithQr);
-        // files.value[0] = fileWithQr;
-        // console.log(fileWithQr);
-        // console.log(files.value);
+        const blob = (await axios.request(config))?.data;
+        const file = new File([new Blob([blob], { type: "application/pdf" })], files.value[0]?.name || "pdfWithQR.pdf", {
+		type: "application/pdf",
+        });
+
+        files.value[0] = file
 
         // Upload files for response
 
@@ -114,7 +104,6 @@ const uploadFile = async () => {
 
         const bodyFormDataGenerateRadicateOut = new FormData();
         for (const file of files.value) {
-            console.log("Filer for::", file);
             bodyFormDataGenerateRadicateOut.append("files", file);
         }
 
@@ -128,8 +117,6 @@ const uploadFile = async () => {
         );
         answered.value = true;
         documentNumber.value = resGenerateRadicateOut.data.idRadicate;
-        console.log(resGenerateRadicateOut.data);
-
         toast.update(idLoadFile, {
             render: "Archivo cargado con éxito",
             type: "success",
@@ -203,7 +190,7 @@ const onFileDrop = (event) => {
 watch(
     () => props.data,
     (currentValue) => {
-        if (currentValue.numberOutClaim) return (answered.value = true);
+        if (currentValue.numberOutClaim || currentValue.status == "No requiere respuesta") return (answered.value = true);
         return;
     }
 );
