@@ -64,7 +64,7 @@ const createUser = () => {
         if(response.status == 200) {
             toast("Usuario creado exitosamente...", {
                 "type": "success",
-                "position": "bottom-right",
+                "position": "top-right",
                 "pauseOnHover": false,
                 "autoClose": 5000,
                 "dangerouslyHTMLString": true
@@ -80,7 +80,7 @@ const createUser = () => {
         }
         loading.value = false;
         setTimeout(() => {
-            router.push('/jobs/candidate-lists');
+            router.push('/administration/users');
         }, 4000);
     })
     .catch((error) => {
@@ -166,8 +166,8 @@ getAreas();
                     <label class="form-label">Rol</label>
                     <select v-model="v$.rol.$model" class="form-select" :class="{ 'border border-danger': v$.rol.$error }" name="" id="">
                         <option value="">Seleccione Rol</option>
-                        <option value="FUNCTIONARY">FUNCTIONARY</option>
-                        <option value="BOSS_OF_AREA">BOSS_OF_AREA</option>
+                        <option value="FUNCTIONARY">FUNCIONARIO</option>
+                        <option value="BOSS_OF_AREA">JEFE DE AREA</option>
                         <option value="DIRECTOR">DIRECTOR</option>
                     </select>
                     <p class="text-danger" :class="{ 'd-none': !v$.rol.$error }">

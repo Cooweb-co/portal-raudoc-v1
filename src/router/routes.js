@@ -25,7 +25,7 @@ export default [
     name: "createUser",
     component: () => import("../views/pages/create-user.vue"),
     meta: {
-      title: "Create User"
+      title: "Creación de usuario"
     },
   },
   {
