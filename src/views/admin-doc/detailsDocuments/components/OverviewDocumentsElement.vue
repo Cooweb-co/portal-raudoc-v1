@@ -18,10 +18,11 @@ const startProccessAt = ref(
         props.file?.startProccessAt?.seconds || props.file?.createdAt?.seconds
     )
 );
-const placement = ref("left");
+const placement = ref("right");
 const summary = ref(props.file?.summary?.summary || "No definido");
 const legalBasis = ref(props.file?.summary?.legalBasis || false);
 const additionalInformation = ref(props.file?.summary?.additionalInformation || false);
+
 
 const open = ref(false);
 
@@ -39,7 +40,6 @@ const goToDocument = () => {
     const path = `/Companies/BAQVERDE/${year}/Claims/${props.id}`;
     openDocument(props.file.name, path);
 };
-// const buttonWidth = 70;
 </script>
 
 <template>
@@ -104,19 +104,18 @@ const goToDocument = () => {
         style="z-index: 100000 !important;"
     >
         <h5>Resumen</h5>
-        {{ console.log(file) }}
         <p class="text-muted">{{ summary }}</p>
         <h5 class="mt-2">Fundamentos legales:</h5>
-        <ol v-if="legalBasis.value">
-            <li v-for="item in legalBasis.value" :key="item" class="text-muted">
-                {{ item || "No se encontraron fundamentos legales" }}
+        <ol v-if="legalBasis.length > 0">
+            <li v-for="item in legalBasis" :key="item" class="text-muted">
+                {{ item }}
             </li>
         </ol>
         <span v-else class="text-muted">No se encontraron fundamentos legales</span>
         <h5 class="mt-2">Información adicional:</h5>
-        <ul v-if="additionalInformation.value">
+        <ul v-if="additionalInformation.length > 0">
             <li
-                v-for="item in additionalInformation.value"
+                v-for="item in additionalInformation"
                 :key="item"
                 class="text-muted"
             >
