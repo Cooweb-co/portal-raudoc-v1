@@ -9,6 +9,7 @@ import { toast } from "vue3-toastify";
 import { ref, watch, defineProps, computed } from "vue";
 import axios from "axios";
 import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
+import { transformTimeStampToDate } from "@/helpers/transformDate";
 // import { message } from "ant-design-vue";
 
 const props = defineProps(["loading", "data"]);
@@ -40,6 +41,7 @@ const classDropZone = computed(() => {
     return styles + " border-primary text-primary";
 });
 
+
 const uploadFile = async () => {
     let idLoadFile;
     try {
@@ -64,6 +66,10 @@ const uploadFile = async () => {
 
         // Upload first file for add it QR
 
+        const date = transformTimeStampToDate(
+            props?.data?.rawEntryDate,
+            "DD/MM/YYYY HH:mm:ss"
+        );
         const headersAddQR = {
             "Content-Type": "multipart/form-data",
         };
@@ -73,7 +79,14 @@ const uploadFile = async () => {
             "url",
             `${domain}/r/${company}/${pathname[pathname.length - 1]}`
         );
-        bodyFormDataAddQR.append("file", files.value[0], files.value[0]?.name || "pdfWithQR.pdf");
+
+        bodyFormDataAddQR.append("codeRadicate", props?.data?.numberEntryClaim);
+        bodyFormDataAddQR.append("dateRadicate", date);
+        bodyFormDataAddQR.append(
+            "file",
+            files.value[0],
+            files.value[0]?.name || "pdfWithQR.pdf"
+        );
 
         let config = {
             method: "post",
@@ -85,11 +98,15 @@ const uploadFile = async () => {
         };
 
         const blob = (await axios.request(config))?.data;
-        const file = new File([new Blob([blob], { type: "application/pdf" })], files.value[0]?.name || "pdfWithQR.pdf", {
-		type: "application/pdf",
-        });
+        const file = new File(
+            [new Blob([blob], { type: "application/pdf" })],
+            files.value[0]?.name || "pdfWithQR.pdf",
+            {
+                type: "application/pdf",
+            }
+        );
 
-        files.value[0] = file
+        files.value[0] = file;
 
         // Upload files for response
 
@@ -190,7 +207,11 @@ const onFileDrop = (event) => {
 watch(
     () => props.data,
     (currentValue) => {
-        if (currentValue.numberOutClaim || currentValue.status == "No requiere respuesta") return (answered.value = true);
+        if (
+            currentValue.numberOutClaim ||
+            currentValue.status == "No requiere respuesta"
+        )
+            return (answered.value = true);
         return;
     }
 );
