@@ -71,8 +71,14 @@ export default {
     const peopleList = ref([]);
     const timerAI = ref([]);
     const dropzone = ref(false);
-    const manual_address = ref(true);
+    const manual_address = ref(false);
     const manual_address_info = ref(["", "", "", "", "", "", ""]);
+    const finalAddress = ref("");
+
+    const addressOptions = ref([
+      { label: "Calle", value: "CL. " },
+      { label: "Carrera", value: "CRA. " },
+    ]);
 
     let config = {
       method: "get",
@@ -125,7 +131,7 @@ export default {
       names: { required: MESSAGE_REQUIRED },
       lastNames: { required: MESSAGE_REQUIRED },
       email: { required: MESSAGE_REQUIRED, MESSAGE_EMAIL },
-      address: { required: MESSAGE_REQUIRED },
+      address: {},
       assignedTo: { required: MESSAGE_REQUIRED },
       subject: { required: MESSAGE_REQUIRED },
       description: { required: MESSAGE_REQUIRED },
@@ -487,7 +493,18 @@ export default {
       }
     });
 
-    
+    function concatAddress() {
+      finalAddress.value =
+        manual_address_info.value[0] +
+        manual_address_info.value[1] +
+        manual_address_info.value[2] +
+        " #" +
+        manual_address_info.value[3] +
+        manual_address_info.value[4] +
+        " - " +
+        manual_address_info.value[5] +
+        manual_address_info.value[6];
+    }
 
     return {
       dropzoneFile,
@@ -500,6 +517,7 @@ export default {
       mode,
       saveLoading,
       submitLoading,
+      addressOptions,
       qrModal,
       loadingAI,
       newDate,
@@ -529,6 +547,7 @@ export default {
       selectedFile,
       onFileDrop,
       getPeople,
+      concatAddress,
     };
   },
   data() {
@@ -598,7 +617,7 @@ export default {
           entryDate: this.form.date,
           endDate: !this.form.untilDate ? null : this.form.untilDate,
           assignedToUid: this.getAssignedUid[0]?.uid,
-          city: this.form.city,
+          city: this.form.city ?? "",
           folios: parseInt(this.form.folios),
           assignedTo: this.form.assignedTo,
           observations: this.form.observations,
@@ -610,7 +629,9 @@ export default {
             identificationNumber: this.form.idNumber,
             firstNames: this.form.names,
             lastNames: this.form.lastNames,
-            address: this.form.address,
+            address: this.manual_address
+              ? this.finalAddress
+              : this.form.address,
             phoneNumber: this.form.contactPhone,
             email: this.form.email,
           },
@@ -760,16 +781,28 @@ export default {
 
 <template>
   <!-- Modal -->
-  <Modal v-if="qrModal" title="" size="small" :hideIconClose="true" @close="closeModal">
+  <Modal
+    v-if="qrModal"
+    title=""
+    size="small"
+    :hideIconClose="true"
+    @close="closeModal"
+  >
     <template #content>
-      <div class="d-flex flex-column justify-content-center align-items-center gap-3">
+      <div
+        class="d-flex flex-column justify-content-center align-items-center gap-3"
+      >
         <div>
           <h4 class="text-success fw-bold fs-4">
             {{ radicate?.idRadicate }}
           </h4>
         </div>
         <div class="pb-4">
-          <a-qrcode error-level="H" :value="'http://portal.raudoc.com/r/BAQVERDE/' + documentID" icon="" />
+          <a-qrcode
+            error-level="H"
+            :value="'http://portal.raudoc.com/r/BAQVERDE/' + documentID"
+            icon=""
+          />
         </div>
       </div>
     </template>
@@ -777,7 +810,11 @@ export default {
 
   <!-- page tempalte-->
   <Layout>
-    <PageHeader :title="`RADICAR DOCUMENTO`" subTitle="Crear" pageTitle="Proyectos" />
+    <PageHeader
+      :title="`RADICAR DOCUMENTO`"
+      subTitle="Crear"
+      pageTitle="Proyectos"
+    />
 
     <!-- page header ( buttons ) -->
     <BRow>
@@ -791,17 +828,39 @@ export default {
         <div>{{ auxDocTypes }}</div>
       </div>
       <div class="text-end mb-4 col-6 col-sm-6">
-        <BButton v-if="!showRadicationButton" type="submit" variant="success" class="w-sm" @click="handleSaveInfo"
-          :disabled="saveLoading">
+        <BButton
+          v-if="!showRadicationButton"
+          type="submit"
+          variant="success"
+          class="w-sm"
+          @click="handleSaveInfo"
+          :disabled="saveLoading"
+        >
           <div class="button-content">
-            <span v-if="saveLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span
+              v-if="saveLoading"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
             <span>Guardar Cambios</span>
           </div>
         </BButton>
-        <BButton v-else type="submit" variant="danger" class="w-sm" @click="handleSubmitDocument"
-          :disabled="submitLoading">
+        <BButton
+          v-else
+          type="submit"
+          variant="danger"
+          class="w-sm"
+          @click="handleSubmitDocument"
+          :disabled="submitLoading"
+        >
           <div class="button-content">
-            <span v-if="submitLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span
+              v-if="submitLoading"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
             <span>Radicar Documento</span>
           </div>
         </BButton>
@@ -811,8 +870,15 @@ export default {
     <!-- columns of page data ( document section ) - ( form section ) -->
     <BRow>
       <!-- Document section column -->
-      <BCol lg="4" md="12" sm="12" @dragover.prevent="onDragOver" @dragenter.prevent="onDragEnter"
-        @dragleave.prevent="onDragLeave" @drop="onFileDrop">
+      <BCol
+        lg="4"
+        md="12"
+        sm="12"
+        @dragover.prevent="onDragOver"
+        @dragenter.prevent="onDragEnter"
+        @dragleave.prevent="onDragLeave"
+        @drop="onFileDrop"
+      >
         <!-- {{ claimData }} -->
         <BCard no-body>
           <BCardHeader>
@@ -827,16 +893,31 @@ export default {
                   <FileTextIcon size="28" />
                 </p>
                 <span> Arrastra el archivo para subirlo</span>
-                <input type="file" name="formFile" id="formFile" multiple class="input-file" @change="selectedFile" />
-                <label for="formFile" class="link-primary label-formFile">o Clic acá para selecciona un archivo</label>
-                <span class="text-success d-flex justify-content-center align-items-center gap-1"
-                  style="opacity: 0.8; font-size: 0.6rem">
+                <input
+                  type="file"
+                  name="formFile"
+                  id="formFile"
+                  multiple
+                  class="input-file"
+                  @change="selectedFile"
+                />
+                <label for="formFile" class="link-primary label-formFile"
+                  >o Clic acá para selecciona un archivo</label
+                >
+                <span
+                  class="text-success d-flex justify-content-center align-items-center gap-1"
+                  style="opacity: 0.8; font-size: 0.6rem"
+                >
                   <AlertOctagonIcon size="10" /> Solo se analizará con la IA el
                   primer archivo subido.
                 </span>
               </div>
               <div class="vstack gap-2 mt-2" v-if="files.length > 0">
-                <div class="border rounded" v-for="(file, index) of files" :key="index">
+                <div
+                  class="border rounded"
+                  v-for="(file, index) of files"
+                  :key="index"
+                >
                   <div class="d-flex align-items-center p-2" v-if="file">
                     <div class="flex-grow-1">
                       <div class="pt-1">
@@ -847,11 +928,19 @@ export default {
                           <strong>{{ file.size / 1024 }}</strong>
                           KB
                         </p>
-                        <strong class="error text-danger" data-dz-errormessage=""></strong>
+                        <strong
+                          class="error text-danger"
+                          data-dz-errormessage=""
+                        ></strong>
                       </div>
                     </div>
                     <div class="flex-shrink-0 ms-3">
-                      <BButton variant="danger" size="sm" data-dz-remove="" @click="deleteRecord(file.name)">
+                      <BButton
+                        variant="danger"
+                        size="sm"
+                        data-dz-remove=""
+                        @click="deleteRecord(file.name)"
+                      >
                         borrar
                       </BButton>
                     </div>
@@ -861,7 +950,9 @@ export default {
             </div>
           </BCardBody>
           <BoCardBody v-else>
-            <h3 class="w-100 d-flex justify-content-center align-items-center text-lg py-2">
+            <h3
+              class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
+            >
               Radicado Generado
             </h3>
           </BoCardBody>
@@ -869,12 +960,25 @@ export default {
         <BCard no-body>
           <BCardBody>
             <div class="mb-3">
-              <label class="form-label fw-bold" for="project-title-input">Asuntos</label>
-              <BSpinner v-if="loadingAI" class="float-end" small v-b-tooltip.hover.top title="Extrayendo asunto con IA"
-                type="grow" />
+              <label class="form-label fw-bold" for="project-title-input"
+                >Asuntos</label
+              >
+              <BSpinner
+                v-if="loadingAI"
+                class="float-end"
+                small
+                v-b-tooltip.hover.top
+                title="Extrayendo asunto con IA"
+                type="grow"
+              />
 
-              <input type="text" v-model="form.subject" class="form-control" id="project-title-input"
-                placeholder="Ingrese asunto del radicado" />
+              <input
+                type="text"
+                v-model="form.subject"
+                class="form-control"
+                id="project-title-input"
+                placeholder="Ingrese asunto del radicado"
+              />
               <ValidateLabel v-bind="{ v$ }" attribute="subject" />
             </div>
 
@@ -882,10 +986,20 @@ export default {
 
             <div class="mb-3">
               <label class="form-label fw-bold">Resumen de radicado</label>
-              <BSpinner v-if="loadingAI" class="float-end" small v-b-tooltip.hover.top title="Extrayendo resumen con IA"
-                type="grow" />
+              <BSpinner
+                v-if="loadingAI"
+                class="float-end"
+                small
+                v-b-tooltip.hover.top
+                title="Extrayendo resumen con IA"
+                type="grow"
+              />
               <!-- <ckeditor v-model="editorData" :editor="editor"></ckeditor> -->
-              <textarea class="form-control" v-model="form.description" style="min-height: 255px"></textarea>
+              <textarea
+                class="form-control"
+                v-model="form.description"
+                style="min-height: 255px"
+              ></textarea>
               <ValidateLabel v-bind="{ v$ }" attribute="description" />
             </div>
           </BCardBody>
@@ -903,91 +1017,191 @@ export default {
           <BCardBody>
             <BRow>
               <BCol lg="6" class="mb-3">
-                <label for="choices-privacy-status-input" class="form-label fw-bold">Área</label>
-                <Multiselect v-model="form.area" :required="true" :close-on-select="true" :searchable="true"
-                  :create-option="true" placeholder="Seleccione" :options="trds" @select="clearSelectInput" />
+                <label
+                  for="choices-privacy-status-input"
+                  class="form-label fw-bold"
+                  >Área</label
+                >
+                <Multiselect
+                  v-model="form.area"
+                  :required="true"
+                  :close-on-select="true"
+                  :searchable="true"
+                  :create-option="true"
+                  placeholder="Seleccione"
+                  :options="trds"
+                  @select="clearSelectInput"
+                />
 
                 <ValidateLabel v-bind="{ v$ }" attribute="area" />
               </BCol>
               <BCol lg="3">
-                <label for="datepicker-deadline-input" class="form-label fw-bold">Fecha</label>
-                <input v-model="form.date" :config="rangeDateconfig" class="form-control"
-                  style="cursor: no-drop !important" disabled />
-                <ValidateLabel v-bind="{ v$ }" attribute="date" style="cursor: no-drop !important" />
+                <label
+                  for="datepicker-deadline-input"
+                  class="form-label fw-bold"
+                  >Fecha</label
+                >
+                <input
+                  v-model="form.date"
+                  :config="rangeDateconfig"
+                  class="form-control"
+                  style="cursor: no-drop !important"
+                  disabled
+                />
+                <ValidateLabel
+                  v-bind="{ v$ }"
+                  attribute="date"
+                  style="cursor: no-drop !important"
+                />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="choices-privacy-status-input" class="form-label fw-bold">Método de entrada</label>
-                <Multiselect v-model="form.inputMethod" :required="true" :close-on-select="true" :searchable="true"
-                  :create-option="true" placeholder="Seleccione" :options="[
-    {
-      value: 'Página web',
-      label: 'Página web',
-    },
-    {
-      value: 'Presencial',
-      label: 'Presencial',
-    },
-    {
-      value: 'Mensajería Certificada',
-      label: 'Mensajería Certificada',
-    },
-    {
-      value: 'Correo Electrónico',
-      label: 'Correo Electrónico',
-    },
-    {
-      value: 'WhatsApp',
-      label: 'WhatsApp',
-    },
-  ]" />
+                <label
+                  for="choices-privacy-status-input"
+                  class="form-label fw-bold"
+                  >Método de entrada</label
+                >
+                <Multiselect
+                  v-model="form.inputMethod"
+                  :required="true"
+                  :close-on-select="true"
+                  :searchable="true"
+                  :create-option="true"
+                  placeholder="Seleccione"
+                  :options="[
+                    {
+                      value: 'Página web',
+                      label: 'Página web',
+                    },
+                    {
+                      value: 'Presencial',
+                      label: 'Presencial',
+                    },
+                    {
+                      value: 'Mensajería Certificada',
+                      label: 'Mensajería Certificada',
+                    },
+                    {
+                      value: 'Correo Electrónico',
+                      label: 'Correo Electrónico',
+                    },
+                    {
+                      value: 'WhatsApp',
+                      label: 'WhatsApp',
+                    },
+                  ]"
+                />
                 <ValidateLabel v-bind="{ v$ }" attribute="inputMethod" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="choices-privacy-status-input" class="form-label fw-bold">Serie</label>
-                <Multiselect v-model="form.serie" :required="true" :close-on-select="true" :searchable="true"
-                  :create-option="true" placeholder="Seleccione" :options="series" />
+                <label
+                  for="choices-privacy-status-input"
+                  class="form-label fw-bold"
+                  >Serie</label
+                >
+                <Multiselect
+                  v-model="form.serie"
+                  :required="true"
+                  :close-on-select="true"
+                  :searchable="true"
+                  :create-option="true"
+                  placeholder="Seleccione"
+                  :options="series"
+                />
                 <ValidateLabel v-bind="{ v$ }" attribute="serie" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="choices-privacy-status-input" class="form-label fw-bold">Subserie</label>
-                <Multiselect v-model="form.subSerie" :required="true" :close-on-select="true" :searchable="true"
-                  :create-option="true" placeholder="Seleccione" :options="subseries" />
+                <label
+                  for="choices-privacy-status-input"
+                  class="form-label fw-bold"
+                  >Subserie</label
+                >
+                <Multiselect
+                  v-model="form.subSerie"
+                  :required="true"
+                  :close-on-select="true"
+                  :searchable="true"
+                  :create-option="true"
+                  placeholder="Seleccione"
+                  :options="subseries"
+                />
                 <ValidateLabel v-bind="{ v$ }" attribute="subSerie" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="choices-privacy-status-input" class="form-label fw-bold col-11 text-truncate">Tipología
-                  Documental</label>
-                <Multiselect v-model="form.documentType" :required="true" :close-on-select="true" :searchable="true"
-                  :create-option="true" placeholder="Seleccione" :options="isDocs" />
+                <label
+                  for="choices-privacy-status-input"
+                  class="form-label fw-bold col-11 text-truncate"
+                  >Tipología Documental</label
+                >
+                <Multiselect
+                  v-model="form.documentType"
+                  :required="true"
+                  :close-on-select="true"
+                  :searchable="true"
+                  :create-option="true"
+                  placeholder="Seleccione"
+                  :options="isDocs"
+                />
                 <ValidateLabel v-bind="{ v$ }" attribute="documentType" />
               </BCol>
               <BCol lg="3" v-if="showDeadLine">
-                <label for="datepicker-deadline-input" class="form-label fw-bold">Fecha límite</label>
-                <flat-pickr v-model="form.untilDate" :config="rangeDateconfig"
-                  class="form-control flatpickr-input"></flat-pickr>
+                <label
+                  for="datepicker-deadline-input"
+                  class="form-label fw-bold"
+                  >Fecha límite</label
+                >
+                <flat-pickr
+                  v-model="form.untilDate"
+                  :config="rangeDateconfig"
+                  class="form-control flatpickr-input"
+                ></flat-pickr>
                 <ValidateLabel v-bind="{ v$ }" attribute="untilDate" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="username" class="form-label fw-bold">Folios <span
-                    class="text-danger fw-bold">*</span></label>
-                <input type="text" class="form-control" v-model="form.folios" :class="{
-    'is-invalid': submitted && v$.user.username.$error,
-  }" id="folios" placeholder="Ingrese folios" />
+                <label for="username" class="form-label fw-bold"
+                  >Folios <span class="text-danger fw-bold">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.folios"
+                  :class="{
+                    'is-invalid': submitted && v$.user.username.$error,
+                  }"
+                  id="folios"
+                  placeholder="Ingrese folios"
+                />
 
                 <ValidateLabel v-bind="{ v$ }" attribute="folios" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="username" class="form-label fw-bold">Radicado Externo</label>
-                <input type="text" class="form-control" v-model="form.externalFiling" :class="{
-    'is-invalid': submitted && v$.user.username.$error,
-  }" id="RadicadoExterno" placeholder="# Radicado externo" />
+                <label for="username" class="form-label fw-bold"
+                  >Radicado Externo</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.externalFiling"
+                  :class="{
+                    'is-invalid': submitted && v$.user.username.$error,
+                  }"
+                  id="RadicadoExterno"
+                  placeholder="# Radicado externo"
+                />
               </BCol>
               <BCol lg="6" class="mb-3">
                 <label for="username" class="form-label fw-bold">
                   Asignado a
-                  <span class="text-danger">*</span></label>
-                <Multiselect v-model="form.assignedTo" :required="true" :close-on-select="true" :create-option="true"
-                  :searchable="true" placeholder="Seleccione" :options="peopleList" />
+                  <span class="text-danger">*</span></label
+                >
+                <Multiselect
+                  v-model="form.assignedTo"
+                  :required="true"
+                  :close-on-select="true"
+                  :create-option="true"
+                  :searchable="true"
+                  placeholder="Seleccione"
+                  :options="peopleList"
+                />
                 <ValidateLabel v-bind="{ v$ }" attribute="assignedTo" />
               </BCol>
             </BRow>
@@ -1002,153 +1216,246 @@ export default {
           <BCardBody>
             <BRow>
               <BCol lg="3" class="mb-3">
-                <label for="choices-privacy-status-input" class="form-label fw-bold">Tipo de persona</label>
-                <Multiselect v-model="form.personType" :required="true" :close-on-select="true" :searchable="true"
-                  :create-option="true" placeholder="Seleccione" :options="[
-    { value: 'Natural', label: 'Natural' },
-    {
-      value: 'Jurídica',
-      label: 'Jurídica',
-    },
-  ]" />
+                <label
+                  for="choices-privacy-status-input"
+                  class="form-label fw-bold"
+                  >Tipo de persona</label
+                >
+                <Multiselect
+                  v-model="form.personType"
+                  :required="true"
+                  :close-on-select="true"
+                  :searchable="true"
+                  :create-option="true"
+                  placeholder="Seleccione"
+                  :options="[
+                    { value: 'Natural', label: 'Natural' },
+                    {
+                      value: 'Jurídica',
+                      label: 'Jurídica',
+                    },
+                  ]"
+                />
                 <ValidateLabel v-bind="{ v$ }" attribute="personType" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="choices-privacy-status-input" class="form-label fw-bold">Tipo de documento</label>
-                <Multiselect v-model="form.idType" :required="true" :close-on-select="true" :searchable="true"
-                  :create-option="true" placeholder="Seleccione" :options="[
-    { value: 'Cédula', label: 'Cédula' },
-    {
-      value: 'TI',
-      label: 'TI',
-    },
-    {
-      value: 'Pasaporte',
-      label: 'Pasaporte',
-    },
-    {
-      value: 'Cédula extranjería',
-      label: 'Cédula extranjería',
-    },
-  ]" />
+                <label
+                  for="choices-privacy-status-input"
+                  class="form-label fw-bold"
+                  >Tipo de documento</label
+                >
+                <Multiselect
+                  v-model="form.idType"
+                  :required="true"
+                  :close-on-select="true"
+                  :searchable="true"
+                  :create-option="true"
+                  placeholder="Seleccione"
+                  :options="[
+                    { value: 'Cédula', label: 'Cédula' },
+                    {
+                      value: 'TI',
+                      label: 'TI',
+                    },
+                    {
+                      value: 'Pasaporte',
+                      label: 'Pasaporte',
+                    },
+                    {
+                      value: 'Cédula extranjería',
+                      label: 'Cédula extranjería',
+                    },
+                  ]"
+                />
                 <ValidateLabel v-bind="{ v$ }" attribute="idType" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="username" class="form-label fw-bold">Número de documento
-                  <span class="text-danger fw-bold">*</span></label>
-                <input type="text" class="form-control" v-model="form.idNumber" id="username"
-                  placeholder="Ingrese numero de documento" />
+                <label for="username" class="form-label fw-bold"
+                  >Número de documento
+                  <span class="text-danger fw-bold">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.idNumber"
+                  id="username"
+                  placeholder="Ingrese numero de documento"
+                />
 
                 <ValidateLabel v-bind="{ v$ }" attribute="idNumber" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="username" class="form-label fw-bold">Teléfono de contacto
-                  <span class="text-danger fw-bold">*</span></label>
-                <input type="text" class="form-control" v-model="form.contactPhone"
-                  placeholder="Ingrese telefono de contacto" />
+                <label for="username" class="form-label fw-bold"
+                  >Teléfono de contacto
+                  <span class="text-danger fw-bold">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.contactPhone"
+                  placeholder="Ingrese telefono de contacto"
+                />
                 <ValidateLabel v-bind="{ v$ }" attribute="contactPhone" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="username" class="form-label fw-bold">Nombres <span
-                    class="text-danger fw-bold">*</span></label>
-                <input type="text" class="form-control" v-model="form.names" id="username"
-                  placeholder="Ingrese nombres" />
+                <label for="username" class="form-label fw-bold"
+                  >Nombres <span class="text-danger fw-bold">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.names"
+                  id="username"
+                  placeholder="Ingrese nombres"
+                />
 
                 <ValidateLabel v-bind="{ v$ }" attribute="names" />
               </BCol>
               <BCol lg="3" class="mb-3">
-                <label for="username" class="form-label fw-bold">Apellidos <span
-                    class="text-danger fw-bold">*</span></label>
-                <input type="text" class="form-control" v-model="form.lastNames" placeholder="Ingrese apellidos" />
+                <label for="username" class="form-label fw-bold"
+                  >Apellidos <span class="text-danger fw-bold">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.lastNames"
+                  placeholder="Ingrese apellidos"
+                />
 
                 <ValidateLabel v-bind="{ v$ }" attribute="lastNames" />
               </BCol>
               <BCol lg="6" class="mb-3">
-                <label for="username" class="form-label fw-bold">Correo electrónico
-                  <span class="text-danger fw-bold">*</span></label>
-                <input type="text" class="form-control" v-model="form.email" id="username"
-                  placeholder="Ingrese email" />
+                <label for="username" class="form-label fw-bold"
+                  >Correo electrónico
+                  <span class="text-danger fw-bold">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="form.email"
+                  id="username"
+                  placeholder="Ingrese email"
+                />
 
                 <ValidateLabel v-bind="{ v$ }" attribute="email" />
               </BCol>
               <BCol lg="12" class="mb-3">
                 <div class="label-checkbox">
-                  <label for="username" class="form-label fw-bold">Dirección <span
-                      class="text-danger fw-bold">*</span></label>
+                  <label for="username" class="form-label fw-bold"
+                    >Dirección <span class="text-danger fw-bold">*</span></label
+                  >
                   <div class="fs-15">
-                    <label for="" class="px-2 fw-bold text-muted">Agregar dirección manual</label>
-                    <input v-model="manual_address" class="form-check-input" type="checkbox" />
+                    <label for="" class="px-2 fw-bold text-muted"
+                      >Agregar dirección manual</label
+                    >
+                    <input
+                      v-model="manual_address"
+                      class="form-check-input"
+                      type="checkbox"
+                    />
                   </div>
                 </div>
 
-                <input v-if="!manual_address" id="place" class="form-control" type="text"
-                  placeholder="Ingrese una dirección" />
+                <div v-if="!manual_address">
+                  <input
+                    id="place"
+                    class="form-control"
+                    type="text"
+                    placeholder="Ingrese una dirección"
+                  />
+                </div>
 
-                <!-- <div v-else class="manual-address-inputs-box my-2">
-                  <div style="min-width: 23.7%;"><input class="form-control" type="text"
-                      placeholder="Ingrese una dirección 2" /></div>
-                  <div><input class="form-control" type="text" placeholder="Número" /></div>
-                  <div><input class="form-control" type="text" placeholder="Letra" /></div>
-                  <div>
-                    <span> # </span>
-                  </div>
-
-                  <div><input class="form-control" type="text" placeholder="Número" /></div>
-                  <div><input class="form-control" type="text" placeholder="Letra" /></div>
-                  <div>
-                    <span> - </span>
-                  </div>
-                  <div><input class="form-control" type="text" placeholder="Número" /></div>
-                  <div><input class="form-control" type="text" placeholder="Complemento" /></div>
-                </div> -->
-
-                <div v-else class="row w-100 py-2">
-                  <pre>{{ manual_address_info }}</pre>
+                <div v-else class="row py-2">
                   <div class="col-lg-3">
-                    <input v-model="manual_address_info[0]" class="form-control" type="text"
-                      placeholder="Ingrese una dirección 2" />
+                    <Multiselect
+                      v-model="manual_address_info[0]"
+                      :close-on-select="true"
+                      :searchable="true"
+                      placeholder="Seleccione"
+                      :options="addressOptions"
+                      @input="concatAddress()"
+                    />
                   </div>
                   <div class="col-lg-1">
-                    <input v-model="manual_address_info[1]" class="form-control" type="text" placeholder="Número" />
+                    <input
+                      v-model="manual_address_info[1]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Número"
+                      @input="concatAddress()"
+                    />
                   </div>
                   <div class="col-lg-1">
-                    <input v-model="manual_address_info[2]" class="form-control" type="text" placeholder="Letra" />
+                    <input
+                      v-model="manual_address_info[2]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Letra"
+                      @input="concatAddress()"
+                    />
                   </div>
-                  <div class="col-lg-1" style="
+                  <div
+                    class="col-lg-1"
+                    style="
                       width: 30px !important;
                       display: flex;
                       align-items: center;
                       justify-content: center;
                       height: 40px;
-                    ">
+                    "
+                  >
                     <span> # </span>
                   </div>
 
                   <div class="col-lg-1">
-                    <input v-model="manual_address_info[3]" class="form-control" type="text" placeholder="Número" />
+                    <input
+                      v-model="manual_address_info[3]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Número"
+                      @input="concatAddress()"
+                    />
                   </div>
                   <div class="col-lg-1">
-                    <input v-model="manual_address_info[4]" class="form-control" type="text" placeholder="Letra" />
+                    <input
+                      v-model="manual_address_info[4]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Letra"
+                      @input="concatAddress()"
+                    />
                   </div>
-                  <div class="col-lg-1" style="
+                  <div
+                    class="col-lg-1"
+                    style="
                       width: 30px !important;
                       display: flex;
                       align-items: center;
                       justify-content: center;
                       height: 40px;
-                    ">
+                    "
+                  >
                     <span> - </span>
                   </div>
                   <div class="col-lg-1">
-                    <input v-model="manual_address_info[5]" class="form-control" type="text" placeholder="Número" />
+                    <input
+                      v-model="manual_address_info[5]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Núm"
+                      @input="concatAddress()"
+                    />
                   </div>
                   <div class="col-lg-2">
-                    <input v-model="manual_address_info[6]" class="form-control" type="text"
-                      placeholder="Complemento" />
+                    <input
+                      v-model="manual_address_info[6]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Complemento"
+                      @input="concatAddress()"
+                    />
                   </div>
                 </div>
-
-                <ValidateLabel v-bind="{ v$ }" attribute="address" />
               </BCol>
             </BRow>
           </BCardBody>
