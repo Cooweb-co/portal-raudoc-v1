@@ -4,13 +4,18 @@
 // import "@vueform/multiselect/themes/default.css";
 
 // import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-// import useVuelidate from "@vuelidate/core";
+
+import { useVuelidate } from "@vuelidate/core";
+import { required, email } from "@vuelidate/validators";
 import { toast } from "vue3-toastify";
-import { ref, watch, defineProps, computed } from "vue";
+import ValidateLabel from "@/utils/ValidateLabel.vue";
+import { MESSAGE_REQUIRED } from "@/constants/rules.ts";
+
+import { ref, reactive, watch, defineProps, computed } from "vue";
 import axios from "axios";
+
 import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
-// import { message } from "ant-design-vue";
 
 const props = defineProps(["loading", "data"]);
 const files = ref([]);
@@ -41,6 +46,54 @@ const classDropZone = computed(() => {
     return styles + " border-primary text-primary";
 });
 
+const getDate = () => {
+    // Obtener la fecha y hora actual
+    // Get the current date and time
+    const currentDate = new Date();
+
+    // Convert the current date to milliseconds since January 1, 1970
+    const milliseconds = currentDate.getTime();
+
+    // Convert milliseconds to seconds and nanoseconds
+    const seconds = Math.floor(milliseconds / 1000); // Convert milliseconds to seconds
+    const nanoseconds = (milliseconds % 1000) * 1000000; // Convert remaining milliseconds to nanoseconds
+
+    // Create the timestamp object
+    const timestamp = { seconds: seconds, nanoseconds: nanoseconds };
+    const formatDate = transformTimeStampToDate(timestamp, "DD/MM/YYYY HH:mm:ss")
+    return formatDate
+};
+
+const form = reactive({
+    entryDate: getDate(),
+    name: "",
+    company: "", //Opcional
+    email: "",
+    address: "",
+    city: "",
+    subject: "",
+    body: "",
+    senderName: "",
+    position: "",
+    senderCompany: company,
+});
+
+const rules = {
+    entryDate: { required: MESSAGE_REQUIRED },
+    name: { required },
+    company: {}, //Opcional
+    email: { required, email },
+    address: { required },
+    city: { required },
+    subject: { required },
+    body: { required },
+    senderName: { required },
+    position: { required },
+    senderCompany: { required },
+};
+
+// eslint-disable-next-line no-unused-vars
+const v$ = useVuelidate(rules, form);
 
 const uploadFile = async () => {
     let idLoadFile;
@@ -149,6 +202,17 @@ const uploadFile = async () => {
             isLoading: false,
             autoClose: 3000,
         });
+    }
+};
+
+const preview = async () => {
+    console.log(form);
+    const result = await v$.value.$validate();
+    if (result) {
+        return;
+    } else {
+        console.warn("Llena los campos");
+        return;
     }
 };
 
@@ -297,23 +361,32 @@ watch(
             >
                 <h1 class="text-lg">Ya se respondió el radicado</h1>
             </div> -->
+
             <section>
                 <div
-                    class="d-flex justify-content-between align-items-center w-100"
+                    class="d-flex justify-content-between align-items-start align-items-sm-center w-100 mt-2 flex-column-reverse flex-sm-row"
                 >
-                    <div class="grid gx-2">
+                    <div class="grid gx-2 mt-2 mt-sm-0">
                         <BButton
                             type="submit"
-                            :variant="answered ? 'secondary' : 'success'"
+                            :variant="answered ? 'secondary' : 'danger'"
                             :disabled="answered ? true : false"
                             class="w-sm"
                             @click="uploadFile"
                             >Generar Radicado</BButton
                         >
                         <BButton
+                            type="submit"
+                            :variant="answered ? 'secondary' : 'primary'"
+                            :disabled="answered ? true : false"
+                            class="w-sm ms-2"
+                            @click="preview"
+                            >Vista previa</BButton
+                        >
+                        <BButton
                             type="button"
                             class="w-sm mx-2"
-                            variant="primary"
+                            variant="success"
                             v-if="answered"
                             @click="sendFile"
                         >
@@ -343,6 +416,167 @@ watch(
                     <ckeditor v-model="editorData" :editor="editor"></ckeditor>
                 </div>
             </BCardBody> -->
+                <BCard no-body class="mt-3">
+                    <BCardHeader>
+                        <h6>Generador de documentos</h6>
+                    </BCardHeader>
+                    <BCardBody>
+                        <BRow class="mb-3">
+                            <BCol lg="6" class="mb-3">
+                                <label for="name" class="form-label fw-bold"
+                                    >Nombre
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.name"
+                                    id="name"
+                                    :required="true"
+                                    placeholder="Ingrese el nombre del destinatario"
+                                />
+                                <ValidateLabel v-bind="{ v$ }" attribute="name" />
+                            </BCol>
+
+                            <BCol lg="6" class="mb-3">
+                                <label for="email" class="form-label fw-bold"
+                                    >Email
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.email"
+                                    id="email"
+                                    :required="true"
+                                    placeholder="Ingrese el correo del destinatario"
+                                />
+                            </BCol>
+
+                            <BCol lg="3" class="mb-3">
+                                <label for="company" class="form-label fw-bold"
+                                    >Compañía
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.company"
+                                    id="company"
+                                    :required="true"
+                                    placeholder="Ingrese la compañía del destinatario"
+                                />
+                            </BCol>
+
+                            <BCol lg="3" class="mb-3">
+                                <label for="address" class="form-label fw-bold"
+                                    >Dirección
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.address"
+                                    id="address"
+                                    :required="true"
+                                    placeholder="Ingrese la dirección del destinatario"
+                                />
+                            </BCol>
+
+                            <BCol lg="3" class="mb-3">
+                                <label for="city" class="form-label fw-bold"
+                                    >Ciudad
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.city"
+                                    id="city"
+                                    :required="true"
+                                    placeholder="Ingrese la ciudad del destinatario"
+                                />
+                            </BCol>
+
+                            <BCol lg="3" class="mb-3">
+                                <label
+                                    for="senderName"
+                                    class="form-label fw-bold"
+                                    >Nombre del remitente
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.senderName"
+                                    id="senderName"
+                                    :required="true"
+                                    placeholder="Ingrese el nombre del remitente"
+                                />
+                            </BCol>
+
+                            <BCol lg="4" class="mb-3">
+                                <label for="position" class="form-label fw-bold"
+                                    >Cargo del remitente
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.position"
+                                    id="position"
+                                    :required="true"
+                                    placeholder="Ingrese el cargo del remitente"
+                                />
+                            </BCol>
+
+                            <BCol lg="8" class="mb-3">
+                                <label for="subject" class="form-label fw-bold"
+                                    >Asunto
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    :required="true"
+                                    v-model="form.subject"
+                                    id="subject"
+                                    placeholder="Ingrese el asunto"
+                                />
+                            </BCol>
+
+                            <BCol lg="12" class="mb-3">
+                                <label for="body" class="form-label fw-bold"
+                                    >Contenido del correo
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <textarea
+                                    type="text"
+                                    class="form-control w-100"
+                                    v-model="form.body"
+                                    id="body"
+                                    :required="true"
+                                    placeholder="Ingrese el contenido del correo"
+                                />
+                            </BCol>
+                        </BRow>
+                    </BCardBody>
+                </BCard>
                 <div class="relative">
                     <BCard no-body class="mt-3">
                         <BCardHeader>
