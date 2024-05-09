@@ -71,7 +71,7 @@ export default {
     const peopleList = ref([]);
     const timerAI = ref([]);
     const dropzone = ref(false);
-    const manual_address = ref(false);
+    const manual_address = ref(true);
     const manual_address_info = ref(["", "", "", "", "", "", ""]);
     const finalAddress = ref("");
 
@@ -538,6 +538,7 @@ export default {
       showDeadLine,
       moment,
       manual_address_info,
+      finalAddress,
       clearSelectInput,
       getTrds,
       deleteRecord,
@@ -603,8 +604,6 @@ export default {
           },
         };
 
-        // console.log(this.getAreaId);
-
         const body = {
           subject: this.form.subject,
           summary: this.form.description,
@@ -629,9 +628,10 @@ export default {
             identificationNumber: this.form.idNumber,
             firstNames: this.form.names,
             lastNames: this.form.lastNames,
-            address: this.manual_address
-              ? this.finalAddress
-              : this.form.address,
+            address:
+              this.manual_address === true
+                ? this.finalAddress
+                : this.form.address,
             phoneNumber: this.form.contactPhone,
             email: this.form.email,
           },
@@ -1361,12 +1361,12 @@ export default {
                     id="place"
                     class="form-control"
                     type="text"
-                    placeholder="Ingrese una dirección"
+                    placeholder="Ingrese una referencia o dirección especifica"
                   />
                 </div>
 
-                <div v-else class="row py-2">
-                  <div class="col-lg-3">
+                <div v-else class="row row-cols-1 row-cols-md-6 gx-1 gy-3 py-2">
+                  <div class="col-sm-12 col-md-3">
                     <Multiselect
                       v-model="manual_address_info[0]"
                       :close-on-select="true"
@@ -1376,7 +1376,7 @@ export default {
                       @input="concatAddress()"
                     />
                   </div>
-                  <div class="col-lg-1">
+                  <div class="col">
                     <input
                       v-model="manual_address_info[1]"
                       class="form-control"
@@ -1385,7 +1385,7 @@ export default {
                       @input="concatAddress()"
                     />
                   </div>
-                  <div class="col-lg-1">
+                  <div class="col">
                     <input
                       v-model="manual_address_info[2]"
                       class="form-control"
@@ -1395,7 +1395,7 @@ export default {
                     />
                   </div>
                   <div
-                    class="col-lg-1"
+                    class="col"
                     style="
                       width: 30px !important;
                       display: flex;
@@ -1407,7 +1407,7 @@ export default {
                     <span> # </span>
                   </div>
 
-                  <div class="col-lg-1">
+                  <div class="col">
                     <input
                       v-model="manual_address_info[3]"
                       class="form-control"
@@ -1416,7 +1416,7 @@ export default {
                       @input="concatAddress()"
                     />
                   </div>
-                  <div class="col-lg-1">
+                  <div class="col">
                     <input
                       v-model="manual_address_info[4]"
                       class="form-control"
@@ -1426,7 +1426,7 @@ export default {
                     />
                   </div>
                   <div
-                    class="col-lg-1"
+                    class="col"
                     style="
                       width: 30px !important;
                       display: flex;
@@ -1437,16 +1437,16 @@ export default {
                   >
                     <span> - </span>
                   </div>
-                  <div class="col-lg-1">
+                  <div class="col">
                     <input
                       v-model="manual_address_info[5]"
                       class="form-control"
                       type="text"
-                      placeholder="Núm"
+                      placeholder="Número"
                       @input="concatAddress()"
                     />
                   </div>
-                  <div class="col-lg-2">
+                  <div class="col-sm-12 col-md-2">
                     <input
                       v-model="manual_address_info[6]"
                       class="form-control"
