@@ -38,12 +38,11 @@ export const onListenClaimData = async (claimId, companyId, callback) => {
         return onSnapshot(
             doc(firestore, "Companies", companyId, "Claims", claimId),
             (doc) => {
-                console.log("onListenClaimData::::OnSnapshot", doc.data());
                 callback(doc.data());
             }
         );
     } catch (error) {
-        console.log("error: ", error);
+        console.error("error: ", error);
     }
     // eslint-disable-next-line no-useless-catch
 };
@@ -51,7 +50,6 @@ export const onListenClaimData = async (claimId, companyId, callback) => {
 export const saveFile = async (pathDocument, urlPDF, fileName) => {
     // eslint-disable-next-line no-useless-catch
     try {
-        console.log("saveFile:::", pathDocument, urlPDF, fileName);
 
         await firestore.doc(pathDocument).collection("Files").add({
             name: fileName,

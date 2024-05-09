@@ -192,7 +192,7 @@ export default {
         );
         return unsubscribe;
       } catch (error) {
-        console.log("error: ", error);
+        console.error("error: ", error);
       }
     };
 
@@ -208,7 +208,6 @@ export default {
     const uploadDocument = async () => {
       for (let i = 0; i < filesToUpload.value.length; i++) {
         const file = filesToUpload.value[i];
-        console.log(file);
         try {
           if (!documentID.value) {
             await instance.proxy.handleCreateClaimID();
@@ -285,7 +284,6 @@ export default {
         ...filesToUpload.value,
         ...event.dataTransfer.files,
       ];
-      console.log(files.value);
     };
 
     // obtener listado trds
@@ -303,7 +301,7 @@ export default {
           });
         })
         .catch((error) => {
-          console.log(error);
+          console.error(error);
         });
     }
 
@@ -333,7 +331,7 @@ export default {
           peopleList.value = auxPeople;
         })
         .catch((error) => {
-          console.log(error);
+          console.error(error);
         });
     }
 
@@ -363,7 +361,6 @@ export default {
 
     const showDeadLine = computed(() => {
       if (form.documentType?.toLocaleLowerCase() == "demanda") {
-        // console.log("ShowDeadline true");
         return true;
       }
       return false;
@@ -583,7 +580,7 @@ export default {
         const id = await createClaimID(userID);
         this.documentID = id;
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     },
 
@@ -648,7 +645,7 @@ export default {
       } catch (error) {
         this.saveLoading = false;
         this.showRadicationButton = false;
-        console.log(error);
+        console.error(error);
       }
     },
 
@@ -684,7 +681,7 @@ export default {
         }
       } catch (error) {
         this.submitLoading = false;
-        console.log(error);
+        console.error(error);
       }
     },
 
@@ -699,7 +696,7 @@ export default {
         }
       } catch (error) {
         this.saveLoading = false;
-        console.log(error);
+        console.error(error);
       }
     },
     closeModal() {
@@ -757,7 +754,6 @@ export default {
         " #" +
         place.address_components[0].long_name;
       this.form.city = place.address_components[4].long_name;
-      // console.log("place", place);
     });
   },
   computed: {

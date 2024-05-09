@@ -232,7 +232,6 @@ export default {
         return this.$store ? this.$store.state.layout.sidebarColor : {} || {};
       },
       set(sidebarColor) {
-        console.log("this.$store.state.layout.sidebarColor", this.$store.state.layout.sidebarColor)
         return this.changeSidebarColor({
           sidebarColor: sidebarColor,
         });
