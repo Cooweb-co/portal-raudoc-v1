@@ -9,7 +9,7 @@ import OverviewSummary from "./OverviewSummary.vue";
 import OverviewDocuments from "./OverviewDocuments.vue";
 import OverviewResponse from "./OverviewResponse.vue";
 
-import transformDate from "@/helpers/transformDate";
+import {transformDate} from "@/helpers/transformDate";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
 // import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo";
 import setState from "@/helpers/setState";
@@ -88,6 +88,7 @@ onMounted(async () => {
             address: docData?.petitionerInformation?.address || "No definido",
             additionalInformation: docData?.additionalInformation || [],
             legalBasis: docData?.legalBasis || [],
+            rawEntryDate: docData?.createdAt
         };
         numberClaim.value =
             data.value.numberEntryClaim ||

@@ -1,8 +1,20 @@
-import moment from "moment";
-moment.locale('es');
+import moment from "moment/moment";
+moment.locale("es");
 
-export default function transformDate(data) {
-  const date = new Date(data * 1000); // Convertir a milisegundos
-  const formattedDate = moment(date).format("DD MMMM, YYYY");
-  return formattedDate
+export function transformDate(data) {
+    const date = new Date(data * 1000); // Convertir a milisegundos
+    const formattedDate = moment(date).format("DD MMMM, YYYY");
+    return formattedDate;
+}
+
+export function transformTimeStampToDate(timestamp, format) {
+    const timestampMillis =
+        timestamp.seconds * 1000 + Math.round(timestamp.nanoseconds / 1000000);
+    // Convierte el timestamp a un objeto Moment.js
+    const fechaMoment = moment(timestampMillis);
+
+    // Formatea la fecha en el formato deseado
+    const fechaFormateada = fechaMoment.format(format);
+
+    return fechaFormateada;
 }

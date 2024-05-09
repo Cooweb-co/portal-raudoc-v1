@@ -4,7 +4,7 @@ import CalendarFilter from "./CalendarFilter.vue";
 import { ref, reactive, onBeforeMount, computed } from "vue";
 import axios from "axios";
 import moment from "moment";
-import transformDate from "@/helpers/transformDate";
+import {transformDate} from "@/helpers/transformDate";
 import setState from "@/helpers/setState";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
 
