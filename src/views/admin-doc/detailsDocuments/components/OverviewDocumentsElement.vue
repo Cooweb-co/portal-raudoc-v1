@@ -1,5 +1,5 @@
 <script setup>
-import transformDate from "@/helpers/transformDate";
+import {transformDate} from "@/helpers/transformDate";
 import { EyeOutlined } from "@ant-design/icons-vue";
 import { openDocument } from "@/services/docservice/doc.service";
 import { ref, defineProps } from "vue";
