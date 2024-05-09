@@ -71,15 +71,23 @@ export default {
     const peopleList = ref([]);
     const timerAI = ref([]);
     const dropzone = ref(false);
+    const manual_address = ref(true);
+    const manual_address_info = ref(["", "", "", "", "", "", ""]);
+    const finalAddress = ref("");
 
-        let config = {
-            method: "get",
-            maxBodyLength: Infinity,
-            url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
-            headers: {
-                company: "BAQVERDE",
-            },
-        };
+    const addressOptions = ref([
+      { label: "Calle", value: "CL. " },
+      { label: "Carrera", value: "CRA. " },
+    ]);
+
+    let config = {
+      method: "get",
+      maxBodyLength: Infinity,
+      url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
+      headers: {
+        company: "BAQVERDE",
+      },
+    };
 
     // controlador de variables para el formulario de radicacion
     const form = reactive({
@@ -123,7 +131,7 @@ export default {
       names: { required: MESSAGE_REQUIRED },
       lastNames: { required: MESSAGE_REQUIRED },
       email: { required: MESSAGE_REQUIRED, MESSAGE_EMAIL },
-      address: { required: MESSAGE_REQUIRED },
+      address: {},
       assignedTo: { required: MESSAGE_REQUIRED },
       subject: { required: MESSAGE_REQUIRED },
       description: { required: MESSAGE_REQUIRED },
@@ -299,35 +307,35 @@ export default {
         });
     }
 
-        // obtener listado de usuarios activos por areas
-        async function getPeople() {
-            const config = {
-                method: "get",
-                maxBodyLength: Infinity,
-                url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaId.value}`,
-                headers: {
-                    company: "BAQVERDE",
-                },
-            };
-            var auxPeople = [];
-            axios
-                .request(config)
-                .then((response) => {
-                    response.data.forEach((element) => {
-                        auxPeople.push({
-                            label: element.name,
-                            value: element.name,
-                            area: element.area,
-                            role: element.role,
-                            uid: element.uid,
-                        });
-                    });
-                    peopleList.value = auxPeople;
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
-        }
+    // obtener listado de usuarios activos por areas
+    async function getPeople() {
+      const config = {
+        method: "get",
+        maxBodyLength: Infinity,
+        url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaId.value}`,
+        headers: {
+          company: "BAQVERDE",
+        },
+      };
+      var auxPeople = [];
+      axios
+        .request(config)
+        .then((response) => {
+          response.data.forEach((element) => {
+            auxPeople.push({
+              label: element.name,
+              value: element.name,
+              area: element.area,
+              role: element.role,
+              uid: element.uid,
+            });
+          });
+          peopleList.value = auxPeople;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
 
     //obtener dias segun tipologia documental
     const getDocDays = computed(() => {
@@ -485,6 +493,19 @@ export default {
       }
     });
 
+    function concatAddress() {
+      finalAddress.value =
+        manual_address_info.value[0] +
+        manual_address_info.value[1] +
+        manual_address_info.value[2] +
+        " #" +
+        manual_address_info.value[3] +
+        manual_address_info.value[4] +
+        " - " +
+        manual_address_info.value[5] +
+        manual_address_info.value[6];
+    }
+
     return {
       dropzoneFile,
       files,
@@ -496,6 +517,7 @@ export default {
       mode,
       saveLoading,
       submitLoading,
+      addressOptions,
       qrModal,
       loadingAI,
       newDate,
@@ -511,18 +533,22 @@ export default {
       getAssignedUid,
       getDocDays,
       getAreaId,
+      manual_address,
+      classDropZone,
+      showDeadLine,
+      moment,
+      manual_address_info,
+      finalAddress,
       clearSelectInput,
       getTrds,
       deleteRecord,
-      classDropZone,
       onDragOver,
       onDragEnter,
       onDragLeave,
       selectedFile,
       onFileDrop,
       getPeople,
-      showDeadLine,
-      moment,
+      concatAddress,
     };
   },
   data() {
@@ -578,52 +604,53 @@ export default {
           },
         };
 
-        // console.log(this.getAreaId);
-
-                const body = {
-                    subject: this.form.subject,
-                    summary: this.form.description,
-                    area: this.form.area,
-                    areaId: this.getAreaId,
-                    serie: this.form.serie,
-                    subSerie: this.form.subSerie,
-                    days: this.getDocDays[0]?.days ?? null,
-                    documentaryTypologyEntry: this.form.documentType,
-                    entryDate: this.form.date,
-                    endDate: !this.form.untilDate ? null : this.form.untilDate,
-                    assignedToUid: this.getAssignedUid[0]?.uid,
-                    city: this.form.city,
-                    folios: parseInt(this.form.folios),
-                    assignedTo: this.form.assignedTo,
-                    observations: this.form.observations,
-                    externalRadicate: this.form.externalFiling,
-                    inputMethod: this.form.inputMethod,
-                    petitionerInformation: {
-                        personType: this.form.personType,
-                        identificationType: this.form.idType,
-                        identificationNumber: this.form.idNumber,
-                        firstNames: this.form.names,
-                        lastNames: this.form.lastNames,
-                        address: this.form.address,
-                        phoneNumber: this.form.contactPhone,
-                        email: this.form.email,
-                    },
-                };
-                const response = await axios.post(
-                    `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`,
-                    body,
-                    config
-                );
-                if (response.data.message) {
-                    this.saveLoading = false;
-                    this.showRadicationButton = true;
-                }
-            } catch (error) {
-                this.saveLoading = false;
-                this.showRadicationButton = false;
-                console.log(error);
-            }
-        },
+        const body = {
+          subject: this.form.subject,
+          summary: this.form.description,
+          area: this.form.area,
+          areaId: this.getAreaId,
+          serie: this.form.serie,
+          subSerie: this.form.subSerie,
+          days: this.getDocDays[0]?.days ?? null,
+          documentaryTypologyEntry: this.form.documentType,
+          entryDate: this.form.date,
+          endDate: !this.form.untilDate ? null : this.form.untilDate,
+          assignedToUid: this.getAssignedUid[0]?.uid,
+          city: this.form.city ?? "",
+          folios: parseInt(this.form.folios),
+          assignedTo: this.form.assignedTo,
+          observations: this.form.observations,
+          externalRadicate: this.form.externalFiling,
+          inputMethod: this.form.inputMethod,
+          petitionerInformation: {
+            personType: this.form.personType,
+            identificationType: this.form.idType,
+            identificationNumber: this.form.idNumber,
+            firstNames: this.form.names,
+            lastNames: this.form.lastNames,
+            address:
+              this.manual_address === true
+                ? this.finalAddress
+                : this.form.address,
+            phoneNumber: this.form.contactPhone,
+            email: this.form.email,
+          },
+        };
+        const response = await axios.post(
+          `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`,
+          body,
+          config
+        );
+        if (response.data.message) {
+          this.saveLoading = false;
+          this.showRadicationButton = true;
+        }
+      } catch (error) {
+        this.saveLoading = false;
+        this.showRadicationButton = false;
+        console.log(error);
+      }
+    },
 
     async handleSubmitDocument() {
       try {
@@ -640,11 +667,11 @@ export default {
           typeRadicate: this.mode,
         };
 
-                const response = await axios.post(
-                    `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_GENERATE_RADICATE_V1?claimId=${this.documentID}`,
-                    body,
-                    config
-                );
+        const response = await axios.post(
+          `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_GENERATE_RADICATE_V1?claimId=${this.documentID}`,
+          body,
+          config
+        );
 
         if (response) {
           this.submitLoading = false;
@@ -1313,19 +1340,122 @@ export default {
                 <ValidateLabel v-bind="{ v$ }" attribute="email" />
               </BCol>
               <BCol lg="12" class="mb-3">
-                <label for="username" class="form-label fw-bold"
-                  >Dirección <span class="text-danger fw-bold">*</span></label
-                >
-                <!-- <input type="text" class="form-control" v-model="form.address" id="username"
-                  placeholder="Ingrese una dirección" /> -->
-                <input
-                  id="place"
-                  class="form-control"
-                  type="text"
-                  placeholder="Ingrese una dirección"
-                />
+                <div class="label-checkbox">
+                  <label for="username" class="form-label fw-bold"
+                    >Dirección <span class="text-danger fw-bold">*</span></label
+                  >
+                  <div class="fs-15">
+                    <label for="" class="px-2 fw-bold text-muted"
+                      >Agregar dirección manual</label
+                    >
+                    <input
+                      v-model="manual_address"
+                      class="form-check-input"
+                      type="checkbox"
+                    />
+                  </div>
+                </div>
 
-                <ValidateLabel v-bind="{ v$ }" attribute="address" />
+                <div v-if="!manual_address">
+                  <input
+                    id="place"
+                    class="form-control"
+                    type="text"
+                    placeholder="Ingrese una referencia o dirección especifica"
+                  />
+                </div>
+
+                <div v-else class="row row-cols-1 row-cols-md-6 gx-1 gy-3 py-2">
+                  <div class="col-sm-12 col-md-3">
+                    <Multiselect
+                      v-model="manual_address_info[0]"
+                      :close-on-select="true"
+                      :searchable="true"
+                      placeholder="Seleccione"
+                      :options="addressOptions"
+                      @input="concatAddress()"
+                    />
+                  </div>
+                  <div class="col">
+                    <input
+                      v-model="manual_address_info[1]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Número"
+                      @input="concatAddress()"
+                    />
+                  </div>
+                  <div class="col">
+                    <input
+                      v-model="manual_address_info[2]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Letra"
+                      @input="concatAddress()"
+                    />
+                  </div>
+                  <div
+                    class="col"
+                    style="
+                      width: 30px !important;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      height: 40px;
+                    "
+                  >
+                    <span> # </span>
+                  </div>
+
+                  <div class="col">
+                    <input
+                      v-model="manual_address_info[3]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Número"
+                      @input="concatAddress()"
+                    />
+                  </div>
+                  <div class="col">
+                    <input
+                      v-model="manual_address_info[4]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Letra"
+                      @input="concatAddress()"
+                    />
+                  </div>
+                  <div
+                    class="col"
+                    style="
+                      width: 30px !important;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      height: 40px;
+                    "
+                  >
+                    <span> - </span>
+                  </div>
+                  <div class="col">
+                    <input
+                      v-model="manual_address_info[5]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Número"
+                      @input="concatAddress()"
+                    />
+                  </div>
+                  <div class="col-sm-12 col-md-2">
+                    <input
+                      v-model="manual_address_info[6]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Complemento"
+                      @input="concatAddress()"
+                    />
+                  </div>
+                </div>
               </BCol>
             </BRow>
           </BCardBody>
@@ -1336,6 +1466,21 @@ export default {
 </template>
 
 <style lang="scss" scoped>
+.manual-address-inputs-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 25px;
+}
+
+.label-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .section {
   border: 1px solid;
 }
@@ -1368,5 +1513,11 @@ export default {
 
 .label-formFile:hover {
   cursor: pointer;
+}
+
+@media (width: 414px) {
+  .manual-address-inputs-box {
+    flex-direction: column;
+  }
 }
 </style>
