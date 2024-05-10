@@ -1,25 +1,25 @@
 export default function setIdRole(state) {
-  const role = state.toLocaleUpperCase();
-  let newState;
-  switch (role) {
-      case "FUNCTIONARY":
-          newState = "Funcionario";
-          break;
-      case "BOSS_OF_AREA":
-          newState = "Jefe de area";
-          break;
-      case "DIRECTOR":
-          newState = "Director";
-          break;
-      case "ANSWERED":
-          newState = "Respondido";
-          break;
-      case "NO_RESPONSE":
-          newState = "No requiere respuesta";
-          break;
-      default:
-          newState = state;
-          break;
-  }
-  return newState;
+    const role = state.toUpperCase();
+    let newState;
+    switch (role) {
+        case "FUNCTIONARY":
+            newState = "FUNCIONARIO";
+            break;
+        case "BOSS_OF_AREA":
+            newState = "JEFE DE AREA";
+            break;
+        case "DIRECTOR":
+            newState = "DIRECTOR";
+            break;
+        case "ADMIN":
+            newState = "ADMINISTRADOR";
+            break;
+        case "RADICATOR":
+            newState = "RADICADOR";
+            break;
+        default:
+            newState = role;
+            break;
+    }
+    return newState;
 }

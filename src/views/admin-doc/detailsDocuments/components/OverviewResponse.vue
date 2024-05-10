@@ -7,15 +7,17 @@ import Editor from "@tinymce/tinymce-vue";
 import { ref, reactive, watch, defineProps, computed } from "vue";
 import axios from "axios";
 import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
-import { state } from "@/state/modules/auth";
 
+import { state } from "@/state/modules/auth";
 import { MESSAGE_REQUIRED } from "@/constants/rules.ts";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
+import setIdRole from "@/helpers/setIdRole";
 
 const props = defineProps(["loading", "data"]);
 const files = ref([]);
 const dropzone = ref(false);
 const answered = ref(false);
+const showInputCompany = ref(false);
 const documentNumber = ref("Número de radicado");
 const maxSize = 10000000;
 const domain = window.location.origin;
@@ -277,7 +279,8 @@ watch(
         // form.city = currentValue.fullName || "";
         form.subject = "Res - " + currentValue.subject || "Res - ";
         form.senderName = user.name || "";
-        form.position = user.idRole || "";
+        form.position = setIdRole(user.idRole);
+        if(currentValue.personType.toUpperCase() == "JURÍDICA") showInputCompany.value = true;
         if (
             currentValue.numberOutClaim ||
             currentValue.status == "No requiere respuesta"
@@ -346,7 +349,7 @@ watch(
                         }}</span
                     >
                 </div>
-                <BCard no-body class="mt-3">
+                <BCard no-body class="mt-3" v-if="!answered">
                     <BCardHeader>
                         <h6>Generador de documentos</h6>
                     </BCardHeader>
@@ -374,9 +377,11 @@ watch(
                                 <BCol lg="12" class="mt-3">
                                     <Editor
                                         api-key="ji1qaja7dyxcn3yt3piim2mby69mwiyra2yv5z6oheq8yweu"
+                                        v-model="form.body"
                                         :init="{
                                             plugins:
                                                 'lists link image table code help wordcount',
+                                            language: 'es'
                                         }"
                                     />
                                 </BCol>
@@ -384,7 +389,7 @@ watch(
                             <BCol lg="4">
                                 <BCol lg="12" class="mb-3">
                                     <label for="name" class="form-label fw-bold"
-                                        >Nombre
+                                        >Destinatario
                                         <span class="text-danger fw-bold"
                                             >*</span
                                         ></label
@@ -422,7 +427,7 @@ watch(
                                     />
                                 </BCol>
 
-                                <BCol lg="12" class="mb-3">
+                                <BCol lg="12" class="mb-3" v-if="showInputCompany">
                                     <label
                                         for="company"
                                         class="form-label fw-bold"
