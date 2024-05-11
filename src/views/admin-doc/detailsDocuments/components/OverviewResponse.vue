@@ -3,10 +3,12 @@ import { useVuelidate } from "@vuelidate/core";
 import { required, email } from "@vuelidate/validators";
 import { toast } from "vue3-toastify";
 import ValidateLabel from "@/utils/ValidateLabel.vue";
-import Editor from "@tinymce/tinymce-vue";
 import { ref, reactive, watch, defineProps, computed } from "vue";
 import axios from "axios";
 import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
+// import Editor from "@tinymce/tinymce-vue";
+// import { VueEditor } from "vue3-editor";
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 import { state } from "@/state/modules/auth";
 import { MESSAGE_REQUIRED } from "@/constants/rules.ts";
@@ -23,6 +25,7 @@ const maxSize = 10000000;
 const domain = window.location.origin;
 const company = "BAQVERDE";
 const pathname = window.location.pathname.split("/");
+
 const selectedFile = async () => {
     const newFiles = document.getElementById("formFile").files;
     for (let i = 0; i < newFiles.length; i++) {
@@ -72,7 +75,7 @@ const form = reactive({
     address: "",
     city: "",
     subject: "",
-    body: "",
+    body: "<h1>Escribe la respuesta del ciudadano aquí</h1>",
     senderName: "",
     position: "",
     senderCompany: company,
@@ -375,7 +378,7 @@ watch(
                                     />
                                 </BCol>
                                 <BCol lg="12" class="mt-3">
-                                    <Editor
+                                    <!-- <Editor
                                         api-key="ji1qaja7dyxcn3yt3piim2mby69mwiyra2yv5z6oheq8yweu"
                                         v-model="form.body"
                                         :init="{
@@ -383,7 +386,9 @@ watch(
                                                 'lists link image table code help wordcount',
                                             language: 'es'
                                         }"
-                                    />
+                                    />-->
+                                    <!--<VueEditor v-model="form.body"/>-->
+                                    <ckeditor :editor="ClassicEditor" v-model="form.body" :config="{}"></ckeditor>
                                 </BCol>
                             </BCol>
                             <BCol lg="4">
