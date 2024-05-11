@@ -8,12 +8,16 @@ import axios from "axios";
 import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
 // import Editor from "@tinymce/tinymce-vue";
 // import { VueEditor } from "vue3-editor";
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import {ClassicEditor} from "@ckeditor/ckeditor5-build-classic";
 
 import { state } from "@/state/modules/auth";
 import { MESSAGE_REQUIRED } from "@/constants/rules.ts";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
 import setIdRole from "@/helpers/setIdRole";
+
+const editorSettings = {
+    placeholder: "Escribe acá la respuesta para el ciudadano.",
+};
 
 const props = defineProps(["loading", "data"]);
 const files = ref([]);
@@ -75,7 +79,7 @@ const form = reactive({
     address: "",
     city: "",
     subject: "",
-    body: "<h1>Escribe la respuesta del ciudadano aquí</h1>",
+    body: "",
     senderName: "",
     position: "",
     senderCompany: company,
@@ -283,7 +287,8 @@ watch(
         form.subject = "Res - " + currentValue.subject || "Res - ";
         form.senderName = user.name || "";
         form.position = setIdRole(user.idRole);
-        if(currentValue.personType.toUpperCase() == "JURÍDICA") showInputCompany.value = true;
+        if (currentValue.personType.toUpperCase() == "JURÍDICA")
+            showInputCompany.value = true;
         if (
             currentValue.numberOutClaim ||
             currentValue.status == "No requiere respuesta"
@@ -388,7 +393,11 @@ watch(
                                         }"
                                     />-->
                                     <!--<VueEditor v-model="form.body"/>-->
-                                    <ckeditor :editor="ClassicEditor" v-model="form.body" :config="{}"></ckeditor>
+                                    <ckeditor
+                                        :editor="ClassicEditor"
+                                        v-model="form.body"
+                                        :config="editorSettings"
+                                    ></ckeditor>
                                 </BCol>
                             </BCol>
                             <BCol lg="4">
@@ -432,7 +441,11 @@ watch(
                                     />
                                 </BCol>
 
-                                <BCol lg="12" class="mb-3" v-if="showInputCompany">
+                                <BCol
+                                    lg="12"
+                                    class="mb-3"
+                                    v-if="showInputCompany"
+                                >
                                     <label
                                         for="company"
                                         class="form-label fw-bold"
