@@ -6,15 +6,12 @@ import ValidateLabel from "@/utils/ValidateLabel.vue";
 import { ref, reactive, watch, defineProps, computed } from "vue";
 import axios from "axios";
 import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
-// import Editor from "@tinymce/tinymce-vue";
-// import { VueEditor } from "vue3-editor";
-import {ClassicEditor} from "@ckeditor/ckeditor5-build-classic";
+import { Editor } from "@camilo__lp/custom-editor-vue3";
 
 import { state } from "@/state/modules/auth";
 import { MESSAGE_REQUIRED } from "@/constants/rules.ts";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
 import setIdRole from "@/helpers/setIdRole";
-
 const editorSettings = {
     placeholder: "Escribe acá la respuesta para el ciudadano.",
 };
@@ -393,11 +390,13 @@ watch(
                                         }"
                                     />-->
                                     <!--<VueEditor v-model="form.body"/>-->
-                                    <ckeditor
-                                        :editor="ClassicEditor"
-                                        v-model="form.body"
-                                        :config="editorSettings"
-                                    ></ckeditor>
+                                    <div class="ck-content">
+                                        <ckeditor
+                                            :editor="Editor"
+                                            v-model="form.body"
+                                            :config="editorSettings"
+                                        ></ckeditor>
+                                    </div>
                                 </BCol>
                             </BCol>
                             <BCol lg="4">
@@ -635,7 +634,7 @@ watch(
     </BTab>
 </template>
 
-<style scoped>
+<style>
 .drop-area {
     height: 20vh;
     border: 2.5px dotted;
@@ -653,5 +652,36 @@ watch(
 
 .label-formFile:hover {
     cursor: pointer;
+}
+
+.ck.ck-button.ck-on,
+a.ck.ck-button.ck-on {
+    color: #2977ff !important;
+}
+
+.ck.ck-button.ck-on:not(.ck-disabled),
+a.ck.ck-button.ck-on:not(.ck-disabled) {
+    background: #e1efff !important;
+    color: #2977ff !important;
+}
+
+.ck.ck-button.ck-on:not(.ck-disabled),
+a.ck.ck-button.ck-on:not(.ck-disabled) * {
+    color: #2977ff !important;
+    fill: #2977ff !important;
+}
+
+.ck.ck-button.ck-on:not(.ck-disabled):hover,
+a.ck.ck-button.ck-on:not(.ck-disabled):hover {
+    background: #e1efff !important;
+}
+
+.ck.ck-button.ck-off:not(.ck-disabled):hover,
+a.ck.ck-button.ck-off:not(.ck-disabled):hover {
+    background: #e1efff !important;
+}
+
+.ck-button__label {
+    background-color: transparent !important;
 }
 </style>
