@@ -390,11 +390,12 @@ watch(
                                         }"
                                     />-->
                                     <!--<VueEditor v-model="form.body"/>-->
-                                    <div class="ck-content">
+                                    <div class="ck-content w-full">
                                         <ckeditor
                                             :editor="Editor"
                                             v-model="form.body"
                                             :config="editorSettings"
+                                            class="w-full"
                                         ></ckeditor>
                                     </div>
                                 </BCol>
@@ -634,7 +635,7 @@ watch(
     </BTab>
 </template>
 
-<style>
+<style scoped>
 .drop-area {
     height: 20vh;
     border: 2.5px dotted;
@@ -653,35 +654,13 @@ watch(
 .label-formFile:hover {
     cursor: pointer;
 }
-
-.ck.ck-button.ck-on,
-a.ck.ck-button.ck-on {
-    color: #2977ff !important;
+</style>
+<style>
+.ck-editor__editable {
+    min-height: 55vh !important;
+    margin-bottom: 1em;
 }
-
-.ck.ck-button.ck-on:not(.ck-disabled),
-a.ck.ck-button.ck-on:not(.ck-disabled) {
-    background: #e1efff !important;
-    color: #2977ff !important;
-}
-
-.ck.ck-button.ck-on:not(.ck-disabled),
-a.ck.ck-button.ck-on:not(.ck-disabled) * {
-    color: #2977ff !important;
-    fill: #2977ff !important;
-}
-
-.ck.ck-button.ck-on:not(.ck-disabled):hover,
-a.ck.ck-button.ck-on:not(.ck-disabled):hover {
-    background: #e1efff !important;
-}
-
-.ck.ck-button.ck-off:not(.ck-disabled):hover,
-a.ck.ck-button.ck-off:not(.ck-disabled):hover {
-    background: #e1efff !important;
-}
-
-.ck-button__label {
-    background-color: transparent !important;
+.ck-powered-by {
+    display: none !important;
 }
 </style>
