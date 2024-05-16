@@ -513,7 +513,6 @@ export default {
         manual_address_info.value[7] +
         ", " +
         manual_address_info.value[8];
-        console.log(finalAddress.value);
     }
 
     return {
@@ -1490,6 +1489,9 @@ export default {
                     />
                   </div>
                 </div>
+              </BCol>
+              <BCol lg="12" class="mb-3 fs-15">
+                <span>{{ finalAddress }}</span>
               </BCol>
             </BRow>
           </BCardBody>
