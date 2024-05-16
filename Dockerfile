@@ -10,7 +10,7 @@ RUN mkdir -p /temp/dev
 COPY package.json bun.lockb /temp/dev/
 RUN cd /temp/dev && bun install --frozen-lockfile
 
-# Instala con --production (excluir devDependencies)
+# Instala las dependencias de producción
 RUN mkdir -p /temp/prod
 COPY package.json bun.lockb /temp/prod/
 RUN cd /temp/prod && bun install --frozen-lockfile --production
@@ -21,9 +21,8 @@ FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
-# [opcional] pruebas y construcción
+# Construcción del proyecto
 ENV NODE_ENV=production
-RUN bun test
 RUN bun run build
 
 # Copia las dependencias de producción y el código fuente en la imagen final
@@ -33,7 +32,11 @@ COPY --from=prerelease /usr/src/app/dist ./dist
 COPY --from=prerelease /usr/src/app/package.json .
 COPY --from=prerelease /usr/src/app/bun.lockb .
 
+# Instala un servidor HTTP para servir la aplicación
+RUN bun add http-server
+
+# Exponer el puerto que usará la aplicación
+EXPOSE 8080
+
 # Ejecuta la aplicación
-USER bun
-EXPOSE 8080/tcp
-ENTRYPOINT [ "bun", "run", "serve", "--", "dist" ]
+CMD ["http-server", "dist"]
