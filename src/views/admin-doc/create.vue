@@ -6,7 +6,7 @@ import {
   onUnmounted,
   computed,
   reactive,
-  onMounted,
+  // onMounted,
 } from "vue";
 import Multiselect from "@vueform/multiselect";
 import dayjs from "dayjs";
@@ -72,12 +72,17 @@ export default {
     const timerAI = ref([]);
     const dropzone = ref(false);
     const manual_address = ref(true);
-    const manual_address_info = ref(["", "", "", "", "", "", ""]);
+    const manual_address_info = ref(["", "", "", "", "", "", "", "", ""]);
     const finalAddress = ref("");
 
     const addressOptions = ref([
       { label: "Calle", value: "CL. " },
       { label: "Carrera", value: "CRA. " },
+      { label: "Autopista", value: "AU. " },
+      { label: "Avenida", value: "AV. " },
+      { label: "Transversal", value: "TV. " },
+      { label: "Diagonal", value: "DG. " },
+      { label: "Vía", value: "VI. " },
     ]);
 
     let config = {
@@ -436,15 +441,15 @@ export default {
       await getPeople();
     }
 
-    const userInfo = JSON.parse(sessionStorage.getItem("authUserInfo"));
+    // const userInfo = JSON.parse(sessionStorage.getItem("authUserInfo"));
 
-    onMounted(() => {
-      const totalName = userInfo.name.split(" ");
+    // onMounted(() => {
+    //   const totalName = userInfo.name.split(" ");
 
-      form.email = userInfo.email;
-      form.names = totalName[0];
-      form.lastNames = totalName[1] + " " + totalName[2];
-    });
+    //   form.email = userInfo.email;
+    //   form.names = totalName[0];
+    //   form.lastNames = totalName[1] + " " + totalName[2];
+    // });
 
     onUnmounted(() => {
       if (unsubscribe) {
@@ -503,7 +508,12 @@ export default {
         manual_address_info.value[4] +
         " - " +
         manual_address_info.value[5] +
-        manual_address_info.value[6];
+        manual_address_info.value[6] +
+        ", " +
+        manual_address_info.value[7] +
+        ", " +
+        manual_address_info.value[8];
+        console.log(finalAddress.value);
     }
 
     return {
@@ -1294,6 +1304,7 @@ export default {
                   class="form-control"
                   v-model="form.contactPhone"
                   placeholder="Ingrese telefono de contacto"
+                  autocomplete="tel"
                 />
                 <ValidateLabel v-bind="{ v$ }" attribute="contactPhone" />
               </BCol>
@@ -1307,6 +1318,7 @@ export default {
                   v-model="form.names"
                   id="username"
                   placeholder="Ingrese nombres"
+                  autocomplete="name"
                 />
 
                 <ValidateLabel v-bind="{ v$ }" attribute="names" />
@@ -1320,6 +1332,7 @@ export default {
                   class="form-control"
                   v-model="form.lastNames"
                   placeholder="Ingrese apellidos"
+                  autocomplete="family-name"
                 />
 
                 <ValidateLabel v-bind="{ v$ }" attribute="lastNames" />
@@ -1335,6 +1348,7 @@ export default {
                   v-model="form.email"
                   id="username"
                   placeholder="Ingrese email"
+                  autocomplete="email"
                 />
 
                 <ValidateLabel v-bind="{ v$ }" attribute="email" />
@@ -1453,6 +1467,26 @@ export default {
                       type="text"
                       placeholder="Complemento"
                       @input="concatAddress()"
+                    />
+                  </div>
+                  <div class="col-sm-12 col-md-3">
+                    <input
+                      v-model="manual_address_info[7]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Ciudad"
+                      @input="concatAddress()"
+                      autocomplete="address-level2"
+                    />
+                  </div>
+                  <div class="col-sm-12 col-md-3">
+                    <input
+                      v-model="manual_address_info[8]"
+                      class="form-control"
+                      type="text"
+                      placeholder="Departamento"
+                      @input="concatAddress()"
+                      autocomplete="address-level1"
                     />
                   </div>
                 </div>
