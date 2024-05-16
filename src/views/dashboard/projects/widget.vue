@@ -97,8 +97,8 @@ onMounted(async () => {
   </BRow>
 
   <div id="container">
-    <BCard v-for="(item, index) of projectsWidgets" :key="index" id="element">
-      <BCardBody>
+    <BCard v-for="(item, index) of projectsWidgets" :key="index" id="element" class="w-25 h-75">
+      <BCardBody class="p-1">
         <div class="d-flex align-items-center">
           <div class="avatar-sm flex-shrink-0">
             <span
@@ -159,10 +159,15 @@ onMounted(async () => {
 <style>
 #container {
   display: grid;
-  grid-template-rows: auto;
+  align-items: center;
   grid-auto-rows: auto;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
+  overflow-x: auto;
+  padding-left: 0;
+  padding-right: 2em;
+  margin-right: 2em;
+  margin-left: 1em;
 }
 
 #element {
