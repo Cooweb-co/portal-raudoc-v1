@@ -1,27 +1,39 @@
-# Usa una imagen base de Node.js
-FROM node:18-alpine
+# Usa la imagen oficial de Bun
+# Ver todas las versiones en https://hub.docker.com/r/oven/bun/tags
+FROM oven/bun:1 as base
+WORKDIR /usr/src/app
 
-# Establece el directorio de trabajo dentro del contenedor
-WORKDIR /app
+# Instala las dependencias en un directorio temporal
+# Esto cacheará las dependencias y acelerará las futuras compilaciones
+FROM base AS install
+RUN mkdir -p /temp/dev
+COPY package.json bun.lockb /temp/dev/
+RUN cd /temp/dev && bun install --frozen-lockfile
 
-# Copia el archivo package.json y package-lock.json (si existe)
-COPY package*.json ./
+# Instala con --production (excluir devDependencies)
+RUN mkdir -p /temp/prod
+COPY package.json bun.lockb /temp/prod/
+RUN cd /temp/prod && bun install --frozen-lockfile --production
 
-# Instala las dependencias del proyecto
-RUN npm install
-
-# Copia el resto de los archivos del proyecto al directorio de trabajo
+# Copia node_modules desde el directorio temporal
+# Luego copia todos los archivos del proyecto (no ignorados) a la imagen
+FROM base AS prerelease
+COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
-# Construye la aplicación para producción
-RUN npm run build
+# [opcional] pruebas y construcción
+ENV NODE_ENV=production
+RUN bun test
+RUN bun run build
 
-# Instala el servidor http para servir la aplicación
-# RUN npm install -g http-server
+# Copia las dependencias de producción y el código fuente en la imagen final
+FROM base AS release
+COPY --from=install /temp/prod/node_modules node_modules
+COPY --from=prerelease /usr/src/app/dist ./dist
+COPY --from=prerelease /usr/src/app/package.json .
+COPY --from=prerelease /usr/src/app/bun.lockb .
 
-# Exponer el puerto que usará la aplicación
-EXPOSE 8080
-
-# Comando para ejecutar la aplicación
-# CMD ["http-server", "dist"]
-CMD ["serve"]
+# Ejecuta la aplicación
+USER bun
+EXPOSE 8080/tcp
+ENTRYPOINT [ "bun", "run", "serve", "--", "dist" ]
