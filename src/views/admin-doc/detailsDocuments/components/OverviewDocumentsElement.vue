@@ -12,7 +12,6 @@ const props = defineProps({
 
 const name = ref(props.file?.name || "-");
 const extension = ref(props.file?.name.split(".").pop().toUpperCase() || "-");
-const fullNameClient = ref(props.file?.summary?.applicant?.fullName || "-");
 const startProccessAt = ref(
     transformDate(
         props.file?.startProccessAt?.seconds || props.file?.createdAt?.seconds
@@ -75,12 +74,6 @@ const goToDocument = () => {
             </a-tooltip>
         </td>
         <td>{{ extension }}</td>
-        <td>
-            <a-tooltip>
-                <template #title> prompt text </template>
-                {{ fullNameClient }}
-            </a-tooltip>
-        </td>
         <td>{{ startProccessAt }}</td>
         <td class="">
             <div class="d-flex justify-content-center">

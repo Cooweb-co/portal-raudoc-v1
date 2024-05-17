@@ -9,7 +9,6 @@ const props = defineProps({
     files: Array,
     loading: Boolean,
     title: String,
-    typeOfPerson: String
 });
 const typeDocument = props.title == 'Documentos de salida' ? 'success':'primary'
 </script>
@@ -31,7 +30,6 @@ const typeDocument = props.title == 'Documentos de salida' ? 'success':'primary'
                             <tr>
                                 <th scope="col">Nombre del Archivo</th>
                                 <th scope="col">Tipo</th>
-                                <th scope="col">{{ typeOfPerson }}</th>
                                 <th scope="col">Fecha de Creación</th>
                                 <th scope="col" style="width: 120px">Acción</th>
                             </tr>
