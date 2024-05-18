@@ -155,7 +155,8 @@ const initFullScreen = () => {
         // current working methods
         if (document.documentElement.requestFullscreen) {
             document.documentElement.requestFullscreen();
-        } else if (document.documentElement.mozRequestFullScreen) {
+        } 
+        else if (document.documentElement.mozRequestFullScreen) {
             document.documentElement.mozRequestFullScreen();
         } else if (document.documentElement.webkitRequestFullscreen) {
             document.documentElement.webkitRequestFullscreen(
@@ -961,12 +962,18 @@ onMounted(() => {
                             </span>
                         </template>
                         <h6 class="dropdown-header">Hola {{ name }}!</h6>
-                        <router-link class="dropdown-item" to="/pages/profile"
+                        <!-- <router-link class="dropdown-item" to="/pages/profile"
                             ><i
                                 class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"
                             ></i>
                             <span class="align-middle"> Perfil</span>
-                        </router-link>
+                        </router-link> -->
+                        <div class="dropdown-item" to="/pages/profile"
+                            ><i
+                                class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"
+                            ></i>
+                            <span class="align-middle"> Perfil</span>
+                        </div>
                         <!-- <router-link class="dropdown-item" to="/chat">
               <i class=" mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i>
               <span class="align-middle"> Messages</span>

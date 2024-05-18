@@ -112,11 +112,6 @@ export default {
             document.documentElement.setAttribute("data-sidebar-size", "sm");
         }
 
-        window.addEventListener("resize", () => {
-            document.body.classList.remove("vertical-sidebar-enable");
-            document.querySelector(".hamburger-icon").classList.add("open");
-            this.updateSidebarSize();
-        });
     },
     unmounted() {
         window.removeEventListener("resize", this.updateSidebarSize);
