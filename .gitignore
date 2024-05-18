@@ -137,5 +137,3 @@ package-lock
 .package-lock.json
 .package-lock
 
-bun.*
-bun.lockb
