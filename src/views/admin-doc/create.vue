@@ -1660,6 +1660,7 @@ export default {
                                         'is-invalid':
                                             submitted &&
                                             v$.user.username.$error,
+                                        'preview-manual-address': manual_address_info[0],
                                     }"
                                     >{{ getAddress }}</span
                                 >
