@@ -25,7 +25,7 @@ const loadingFile = ref(false);
 const loadingSendFile = ref(false);
 const documentNumber = ref("Número de radicado");
 const maxSize = 10000000;
-const domain = window.location.origin;
+// const domain = window.location.origin;
 const company = "BAQVERDE";
 const pathname = window.location.pathname.split("/");
 
@@ -128,7 +128,7 @@ const uploadFile = async () => {
         const bodyFormDataAddQR = new FormData();
         bodyFormDataAddQR.append(
             "url",
-            `${domain}/r/${company}/${pathname[pathname.length - 1]}`
+            `https://portal.raudoc.com/r/${company}/${pathname[pathname.length - 1]}`
         );
 
         bodyFormDataAddQR.append("codeRadicate", props?.data?.numberEntryClaim);
