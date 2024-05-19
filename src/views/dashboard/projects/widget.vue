@@ -1,7 +1,7 @@
 <script setup>
 import {
     SendIcon,
-    AwardIcon,
+    CheckSquareIcon,
     ClockIcon,
     CornerDownRightIcon,
 } from "@zhuowenli/vue-feather-icons";
@@ -45,7 +45,7 @@ onMounted(async () => {
                     count: 0,
                 },
                 {
-                    value: "por responder",
+                    value: "Por responder",
                     count: 0,
                 },
                 {
@@ -160,10 +160,10 @@ onMounted(async () => {
                                         item.value.toUpperCase() == 'PROCESADOS'
                                     "
                                 >
-                                    <AwardIcon
+                                    <CheckSquareIcon
                                         size="24"
                                         class="text-primary"
-                                    ></AwardIcon>
+                                    ></CheckSquareIcon>
                                 </template>
                             </span>
                         </div>
