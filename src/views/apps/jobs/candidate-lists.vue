@@ -245,11 +245,10 @@ export default {
                                             'bg-danger-subtle text-danger':
                                                 data.idRole == 'BOSS_OF_AREA',
                                             'bg-primary-subtle text-primary':
-                                                data.idRole == 'DIRECTOR' ||
-                                                data.idRole == 'SUPER ADMIN',
+                                                data.idRole == 'DIRECTOR',
                                             'bg-warning-subtle text-warning':
                                                 data.idRole ==
-                                                'ADMINISTRADOR DE SISTEMA',
+                                                'ADMIN',
                                             'bg-info-subtle text-info':
                                                 data.idRole ==
                                                 'SUPERVISOR DE SISTEMA',
