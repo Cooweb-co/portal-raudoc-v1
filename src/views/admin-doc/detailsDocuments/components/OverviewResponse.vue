@@ -223,14 +223,14 @@ const sendFile = async () => {
         const response = await axios.request(config);
         console.log(JSON.stringify(response.data));
         loadingSendFile.value = false;
-        toast("Archivo enviado correctamente", {
+        toast("Correo enviado correctamente", {
             closeButton: true,
             type: "success",
             closeOnClick: true,
         });
     } catch (error) {
         loadingSendFile.value = false;
-        toast("Error al enviar el archivo", {
+        toast("Error al enviar el correo", {
             closeButton: true,
             type: "error",
             closeOnClick: true,
