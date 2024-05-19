@@ -202,24 +202,39 @@ const uploadFile = async () => {
     }
 };
 
-
-const sendFile = () => {
+const sendFile = async () => {
     try {
         loadingSendFile.value = true;
-        setTimeout(() => {
-            loadingSendFile.value = false;
-            toast("Archivo enviado correctamente", {
-                closeButton: true,
-                type: "success",
-                closeOnClick: true,
-            });
-        }, 5000);
+        const data = JSON.stringify({
+            email: props.data?.email,
+            numberEntryClaim: props.data?.numberEntryClaim,
+        });
+
+        const config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: `${process.env.VUE_APP_CF_BASE_URL}/sendEmailResponseClaim`,
+            headers: {
+                "Content-Type": "application/json",
+            },
+            data: data,
+        };
+
+        const response = await axios.request(config);
+        console.log(JSON.stringify(response.data));
+        loadingSendFile.value = false;
+        toast("Archivo enviado correctamente", {
+            closeButton: true,
+            type: "success",
+            closeOnClick: true,
+        });
     } catch (error) {
+        loadingSendFile.value = false;
         toast("Error al enviar el archivo", {
-                closeButton: true,
-                type: "error",
-                closeOnClick: true,
-            });
+            closeButton: true,
+            type: "error",
+            closeOnClick: true,
+        });
         console.error(error);
     }
 };
