@@ -71,8 +71,13 @@ export default {
         const peopleList = ref([]);
         const timerAI = ref([]);
         const dropzone = ref(false);
-        const manual_address = ref(true);
+        const manual_address = ref(false);
         const manual_address_info = ref(["", "", "", "", "", "", "", "", ""]);
+        const address_info = ref([
+            "" /* Dirección */,
+            "" /* Departamento */,
+            "" /* Ciudad */,
+        ]);
         const finalAddress = ref("");
 
         const addressOptions = ref([
@@ -140,6 +145,7 @@ export default {
             assignedTo: { required: MESSAGE_REQUIRED },
             subject: { required: MESSAGE_REQUIRED },
             description: { required: MESSAGE_REQUIRED },
+            city: {},
         };
 
         const v$ = useVuelidate(rules, form);
@@ -268,7 +274,7 @@ export default {
             return styles + " border-primary text-primary";
         });
 
-        const getAddress = computed(() => {
+        const getAddressManual = computed(() => {
             const direction = `${
                 manual_address_info.value[0] ? manual_address_info.value[0] : ""
             } ${
@@ -300,6 +306,17 @@ export default {
             form.address = direction;
             return direction;
         });
+
+        const getAddress = () => {
+            const direction = `${
+                address_info.value[0] ? address_info.value[0].trim() : ""
+            }${address_info.value[1] ? ", " + address_info.value[1].trim() : ""}${
+                address_info.value[2] ? ", " + address_info.value[2].trim() : ""
+            }`;
+            form.address = direction;
+            form.city = address_info.value[3] ? address_info.value[3].trim() : "";
+            return direction;
+        };
 
         const deleteRecord = (name) => {
             files.value = files.value.filter((file) => name != file.name);
@@ -557,6 +574,8 @@ export default {
             files,
             loadingBtnAI,
             documentID,
+            getAddress,
+            address_info,
             claimData,
             form,
             v$,
@@ -595,7 +614,7 @@ export default {
             onFileDrop,
             getPeople,
             concatAddress,
-            getAddress,
+            getAddressManual,
         };
     },
     data() {
@@ -677,7 +696,7 @@ export default {
                         identificationNumber: this.form.idNumber,
                         firstNames: this.form.names,
                         lastNames: this.form.lastNames,
-                        address: this.finalAddress,
+                        address: this.form.address,
                         phoneNumber: this.form.contactPhone,
                         email: this.form.email,
                     },
@@ -1507,41 +1526,71 @@ export default {
                                             >*</span
                                         ></label
                                     >
-                                    <!-- <div class="fs-15">
-                    <label for="" class="px-2 fw-bold text-muted"
-                      >Agregar dirección manual</label
-                    >
-                    <input
-                      v-model="manual_address"
-                      class="form-check-input"
-                      type="checkbox"
-                    />
-                  </div> -->
+                                    <div class="fs-15">
+                                        <label
+                                            for=""
+                                            class="px-2 fw-bold text-muted"
+                                            >Agregar dirección manual</label
+                                        >
+                                        <input
+                                            v-model="manual_address"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                        />
+                                    </div>
+                                </div>
+                                <div
+                                    class="col-sm-12 col-md-2"
+                                    style="width: 100%"
+                                >
+                                    <ValidateLabel
+                                        v-bind="{ v$ }"
+                                        attribute="address"
+                                        style="width: 100%"
+                                    />
                                 </div>
 
                                 <div v-if="!manual_address">
-                                    <input
-                                        id="place"
-                                        class="form-control"
-                                        type="text"
-                                        placeholder="Ingrese una referencia o dirección especifica"
-                                    />
+                                    <BRow>
+                                        <BCol lg="6" class="mb-3">
+                                            <input
+                                                v-model="address_info[0]"
+                                                id="place"
+                                                class="form-control"
+                                                type="text"
+                                                placeholder="Ingrese la dirección"
+                                                @input="getAddress()"
+                                            />
+                                        </BCol>
+                                        <BCol lg="3" class="mb-3">
+                                            <input
+                                                v-model="address_info[1]"
+                                                id="place"
+                                                class="form-control"
+                                                type="text"
+                                                placeholder="Ingrese el departamento"
+                                                autocomplete="address-level1"
+                                                @input="getAddress()"
+                                            />
+                                        </BCol>
+                                        <BCol lg="3" class="mb-3">
+                                            <input
+                                                v-model="address_info[2]"
+                                                id="place"
+                                                class="form-control"
+                                                type="text"
+                                                placeholder="Ingrese la ciudad"
+                                                autocomplete="address-level2"
+                                                @input="getAddress()"
+                                            />
+                                        </BCol>
+                                    </BRow>
                                 </div>
 
                                 <div
                                     v-else
                                     class="row row-cols-1 row-cols-md-6 gx-1 gy-3 py-2"
                                 >
-                                    <div
-                                        class="col-sm-12 col-md-2"
-                                        style="width: 100%"
-                                    >
-                                        <ValidateLabel
-                                            v-bind="{ v$ }"
-                                            attribute="address"
-                                            style="width: 100%"
-                                        />
-                                    </div>
                                     <div class="col-sm-12 col-md-3">
                                         <Multiselect
                                             v-model="manual_address_info[0]"
@@ -1660,9 +1709,10 @@ export default {
                                         'is-invalid':
                                             submitted &&
                                             v$.user.username.$error,
-                                        'preview-manual-address': manual_address_info[0],
+                                        'preview-manual-address':
+                                            manual_address_info[0],
                                     }"
-                                    >{{ getAddress }}</span
+                                    >{{ getAddressManual }}</span
                                 >
                             </BCol>
                         </BRow>
