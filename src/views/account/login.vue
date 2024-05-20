@@ -174,13 +174,12 @@ export default {
                     </div>
 
                     <div class="mt-4">
-                      
                       <BButton variant="primary" class="w-100 btn btn-primary waves-effect waves-light" type="submit" @click="tryToLogIn" :disabled="processing">
                         {{ processing ? "Procesando..." : "Ingresar" }}
                       </BButton>
                     </div>
 
-                    <div class="mt-4 text-center">
+                    <!-- <div class="mt-4 text-center">
                       <div class="signin-other-title">
                         <h5 class="fs-13 mb-4 title">Ingresar con</h5>
                       </div>
@@ -191,14 +190,14 @@ export default {
                         <BButton variant="danger" type="button" class="btn btn-danger btn-icon ms-1">
                           <i class="ri-google-fill fs-16"></i>
                         </BButton>
-                        <!-- <BButton variant="dark" type="button" class="btn btn-dark btn-icon ms-1">
+                        <BButton variant="dark" type="button" class="btn btn-dark btn-icon ms-1">
                           <i class="ri-github-fill fs-16"></i>
                         </BButton>
                         <BButton variant="info" type="button" class="btn btn-info btn-icon ms-1">
                           <i class="ri-twitter-fill fs-16"></i>
-                        </BButton> -->
+                        </BButton>
                       </div>
-                    </div>
+                    </div> -->
                   </form>
                 </div>
               </BCardBody>
