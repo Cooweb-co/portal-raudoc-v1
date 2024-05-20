@@ -44,18 +44,25 @@ export const actions = {
             commit('SET_CURRENT_USER_INFO', currentUser)
 
             return user
-        });
+        }).catch((error) => {
+            console.log(error)
+            return Promise.reject(error)
+        })
     },
 
     // Logs out the current user.
     logOut({ commit }) {
         // eslint-disable-next-line no-unused-vars
         commit('SET_CURRENT_USER', null)
+        sessionStorage.removeItem('authUser');
+        sessionStorage.removeItem('authUserInfo');
         return new Promise((resolve, reject) => {
             // eslint-disable-next-line no-unused-vars
             getFirebaseBackend().logout().then((response) => {
+                commit('SET_CURRENT_USER', null)
                 resolve(true);
             }).catch((error) => {
+                commit('SET_CURRENT_USER', null)
                 reject(this._handleError(error));
             })
         });
