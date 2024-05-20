@@ -195,7 +195,7 @@ let _fireBaseBackend = null;
  * @param {*} config
  */
 const initFirebaseBackend = (config) => {
-    console.log("CONFIG:: ", config);
+    // console.log("CONFIG:: ", config);
     if (!_fireBaseBackend) {
         _fireBaseBackend = new FirebaseAuthBackend(config);
     }
