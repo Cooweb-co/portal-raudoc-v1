@@ -869,11 +869,11 @@ const areaStackedChart = {
       type: "area",
       height: 350,
       stacked: true,
-      events: {
-        selection: function (chart, e) {
-          console.log(new Date(e.xaxis.min));
-        },
-      },
+      // events: {
+      //   selection: function (chart, e) {
+      //     console.log(new Date(e.xaxis.min));
+      //   },
+      // },
     },
     colors: getChartColorsArray('["--vz-primary", "--vz-info", "--vz-light"]'),
     dataLabels: {
