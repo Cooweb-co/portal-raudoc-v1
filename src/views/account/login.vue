@@ -185,14 +185,14 @@ export default {
                                         </div>
 
                                         <div class="mb-3">
-                                            <div class="float-end">
+                                            <!-- <div class="float-end">
                                                 <router-link
                                                     to="/forgot-password"
                                                     class="text-muted"
                                                     >Olvidaste
                                                     contraseña?</router-link
                                                 >
-                                            </div>
+                                            </div> -->
                                             <label
                                                 class="form-label"
                                                 for="password-input"
