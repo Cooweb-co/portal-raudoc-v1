@@ -1398,7 +1398,7 @@ export default {
                             </BCol>
                             <BCol lg="3" class="mb-3">
                                 <label for="username" class="form-label fw-bold"
-                                    >Número de documento
+                                    >Nº de documento
                                     <span class="text-danger fw-bold"
                                         >*</span
                                     ></label
@@ -1418,7 +1418,7 @@ export default {
                             </BCol>
                             <BCol lg="3" class="mb-3">
                                 <label for="username" class="form-label fw-bold"
-                                    >Teléfono de contacto
+                                    >Tel. de contacto
                                     <span class="text-danger fw-bold"
                                         >*</span
                                     ></label

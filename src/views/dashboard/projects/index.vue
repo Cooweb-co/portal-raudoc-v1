@@ -4,7 +4,7 @@ import PageHeader from "@/components/page-header";
 
 import Widgets from "./widget.vue";
 import Schedules from "./schedule.vue";
-import Project from "./projects.vue";
+// import Project from "./projects.vue";
 // import Task from "./tasks.vue";
 // import ActiveProjects from "./active-projects.vue";
 
@@ -14,7 +14,7 @@ export default {
     PageHeader,
     Widgets,
     Schedules,
-    Project,
+    // Project,
     // Task,
     // ActiveProjects,
   },
@@ -37,7 +37,7 @@ export default {
         </BRow>
         <BRow>
           <BCol xl="12">
-            <Project />
+            <!-- <Project /> -->
           </BCol>
         </BRow>
       </BCol>
