@@ -5,8 +5,9 @@ import {
     getDoc,
     getDocs,
     collection,
+    deleteDoc,
 } from "firebase/firestore";
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, getDownloadURL, deleteObject } from "firebase/storage";
 
 
 import store from '@/state/store'
@@ -151,3 +152,36 @@ export async function getDocStatus(companyId, claimId) {
         console.error("Error al obtener los documentos:", error);
     }
 }
+
+export const deleteDocument = async (companyId, claimId, fileId, year) => {
+    try {
+        const docRef = doc(
+            firestore,
+            "Companies",
+            companyId,
+            "Claims",
+            claimId,
+            "Files",
+            fileId
+        );
+
+        await deleteDoc(docRef);
+        console.log("Documento eliminado exitosamente.");
+        deleteFile(companyId, year, claimId, fileId);
+    } catch (error) {
+        console.error("Error al eliminar el documento:", error);
+    }
+};
+
+export const deleteFile = async (companyId, year, claimId, uniqueFileName) => {
+    try {
+        const storage = getStorage();
+        const storagePath = `Companies/${companyId}/${year}/Claims/${claimId}/${uniqueFileName}`;
+        const fileRef = ref(storage, storagePath);
+
+        await deleteObject(fileRef);
+        console.log("Archivo eliminado exitosamente.");
+    } catch (error) {
+        console.error("Error al eliminar el archivo:", error);
+    }
+};

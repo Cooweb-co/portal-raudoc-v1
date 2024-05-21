@@ -38,6 +38,7 @@ import {
     createClaimID,
     onListenClaimData,
     getDocStatus,
+    // deleteDocument,
 } from "../../services/docservice/doc.service";
 import axios from "axios";
 
@@ -47,11 +48,12 @@ export default {
         const storage = getFirebaseBackend().storage;
         const files = ref([]);
         const filesToUpload = ref([]);
+        const uploadedFiles = ref([]);
         const readDocument = ref(false);
         const dropzoneFile = ref("");
         const loadingBtnAI = ref(false);
         const documentID = ref(null);
-        const documentAIID = ref(null);
+        const documentAI = ref(null);
         const companyID = ref("BAQVERDE");
         const year = ref(new Date().getFullYear());
         const claimData = ref(null);
@@ -61,6 +63,7 @@ export default {
         const qrModal = ref(false);
         let unsubscribe;
         let idProccessAI;
+        const isListeningEnabled = ref(true);
         const loadingAI = ref(false);
         const newDate = ref(dayjs().format("DD/MM/YYYY HH:mm"));
         const trds = ref([]);
@@ -70,6 +73,7 @@ export default {
         const radicate = ref("");
         const peopleList = ref([]);
         const timerAI = ref([]);
+        const timerExtractingInformationAI = ref(null);
         const dropzone = ref(false);
         const manual_address = ref(false);
         const manual_address_info = ref(["", "", "", "", "", "", "", "", ""]);
@@ -151,6 +155,11 @@ export default {
         const v$ = useVuelidate(rules, form);
 
         const startListening = () => {
+            console.log("startListening");
+            if (!isListeningEnabled.value) {
+                console.log("startListening está deshabilitado.");
+                return;
+            }
             try {
                 idProccessAI = toast("Analizando documento con IA...", {
                     isLoading: true,
@@ -160,10 +169,13 @@ export default {
                 });
 
                 unsubscribe = onListenClaimData(
-                    documentAIID.value,
+                    documentAI.value.claimID,
                     companyID.value,
                     async (data) => {
-                        await getDocStatus(companyID.value, documentID.value);
+                        await getDocStatus(
+                            companyID.value,
+                            documentAI.value.claimID
+                        );
                         claimData.value = data;
                         if (data.status == "DRAFT" && data.summary == null) {
                             loadingAI.value = true;
@@ -176,14 +188,17 @@ export default {
                                 });
                                 loadingAI.value = false;
                             }, 60000);
-                            setTimeout(() => {
-                                toast.update(idProccessAI, {
-                                    render: "Extrayendo información relevante...",
-                                    type: toast.TYPE.INFO,
-                                });
-                            }, 3000);
+                            timerExtractingInformationAI.value = setTimeout(
+                                () => {
+                                    toast.update(idProccessAI, {
+                                        render: "Extrayendo información relevante...",
+                                        type: toast.TYPE.INFO,
+                                    });
+                                },
+                                3000
+                            );
                         }
-                        if (data.summary) {
+                        if (data.summary && isListeningEnabled.value) {
                             toast.update(idProccessAI, {
                                 render: "Resumen realizado con exito!",
                                 type: toast.TYPE.SUCCESS,
@@ -206,7 +221,24 @@ export default {
                 );
                 return unsubscribe;
             } catch (error) {
-                console.log("error: ", error);
+                console.error("error: ", error);
+            }
+        };
+
+        const stopListening = () => {
+            if (unsubscribe) {
+                clearTimeout(timerExtractingInformationAI.value);
+                toast.update(idProccessAI, {
+                    render: "Se ha detenido el proceso de extracción de información",
+                    type: toast.TYPE.WARNING,
+                    isLoading: false,
+                    autoClose: 3000,
+                });
+                loadingAI.value = false;
+                isListeningEnabled.value = false;
+                unsubscribe = null;
+            } else {
+                console.log("No hay suscripción activa para desuscribirse.");
             }
         };
 
@@ -255,9 +287,22 @@ export default {
                         isLoading: false,
                         autoClose: 3000,
                     });
+                    uploadedFiles.value[i] = {
+                        companyID: companyID.value,
+                        name: file.name,
+                        uniqueFileName: uniqueFileName,
+                        claimID: documentID.value,
+                        year: year.value,
+                    };
                     if (!readDocument.value) {
                         readDocument.value = true;
-                        documentAIID.value = documentID.value;
+                        documentAI.value = {
+                            companyID: companyID.value,
+                            name: file.name,
+                            uniqueFileName: uniqueFileName,
+                            claimID: documentID.value,
+                            year: year.value,
+                        };
                         startListening();
                     }
                 } catch (error) {
@@ -310,16 +355,34 @@ export default {
         const getAddress = () => {
             const direction = `${
                 address_info.value[0] ? address_info.value[0].trim() : ""
-            }${address_info.value[1] ? ", " + address_info.value[1].trim() : ""}${
+            }${
+                address_info.value[1] ? ", " + address_info.value[1].trim() : ""
+            }${
                 address_info.value[2] ? ", " + address_info.value[2].trim() : ""
             }`;
             form.address = direction;
-            form.city = address_info.value[3] ? address_info.value[3].trim() : "";
+            form.city = address_info.value[3]
+                ? address_info.value[3].trim()
+                : "";
             return direction;
         };
 
         const deleteRecord = (name) => {
-            files.value = files.value.filter((file) => name != file.name);
+            files.value = files.value.filter((file) => {
+                console.log(documentAI.value);
+                
+                if (name == documentAI.value.name) {
+                    stopListening();
+                }
+                // deleteDocument(
+                //     documentAI.value?.companyID,
+                //     documentAI.value?.claimID,
+                //     documentAI.value?.uniqueFileName,
+                //     documentAI.value?.year
+                // );
+                console.log(documentAI.value?.claimID);
+                return name != file.name;
+            });
             filesToUpload.value = filesToUpload.value.filter(
                 (file) => name != file.name
             );
