@@ -169,6 +169,7 @@ getAreas();
                         <option value="FUNCTIONARY">FUNCIONARIO</option>
                         <option value="BOSS_OF_AREA">JEFE DE AREA</option>
                         <option value="DIRECTOR">DIRECTOR</option>
+                        <option value="RADICATOR">RADICADOR</option>
                     </select>
                     <p class="text-danger" :class="{ 'd-none': !v$.rol.$error }">
                         Valor incorrecto
