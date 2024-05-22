@@ -24,7 +24,7 @@ import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
 import Modal from "../modals/Modal.vue";
 import moment from "moment";
 import store from "@/state/store";
-import { FileTextIcon, AlertOctagonIcon } from "@zhuowenli/vue-feather-icons";
+import { FileTextIcon, AlertOctagonIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
 
 // import {
 //   onSnapshot,
@@ -917,6 +917,7 @@ export default {
         Modal,
         FileTextIcon,
         AlertOctagonIcon,
+        Trash2Icon
     },
 };
 </script>
@@ -1108,7 +1109,7 @@ export default {
                                                 data-dz-remove=""
                                                 @click="deleteRecord(file.name)"
                                             >
-                                                borrar
+                                            <Trash2Icon />
                                             </BButton>
                                         </div>
                                     </div>
