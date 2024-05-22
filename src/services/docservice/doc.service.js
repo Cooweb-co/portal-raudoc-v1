@@ -6,11 +6,17 @@ import {
     getDocs,
     collection,
     deleteDoc,
+    query,
+    where,
 } from "firebase/firestore";
-import { getStorage, ref, getDownloadURL, deleteObject } from "firebase/storage";
+import {
+    getStorage,
+    ref,
+    getDownloadURL,
+    deleteObject,
+} from "firebase/storage";
 
-
-import store from '@/state/store'
+import store from "@/state/store";
 
 const firestore = getFirebaseBackend().firestore;
 
@@ -142,34 +148,49 @@ export async function getDocStatus(companyId, claimId) {
         onSnapshot(collectionRef, (querySnapshot) => {
             const querySnapshotUpdates = [];
             querySnapshot.forEach((doc) => {
-                const data = doc.data()
+                const data = doc.data();
                 querySnapshotUpdates.push(data);
-                store.dispatch('createDocState/STATE_DOC', { newValue: data });
+                store.dispatch("createDocState/STATE_DOC", { newValue: data });
             });
         });
-        return
+        return;
     } catch (error) {
         console.error("Error al obtener los documentos:", error);
     }
 }
 
-export const deleteDocument = async (companyId, claimId, fileId, year) => {
+export const deleteDocumentByName = async (companyId, claimId, fileId, year) => {
     try {
-        const docRef = doc(
-            firestore,
-            "Companies",
-            companyId,
-            "Claims",
-            claimId,
-            "Files",
-            fileId
+        // Define the query to find the document with the specific name
+        const collectionPath = `Companies/${companyId}/Claims/${claimId}/Files`;
+        const q = query(
+            collection(firestore, collectionPath),
+            where("name", "==", fileId)
         );
 
-        await deleteDoc(docRef);
-        console.log("Documento eliminado exitosamente.");
-        deleteFile(companyId, year, claimId, fileId);
+        // Execute the query
+        const querySnapshot = await getDocs(q);
+
+        // Check if any document was found
+        if (!querySnapshot.empty) {
+            querySnapshot.forEach(async (docSnapshot) => {
+                // Get the document reference
+                const docRef = doc(firestore, collectionPath, docSnapshot.id);
+
+                // Delete the document
+                await deleteDoc(docRef);
+                await deleteFile(companyId, year, claimId, fileId);
+            });
+            return true;
+        } else {
+            console.error(
+                "No se encontró ningún documento con el nombre especificado."
+            );
+            return false;
+        }
     } catch (error) {
         console.error("Error al eliminar el documento:", error);
+        return false;
     }
 };
 
@@ -180,8 +201,9 @@ export const deleteFile = async (companyId, year, claimId, uniqueFileName) => {
         const fileRef = ref(storage, storagePath);
 
         await deleteObject(fileRef);
-        console.log("Archivo eliminado exitosamente.");
+        return true;
     } catch (error) {
         console.error("Error al eliminar el archivo:", error);
+        return false;
     }
 };

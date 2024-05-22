@@ -39,6 +39,7 @@ import {
     onListenClaimData,
     getDocStatus,
     // deleteDocument,
+    deleteDocumentByName,
 } from "../../services/docservice/doc.service";
 import axios from "axios";
 
@@ -155,9 +156,7 @@ export default {
         const v$ = useVuelidate(rules, form);
 
         const startListening = () => {
-            console.log("startListening");
             if (!isListeningEnabled.value) {
-                console.log("startListening está deshabilitado.");
                 return;
             }
             try {
@@ -238,7 +237,7 @@ export default {
                 isListeningEnabled.value = false;
                 unsubscribe = null;
             } else {
-                console.log("No hay suscripción activa para desuscribirse.");
+                console.warn("No hay suscripción activa para desuscribirse.");
             }
         };
 
@@ -276,24 +275,20 @@ export default {
                             closeOnClick: false,
                         }
                     );
-                    const uploadResult = await uploadBytes(fileRef, file);
-                    console.log(
-                        "Archivo subido con éxito:",
-                        uploadResult.metadata.fullPath
-                    );
+                    await uploadBytes(fileRef, file);
                     toast.update(idLoadFile, {
                         render: `Archivo cargado con éxito ${file.name}`,
                         type: "success",
                         isLoading: false,
                         autoClose: 3000,
                     });
-                    uploadedFiles.value[i] = {
+                    uploadedFiles.value.push({
                         companyID: companyID.value,
                         name: file.name,
                         uniqueFileName: uniqueFileName,
                         claimID: documentID.value,
                         year: year.value,
-                    };
+                    });
                     if (!readDocument.value) {
                         readDocument.value = true;
                         documentAI.value = {
@@ -367,25 +362,47 @@ export default {
             return direction;
         };
 
-        const deleteRecord = (name) => {
-            files.value = files.value.filter((file) => {
-                console.log(documentAI.value);
-                
-                if (name == documentAI.value.name) {
-                    stopListening();
-                }
-                // deleteDocument(
-                //     documentAI.value?.companyID,
-                //     documentAI.value?.claimID,
-                //     documentAI.value?.uniqueFileName,
-                //     documentAI.value?.year
-                // );
-                console.log(documentAI.value?.claimID);
-                return name != file.name;
-            });
+        const deleteRecord = async (name) => {
+            files.value = files.value.filter((file) => name != file.name);
+
+            await processUploadedFiles(name);
+
             filesToUpload.value = filesToUpload.value.filter(
                 (file) => name != file.name
             );
+        };
+
+        const processUploadedFiles = async (name) => {
+            const updatedFiles = [];
+
+            for (let i = 0; i < uploadedFiles.value.length; i++) {
+                const file = uploadedFiles.value[i];
+
+                if (name === file.name) {
+                    if (documentAI.value.name === name) stopListening();
+                    const res = await deleteDocumentByName(
+                        file.companyID,
+                        file.claimID,
+                        file.uniqueFileName,
+                        file.year
+                    );
+                    if (res) {
+                        toast.success("Archivo eliminado exitosamente!", {
+                            position: toast.POSITION.TOP_RIGHT,
+                            autoClose: 3000,
+                        });
+                    } else {
+                        toast.error("No se pudo eliminar el archivo!", {
+                            position: toast.POSITION.TOP_RIGHT,
+                            autoClose: 3000,
+                        });
+                    }
+                } else {
+                    updatedFiles.push(file);
+                }
+            }
+
+            uploadedFiles.value = updatedFiles; // Actualiza uploadedFiles con los archivos no eliminados
         };
 
         const onDragOver = () => {
@@ -408,7 +425,6 @@ export default {
                 ...filesToUpload.value,
                 ...event.dataTransfer.files,
             ];
-            console.log(files.value);
         };
 
         // obtener listado trds
@@ -426,7 +442,7 @@ export default {
                     });
                 })
                 .catch((error) => {
-                    console.log(error);
+                    console.error(error);
                 });
         }
 
@@ -456,7 +472,7 @@ export default {
                     peopleList.value = auxPeople;
                 })
                 .catch((error) => {
-                    console.log(error);
+                    console.error(error);
                 });
         }
 
@@ -486,7 +502,6 @@ export default {
 
         const showDeadLine = computed(() => {
             if (form.documentType?.toLocaleLowerCase() == "demanda") {
-                // console.log("ShowDeadline true");
                 return true;
             }
             return false;
@@ -712,7 +727,7 @@ export default {
                 const id = await createClaimID(userID);
                 this.documentID = id;
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         },
 
@@ -776,7 +791,7 @@ export default {
             } catch (error) {
                 this.saveLoading = false;
                 this.showRadicationButton = false;
-                console.log(error);
+                console.error(error);
             }
         },
 
@@ -812,7 +827,7 @@ export default {
                 }
             } catch (error) {
                 this.submitLoading = false;
-                console.log(error);
+                console.error(error);
             }
         },
 
@@ -827,7 +842,7 @@ export default {
                 }
             } catch (error) {
                 this.saveLoading = false;
-                console.log(error);
+                console.error(error);
             }
         },
         closeModal() {
@@ -885,7 +900,6 @@ export default {
                 " #" +
                 place.address_components[0].long_name;
             this.form.city = place.address_components[4].long_name;
-            // console.log("place", place);
         });
     },
     computed: {
