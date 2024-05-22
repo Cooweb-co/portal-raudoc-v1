@@ -244,14 +244,12 @@ export default {
                                                 data.idRole == 'FUNCTIONARY',
                                             'bg-danger-subtle text-danger':
                                                 data.idRole == 'BOSS_OF_AREA',
-                                            'bg-primary-subtle text-primary':
-                                                data.idRole == 'DIRECTOR',
                                             'bg-warning-subtle text-warning':
                                                 data.idRole ==
-                                                'ADMIN',
+                                                'ADMIN' || data.idRole == 'DIRECTOR',
                                             'bg-info-subtle text-info':
                                                 data.idRole ==
-                                                'SUPERVISOR DE SISTEMA',
+                                                'RADICATOR',
                                         }"
                                         >{{ data.role }}</span
                                     >
