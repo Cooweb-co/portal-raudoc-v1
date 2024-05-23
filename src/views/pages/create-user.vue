@@ -34,7 +34,7 @@ axios
         tdrs.value = response.data;
     })
     .catch((error) => {
-        console.log(error);
+        console.error(error);
     });
 }
 
@@ -60,7 +60,6 @@ const createUser = () => {
         })
     })
     .then((response) => {
-        // console.log(response.data);
         if(response.status == 200) {
             toast("Usuario creado exitosamente...", {
                 "type": "success",
@@ -92,7 +91,7 @@ const createUser = () => {
                 "autoClose": 5000,
                 "dangerouslyHTMLString": true
             })
-        console.log(error);
+        console.error(error);
     });
 }
 

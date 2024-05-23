@@ -58,7 +58,6 @@ export default {
         ...layoutComputed,
         layoutType: {
             get() {
-                console.log();
                 return this.$store
                     ? this.$store.state.layout.layoutType
                     : {} || {};
@@ -68,7 +67,6 @@ export default {
             const idRole = JSON.parse(
                 this.$store.state?.auth?.currentUserInfo
             )?.idRole;
-            console.log(idRole === "ADMIN");
             return idRole === "ADMIN" ? true : false;
         },
     },

@@ -220,8 +220,8 @@ const sendFile = async () => {
             data: data,
         };
 
-        const response = await axios.request(config);
-        console.log(JSON.stringify(response.data));
+        axios.request(config);
+        // console.log(JSON.stringify(response.data));
         loadingSendFile.value = false;
         toast("Correo enviado correctamente", {
             closeButton: true,

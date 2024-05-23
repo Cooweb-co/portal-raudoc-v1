@@ -24,7 +24,7 @@ import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
 import Modal from "../modals/Modal.vue";
 import moment from "moment";
 import store from "@/state/store";
-import { FileTextIcon, AlertOctagonIcon } from "@zhuowenli/vue-feather-icons";
+import { FileTextIcon, AlertOctagonIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
 
 // import {
 //   onSnapshot,
@@ -38,6 +38,8 @@ import {
     createClaimID,
     onListenClaimData,
     getDocStatus,
+    // deleteDocument,
+    deleteDocumentByName,
 } from "../../services/docservice/doc.service";
 import axios from "axios";
 
@@ -47,11 +49,12 @@ export default {
         const storage = getFirebaseBackend().storage;
         const files = ref([]);
         const filesToUpload = ref([]);
+        const uploadedFiles = ref([]);
         const readDocument = ref(false);
         const dropzoneFile = ref("");
         const loadingBtnAI = ref(false);
         const documentID = ref(null);
-        const documentAIID = ref(null);
+        const documentAI = ref(null);
         const companyID = ref("BAQVERDE");
         const year = ref(new Date().getFullYear());
         const claimData = ref(null);
@@ -61,6 +64,7 @@ export default {
         const qrModal = ref(false);
         let unsubscribe;
         let idProccessAI;
+        const isListeningEnabled = ref(true);
         const loadingAI = ref(false);
         const newDate = ref(dayjs().format("DD/MM/YYYY HH:mm"));
         const trds = ref([]);
@@ -70,9 +74,15 @@ export default {
         const radicate = ref("");
         const peopleList = ref([]);
         const timerAI = ref([]);
+        const timerExtractingInformationAI = ref(null);
         const dropzone = ref(false);
-        const manual_address = ref(true);
+        const manual_address = ref(false);
         const manual_address_info = ref(["", "", "", "", "", "", "", "", ""]);
+        const address_info = ref([
+            "" /* Dirección */,
+            "" /* Departamento */,
+            "" /* Ciudad */,
+        ]);
         const finalAddress = ref("");
 
         const addressOptions = ref([
@@ -140,11 +150,15 @@ export default {
             assignedTo: { required: MESSAGE_REQUIRED },
             subject: { required: MESSAGE_REQUIRED },
             description: { required: MESSAGE_REQUIRED },
+            city: {},
         };
 
         const v$ = useVuelidate(rules, form);
 
         const startListening = () => {
+            if (!isListeningEnabled.value) {
+                return;
+            }
             try {
                 idProccessAI = toast("Analizando documento con IA...", {
                     isLoading: true,
@@ -154,10 +168,13 @@ export default {
                 });
 
                 unsubscribe = onListenClaimData(
-                    documentAIID.value,
+                    documentAI.value.claimID,
                     companyID.value,
                     async (data) => {
-                        await getDocStatus(companyID.value, documentID.value);
+                        await getDocStatus(
+                            companyID.value,
+                            documentAI.value.claimID
+                        );
                         claimData.value = data;
                         if (data.status == "DRAFT" && data.summary == null) {
                             loadingAI.value = true;
@@ -170,14 +187,17 @@ export default {
                                 });
                                 loadingAI.value = false;
                             }, 60000);
-                            setTimeout(() => {
-                                toast.update(idProccessAI, {
-                                    render: "Extrayendo información relevante...",
-                                    type: toast.TYPE.INFO,
-                                });
-                            }, 3000);
+                            timerExtractingInformationAI.value = setTimeout(
+                                () => {
+                                    toast.update(idProccessAI, {
+                                        render: "Extrayendo información relevante...",
+                                        type: toast.TYPE.INFO,
+                                    });
+                                },
+                                3000
+                            );
                         }
-                        if (data.summary) {
+                        if (data.summary && isListeningEnabled.value) {
                             toast.update(idProccessAI, {
                                 render: "Resumen realizado con exito!",
                                 type: toast.TYPE.SUCCESS,
@@ -200,7 +220,24 @@ export default {
                 );
                 return unsubscribe;
             } catch (error) {
-                console.log("error: ", error);
+                console.error("error: ", error);
+            }
+        };
+
+        const stopListening = () => {
+            if (unsubscribe) {
+                clearTimeout(timerExtractingInformationAI.value);
+                toast.update(idProccessAI, {
+                    render: "Se ha detenido el proceso de extracción de información",
+                    type: toast.TYPE.WARNING,
+                    isLoading: false,
+                    autoClose: 3000,
+                });
+                loadingAI.value = false;
+                isListeningEnabled.value = false;
+                unsubscribe = null;
+            } else {
+                console.warn("No hay suscripción activa para desuscribirse.");
             }
         };
 
@@ -238,20 +275,29 @@ export default {
                             closeOnClick: false,
                         }
                     );
-                    const uploadResult = await uploadBytes(fileRef, file);
-                    console.log(
-                        "Archivo subido con éxito:",
-                        uploadResult.metadata.fullPath
-                    );
+                    await uploadBytes(fileRef, file);
                     toast.update(idLoadFile, {
                         render: `Archivo cargado con éxito ${file.name}`,
                         type: "success",
                         isLoading: false,
                         autoClose: 3000,
                     });
+                    uploadedFiles.value.push({
+                        companyID: companyID.value,
+                        name: file.name,
+                        uniqueFileName: uniqueFileName,
+                        claimID: documentID.value,
+                        year: year.value,
+                    });
                     if (!readDocument.value) {
                         readDocument.value = true;
-                        documentAIID.value = documentID.value;
+                        documentAI.value = {
+                            companyID: companyID.value,
+                            name: file.name,
+                            uniqueFileName: uniqueFileName,
+                            claimID: documentID.value,
+                            year: year.value,
+                        };
                         startListening();
                     }
                 } catch (error) {
@@ -268,7 +314,7 @@ export default {
             return styles + " border-primary text-primary";
         });
 
-        const getAddress = computed(() => {
+        const getAddressManual = computed(() => {
             const direction = `${
                 manual_address_info.value[0] ? manual_address_info.value[0] : ""
             } ${
@@ -301,11 +347,62 @@ export default {
             return direction;
         });
 
-        const deleteRecord = (name) => {
+        const getAddress = () => {
+            const direction = `${
+                address_info.value[0] ? address_info.value[0].trim() : ""
+            }${
+                address_info.value[1] ? ", " + address_info.value[1].trim() : ""
+            }${
+                address_info.value[2] ? ", " + address_info.value[2].trim() : ""
+            }`;
+            form.address = direction;
+            form.city = address_info.value[3]
+                ? address_info.value[3].trim()
+                : "";
+            return direction;
+        };
+
+        const deleteRecord = async (name) => {
             files.value = files.value.filter((file) => name != file.name);
+
+            await processUploadedFiles(name);
+
             filesToUpload.value = filesToUpload.value.filter(
                 (file) => name != file.name
             );
+        };
+
+        const processUploadedFiles = async (name) => {
+            const updatedFiles = [];
+
+            for (let i = 0; i < uploadedFiles.value.length; i++) {
+                const file = uploadedFiles.value[i];
+
+                if (name === file.name) {
+                    if (documentAI.value.name === name) stopListening();
+                    const res = await deleteDocumentByName(
+                        file.companyID,
+                        file.claimID,
+                        file.uniqueFileName,
+                        file.year
+                    );
+                    if (res) {
+                        toast.success("Archivo eliminado exitosamente!", {
+                            position: toast.POSITION.TOP_RIGHT,
+                            autoClose: 3000,
+                        });
+                    } else {
+                        toast.error("No se pudo eliminar el archivo!", {
+                            position: toast.POSITION.TOP_RIGHT,
+                            autoClose: 3000,
+                        });
+                    }
+                } else {
+                    updatedFiles.push(file);
+                }
+            }
+
+            uploadedFiles.value = updatedFiles; // Actualiza uploadedFiles con los archivos no eliminados
         };
 
         const onDragOver = () => {
@@ -328,7 +425,6 @@ export default {
                 ...filesToUpload.value,
                 ...event.dataTransfer.files,
             ];
-            console.log(files.value);
         };
 
         // obtener listado trds
@@ -346,7 +442,7 @@ export default {
                     });
                 })
                 .catch((error) => {
-                    console.log(error);
+                    console.error(error);
                 });
         }
 
@@ -376,7 +472,7 @@ export default {
                     peopleList.value = auxPeople;
                 })
                 .catch((error) => {
-                    console.log(error);
+                    console.error(error);
                 });
         }
 
@@ -406,7 +502,6 @@ export default {
 
         const showDeadLine = computed(() => {
             if (form.documentType?.toLocaleLowerCase() == "demanda") {
-                // console.log("ShowDeadline true");
                 return true;
             }
             return false;
@@ -557,6 +652,8 @@ export default {
             files,
             loadingBtnAI,
             documentID,
+            getAddress,
+            address_info,
             claimData,
             form,
             v$,
@@ -595,7 +692,7 @@ export default {
             onFileDrop,
             getPeople,
             concatAddress,
-            getAddress,
+            getAddressManual,
         };
     },
     data() {
@@ -630,7 +727,7 @@ export default {
                 const id = await createClaimID(userID);
                 this.documentID = id;
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         },
 
@@ -677,7 +774,7 @@ export default {
                         identificationNumber: this.form.idNumber,
                         firstNames: this.form.names,
                         lastNames: this.form.lastNames,
-                        address: this.finalAddress,
+                        address: this.form.address,
                         phoneNumber: this.form.contactPhone,
                         email: this.form.email,
                     },
@@ -694,7 +791,7 @@ export default {
             } catch (error) {
                 this.saveLoading = false;
                 this.showRadicationButton = false;
-                console.log(error);
+                console.error(error);
             }
         },
 
@@ -730,7 +827,7 @@ export default {
                 }
             } catch (error) {
                 this.submitLoading = false;
-                console.log(error);
+                console.error(error);
             }
         },
 
@@ -745,7 +842,7 @@ export default {
                 }
             } catch (error) {
                 this.saveLoading = false;
-                console.log(error);
+                console.error(error);
             }
         },
         closeModal() {
@@ -803,7 +900,6 @@ export default {
                 " #" +
                 place.address_components[0].long_name;
             this.form.city = place.address_components[4].long_name;
-            // console.log("place", place);
         });
     },
     computed: {
@@ -821,6 +917,7 @@ export default {
         Modal,
         FileTextIcon,
         AlertOctagonIcon,
+        Trash2Icon
     },
 };
 </script>
@@ -1012,7 +1109,7 @@ export default {
                                                 data-dz-remove=""
                                                 @click="deleteRecord(file.name)"
                                             >
-                                                borrar
+                                            <Trash2Icon />
                                             </BButton>
                                         </div>
                                     </div>
@@ -1507,41 +1604,71 @@ export default {
                                             >*</span
                                         ></label
                                     >
-                                    <!-- <div class="fs-15">
-                    <label for="" class="px-2 fw-bold text-muted"
-                      >Agregar dirección manual</label
-                    >
-                    <input
-                      v-model="manual_address"
-                      class="form-check-input"
-                      type="checkbox"
-                    />
-                  </div> -->
+                                    <div class="fs-15">
+                                        <label
+                                            for=""
+                                            class="px-2 fw-bold text-muted"
+                                            >Agregar dirección manual</label
+                                        >
+                                        <input
+                                            v-model="manual_address"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                        />
+                                    </div>
+                                </div>
+                                <div
+                                    class="col-sm-12 col-md-2"
+                                    style="width: 100%"
+                                >
+                                    <ValidateLabel
+                                        v-bind="{ v$ }"
+                                        attribute="address"
+                                        style="width: 100%"
+                                    />
                                 </div>
 
                                 <div v-if="!manual_address">
-                                    <input
-                                        id="place"
-                                        class="form-control"
-                                        type="text"
-                                        placeholder="Ingrese una referencia o dirección especifica"
-                                    />
+                                    <BRow>
+                                        <BCol lg="6" class="mb-3">
+                                            <input
+                                                v-model="address_info[0]"
+                                                id="place"
+                                                class="form-control"
+                                                type="text"
+                                                placeholder="Ingrese la dirección"
+                                                @input="getAddress()"
+                                            />
+                                        </BCol>
+                                        <BCol lg="3" class="mb-3">
+                                            <input
+                                                v-model="address_info[1]"
+                                                id="place"
+                                                class="form-control"
+                                                type="text"
+                                                placeholder="Ingrese el departamento"
+                                                autocomplete="address-level1"
+                                                @input="getAddress()"
+                                            />
+                                        </BCol>
+                                        <BCol lg="3" class="mb-3">
+                                            <input
+                                                v-model="address_info[2]"
+                                                id="place"
+                                                class="form-control"
+                                                type="text"
+                                                placeholder="Ingrese la ciudad"
+                                                autocomplete="address-level2"
+                                                @input="getAddress()"
+                                            />
+                                        </BCol>
+                                    </BRow>
                                 </div>
 
                                 <div
                                     v-else
                                     class="row row-cols-1 row-cols-md-6 gx-1 gy-3 py-2"
                                 >
-                                    <div
-                                        class="col-sm-12 col-md-2"
-                                        style="width: 100%"
-                                    >
-                                        <ValidateLabel
-                                            v-bind="{ v$ }"
-                                            attribute="address"
-                                            style="width: 100%"
-                                        />
-                                    </div>
                                     <div class="col-sm-12 col-md-3">
                                         <Multiselect
                                             v-model="manual_address_info[0]"
@@ -1660,9 +1787,10 @@ export default {
                                         'is-invalid':
                                             submitted &&
                                             v$.user.username.$error,
-                                        'preview-manual-address': manual_address_info[0],
+                                        'preview-manual-address':
+                                            manual_address_info[0],
                                     }"
-                                    >{{ getAddress }}</span
+                                    >{{ getAddressManual }}</span
                                 >
                             </BCol>
                         </BRow>

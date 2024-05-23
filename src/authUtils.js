@@ -115,7 +115,7 @@ class FirebaseAuthBackend {
             // El documento existe, puedes acceder a sus datos
             return user.data()
         } else {
-            console.log("No se encontró el documento.");
+            // console.log("No se encontró el documento.");
             return null
         }
 

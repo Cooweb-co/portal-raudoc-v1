@@ -33,12 +33,12 @@ const sendData = () => {
                 }
             )
             .then((response) => {
-                console.log(response.data);
+                // console.log(response.data);
                 searchLoading.value = false;
                 router.push(`/r/${company.value}/${response.data.claimId}`);
             })
             .catch((error) => {
-                console.log(error);
+                console.error(error);
             });
     } else {
         errorForm.value = true;
