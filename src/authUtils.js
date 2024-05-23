@@ -12,13 +12,14 @@ class FirebaseAuthBackend {
 
             const app = firebase.initializeApp(firebaseConfig);
             // firebase.initializeApp(firebaseConfig);
-            firebase.auth().onAuthStateChanged((user) => {
-                if (user) {
-                    sessionStorage.setItem("authUser", JSON.stringify(user));
-                } else {
-                    sessionStorage.removeItem("authUser");
-                }
-            });
+            // firebase.auth().onAuthStateChanged((user) => {
+            //     if (user) {
+            //         console.log("user", user);
+            //         sessionStorage.setItem("authUser", JSON.stringify(user));
+            //     } else {
+            //         sessionStorage.removeItem("authUser");
+            //     }
+            // });
 
             this.storage = getStorage(app);
             this.firestore = firebase.firestore();
@@ -194,7 +195,7 @@ let _fireBaseBackend = null;
  * @param {*} config
  */
 const initFirebaseBackend = (config) => {
-    console.log("CONFIG:: ", config);
+    // console.log("CONFIG:: ", config);
     if (!_fireBaseBackend) {
         _fireBaseBackend = new FirebaseAuthBackend(config);
     }

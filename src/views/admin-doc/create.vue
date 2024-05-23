@@ -6,6 +6,7 @@ import {
     onUnmounted,
     computed,
     reactive,
+    // onMounted,
 } from "vue";
 import Multiselect from "@vueform/multiselect";
 import dayjs from "dayjs";
@@ -24,7 +25,6 @@ import Modal from "../modals/Modal.vue";
 import moment from "moment";
 import store from "@/state/store";
 import { FileTextIcon, AlertOctagonIcon } from "@zhuowenli/vue-feather-icons";
-
 
 // import {
 //   onSnapshot,
@@ -71,11 +71,24 @@ export default {
         const peopleList = ref([]);
         const timerAI = ref([]);
         const dropzone = ref(false);
+        const manual_address = ref(true);
+        const manual_address_info = ref(["", "", "", "", "", "", "", "", ""]);
+        const finalAddress = ref("");
+
+        const addressOptions = ref([
+            { label: "Calle", value: "CL. " },
+            { label: "Carrera", value: "CRA. " },
+            { label: "Autopista", value: "AU. " },
+            { label: "Avenida", value: "AV. " },
+            { label: "Transversal", value: "TV. " },
+            { label: "Diagonal", value: "DG. " },
+            { label: "Vía", value: "VI. " },
+        ]);
 
         let config = {
             method: "get",
             maxBodyLength: Infinity,
-            url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/TDRS_LIST_V1",
+            url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
             headers: {
                 company: "BAQVERDE",
             },
@@ -192,19 +205,17 @@ export default {
         };
 
         // Select files and drag and drop
-
         const selectedFile = () => {
             const newFiles = document.getElementById("formFile").files;
             for (let i = 0; i < newFiles.length; i++) {
                 files.value.push(newFiles[i]);
-                filesToUpload.value.push(newFiles[i])
+                filesToUpload.value.push(newFiles[i]);
             }
         };
 
         const uploadDocument = async () => {
             for (let i = 0; i < filesToUpload.value.length; i++) {
                 const file = filesToUpload.value[i];
-                console.log(file);
                 try {
                     if (!documentID.value) {
                         await instance.proxy.handleCreateClaimID();
@@ -218,12 +229,15 @@ export default {
                     const folder = `Companies/${companyID.value}/${year.value}/Claims/${documentID.value}`;
                     const storagePath = `${folder}/${uniqueFileName}`;
                     const fileRef = storageRef(storage, storagePath);
-                    const idLoadFile = toast(`Cargando el archivo ${file.name}...`, {
-                        isLoading: true,
-                        hideProgressBar: true,
-                        closeButton: false,
-                        closeOnClick: false,
-                    });
+                    const idLoadFile = toast(
+                        `Cargando el archivo ${file.name}...`,
+                        {
+                            isLoading: true,
+                            hideProgressBar: true,
+                            closeButton: false,
+                            closeOnClick: false,
+                        }
+                    );
                     const uploadResult = await uploadBytes(fileRef, file);
                     console.log(
                         "Archivo subido con éxito:",
@@ -244,7 +258,7 @@ export default {
                     console.error("Error al subir el archivo:", error);
                 }
             }
-            filesToUpload.value = []
+            filesToUpload.value = [];
         };
 
         const classDropZone = computed(() => {
@@ -254,9 +268,44 @@ export default {
             return styles + " border-primary text-primary";
         });
 
+        const getAddress = computed(() => {
+            const direction = `${
+                manual_address_info.value[0] ? manual_address_info.value[0] : ""
+            } ${
+                manual_address_info.value[1] ? manual_address_info.value[1] : ""
+            }${
+                manual_address_info.value[2] ? manual_address_info.value[2] : ""
+            } ${
+                manual_address_info.value[3]
+                    ? "#" + manual_address_info.value[3]
+                    : ""
+            }${
+                manual_address_info.value[4] ? manual_address_info.value[4] : ""
+            } ${
+                manual_address_info.value[5]
+                    ? "- " + manual_address_info.value[5]
+                    : ""
+            }${
+                manual_address_info.value[6] ? manual_address_info.value[6] : ""
+            }${
+                manual_address_info.value[7]
+                    ? ", " + manual_address_info.value[7]
+                    : ""
+            } ${
+                manual_address_info.value[8]
+                    ? "- " + manual_address_info.value[8]
+                    : ""
+            }`;
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+            form.address = direction;
+            return direction;
+        });
+
         const deleteRecord = (name) => {
             files.value = files.value.filter((file) => name != file.name);
-            filesToUpload.value = filesToUpload.value.filter((file) => name != file.name);
+            filesToUpload.value = filesToUpload.value.filter(
+                (file) => name != file.name
+            );
         };
 
         const onDragOver = () => {
@@ -275,7 +324,10 @@ export default {
             event.preventDefault();
             dropzone.value = false;
             files.value = [...files.value, ...event.dataTransfer.files];
-            filesToUpload.value =  [...filesToUpload.value, ...event.dataTransfer.files]
+            filesToUpload.value = [
+                ...filesToUpload.value,
+                ...event.dataTransfer.files,
+            ];
             console.log(files.value);
         };
 
@@ -303,7 +355,7 @@ export default {
             const config = {
                 method: "get",
                 maxBodyLength: Infinity,
-                url: `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_USERS_BY_AREA_ID?areaId=${getAreaId.value}`,
+                url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaId.value}`,
                 headers: {
                     company: "BAQVERDE",
                 },
@@ -354,7 +406,7 @@ export default {
 
         const showDeadLine = computed(() => {
             if (form.documentType?.toLocaleLowerCase() == "demanda") {
-                console.log("ShowDeadline true");
+                // console.log("ShowDeadline true");
                 return true;
             }
             return false;
@@ -427,6 +479,16 @@ export default {
             await getPeople();
         }
 
+        // const userInfo = JSON.parse(sessionStorage.getItem("authUserInfo"));
+
+        // onMounted(() => {
+        //   const totalName = userInfo.name.split(" ");
+
+        //   form.email = userInfo.email;
+        //   form.names = totalName[0];
+        //   form.lastNames = totalName[1] + " " + totalName[2];
+        // });
+
         onUnmounted(() => {
             if (unsubscribe) {
                 unsubscribe;
@@ -473,8 +535,21 @@ export default {
             }
         });
 
-        function getAddress() {
-            console.log(form);
+        function concatAddress() {
+            finalAddress.value =
+                manual_address_info.value[0] +
+                manual_address_info.value[1] +
+                manual_address_info.value[2] +
+                " #" +
+                manual_address_info.value[3] +
+                manual_address_info.value[4] +
+                " - " +
+                manual_address_info.value[5] +
+                manual_address_info.value[6] +
+                ", " +
+                manual_address_info.value[7] +
+                ", " +
+                manual_address_info.value[8];
         }
 
         return {
@@ -488,6 +563,7 @@ export default {
             mode,
             saveLoading,
             submitLoading,
+            addressOptions,
             qrModal,
             loadingAI,
             newDate,
@@ -503,19 +579,23 @@ export default {
             getAssignedUid,
             getDocDays,
             getAreaId,
+            manual_address,
+            classDropZone,
+            showDeadLine,
+            moment,
+            manual_address_info,
+            finalAddress,
             clearSelectInput,
             getTrds,
             deleteRecord,
-            classDropZone,
             onDragOver,
             onDragEnter,
             onDragLeave,
             selectedFile,
             onFileDrop,
             getPeople,
+            concatAddress,
             getAddress,
-            showDeadLine,
-            moment,
         };
     },
     data() {
@@ -577,6 +657,7 @@ export default {
                     subject: this.form.subject,
                     summary: this.form.description,
                     area: this.form.area,
+                    areaId: this.getAreaId,
                     serie: this.form.serie,
                     subSerie: this.form.subSerie,
                     days: this.getDocDays[0]?.days ?? null,
@@ -584,7 +665,7 @@ export default {
                     entryDate: this.form.date,
                     endDate: !this.form.untilDate ? null : this.form.untilDate,
                     assignedToUid: this.getAssignedUid[0]?.uid,
-                    city: this.form.city,
+                    city: this.form.city ?? "",
                     folios: parseInt(this.form.folios),
                     assignedTo: this.form.assignedTo,
                     observations: this.form.observations,
@@ -596,13 +677,13 @@ export default {
                         identificationNumber: this.form.idNumber,
                         firstNames: this.form.names,
                         lastNames: this.form.lastNames,
-                        address: this.form.address,
+                        address: this.finalAddress,
                         phoneNumber: this.form.contactPhone,
                         email: this.form.email,
                     },
                 };
                 const response = await axios.post(
-                    `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`,
+                    `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`,
                     body,
                     config
                 );
@@ -620,7 +701,7 @@ export default {
         async handleSubmitDocument() {
             try {
                 this.submitLoading = true;
-                this.handleSaveChanges()
+                this.handleSaveChanges();
                 const config = {
                     headers: {
                         company: "BAQVERDE",
@@ -633,7 +714,7 @@ export default {
                 };
 
                 const response = await axios.post(
-                    `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_GENERATE_RADICATE_V1?claimId=${this.documentID}`,
+                    `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_GENERATE_RADICATE_V1?claimId=${this.documentID}`,
                     body,
                     config
                 );
@@ -722,7 +803,7 @@ export default {
                 " #" +
                 place.address_components[0].long_name;
             this.form.city = place.address_components[4].long_name;
-            console.log("place", place);
+            // console.log("place", place);
         });
     },
     computed: {
@@ -739,7 +820,7 @@ export default {
         ValidateLabel,
         Modal,
         FileTextIcon,
-        AlertOctagonIcon
+        AlertOctagonIcon,
     },
 };
 </script>
@@ -879,11 +960,19 @@ export default {
                                     >o Clic acá para selecciona un
                                     archivo</label
                                 >
-                                <span class="text-success d-flex justify-content-center align-items-center gap-1" style="opacity: 0.8; font-size: 0.6rem;">
-                                    <AlertOctagonIcon size="10"/> Solo se analizará con la IA el primer archivo subido.
+                                <span
+                                    class="text-success d-flex justify-content-center align-items-center gap-1"
+                                    style="opacity: 0.8; font-size: 0.6rem"
+                                >
+                                    <AlertOctagonIcon size="10" /> Solo se
+                                    analizará con la IA el primer archivo
+                                    subido.
                                 </span>
                             </div>
-                            <div class="vstack gap-2 mt-2" v-if="files.length > 0">
+                            <div
+                                class="vstack gap-2 mt-2"
+                                v-if="files.length > 0"
+                            >
                                 <div
                                     class="border rounded"
                                     v-for="(file, index) of files"
@@ -962,6 +1051,7 @@ export default {
                                 class="form-control"
                                 id="project-title-input"
                                 placeholder="Ingrese asunto del radicado"
+                                :disabled="loadingAI"
                             />
                             <ValidateLabel
                                 v-bind="{ v$ }"
@@ -987,6 +1077,7 @@ export default {
                             <textarea
                                 class="form-control"
                                 v-model="form.description"
+                                :disabled="loadingAI"
                                 style="min-height: 255px"
                             ></textarea>
                             <ValidateLabel
@@ -1042,13 +1133,13 @@ export default {
                                     v-model="form.date"
                                     :config="rangeDateconfig"
                                     class="form-control"
-                                    style="cursor: no-drop !important;"
+                                    style="cursor: no-drop !important"
                                     disabled
-                                >
+                                />
                                 <ValidateLabel
                                     v-bind="{ v$ }"
                                     attribute="date"
-                                    style="cursor: no-drop !important;"
+                                    style="cursor: no-drop !important"
                                 />
                             </BCol>
                             <BCol lg="3" class="mb-3">
@@ -1307,7 +1398,7 @@ export default {
                             </BCol>
                             <BCol lg="3" class="mb-3">
                                 <label for="username" class="form-label fw-bold"
-                                    >Número de documento
+                                    >Nº de documento
                                     <span class="text-danger fw-bold"
                                         >*</span
                                     ></label
@@ -1327,7 +1418,7 @@ export default {
                             </BCol>
                             <BCol lg="3" class="mb-3">
                                 <label for="username" class="form-label fw-bold"
-                                    >Teléfono de contacto
+                                    >Tel. de contacto
                                     <span class="text-danger fw-bold"
                                         >*</span
                                     ></label
@@ -1337,6 +1428,7 @@ export default {
                                     class="form-control"
                                     v-model="form.contactPhone"
                                     placeholder="Ingrese telefono de contacto"
+                                    autocomplete="tel"
                                 />
                                 <ValidateLabel
                                     v-bind="{ v$ }"
@@ -1356,6 +1448,7 @@ export default {
                                     v-model="form.names"
                                     id="username"
                                     placeholder="Ingrese nombres"
+                                    autocomplete="name"
                                 />
 
                                 <ValidateLabel
@@ -1375,6 +1468,7 @@ export default {
                                     class="form-control"
                                     v-model="form.lastNames"
                                     placeholder="Ingrese apellidos"
+                                    autocomplete="family-name"
                                 />
 
                                 <ValidateLabel
@@ -1395,6 +1489,7 @@ export default {
                                     v-model="form.email"
                                     id="username"
                                     placeholder="Ingrese email"
+                                    autocomplete="email"
                                 />
 
                                 <ValidateLabel
@@ -1403,26 +1498,172 @@ export default {
                                 />
                             </BCol>
                             <BCol lg="12" class="mb-3">
-                                <label for="username" class="form-label fw-bold"
-                                    >Dirección
-                                    <span class="text-danger fw-bold"
-                                        >*</span
-                                    ></label
-                                >
-                                <!-- <input type="text" class="form-control" v-model="form.address" id="username"
-                  placeholder="Ingrese una dirección" /> -->
-                                <input
-                                    id="place"
-                                    class="form-control"
-                                    type="text"
-                                    @change="getAddress()"
-                                    placeholder="Ingrese una dirección"
-                                />
+                                <div class="label-checkbox">
+                                    <label
+                                        for="username"
+                                        class="form-label fw-bold"
+                                        >Dirección
+                                        <span class="text-danger fw-bold"
+                                            >*</span
+                                        ></label
+                                    >
+                                    <!-- <div class="fs-15">
+                    <label for="" class="px-2 fw-bold text-muted"
+                      >Agregar dirección manual</label
+                    >
+                    <input
+                      v-model="manual_address"
+                      class="form-check-input"
+                      type="checkbox"
+                    />
+                  </div> -->
+                                </div>
 
-                                <ValidateLabel
-                                    v-bind="{ v$ }"
-                                    attribute="address"
-                                />
+                                <div v-if="!manual_address">
+                                    <input
+                                        id="place"
+                                        class="form-control"
+                                        type="text"
+                                        placeholder="Ingrese una referencia o dirección especifica"
+                                    />
+                                </div>
+
+                                <div
+                                    v-else
+                                    class="row row-cols-1 row-cols-md-6 gx-1 gy-3 py-2"
+                                >
+                                    <div
+                                        class="col-sm-12 col-md-2"
+                                        style="width: 100%"
+                                    >
+                                        <ValidateLabel
+                                            v-bind="{ v$ }"
+                                            attribute="address"
+                                            style="width: 100%"
+                                        />
+                                    </div>
+                                    <div class="col-sm-12 col-md-3">
+                                        <Multiselect
+                                            v-model="manual_address_info[0]"
+                                            :close-on-select="true"
+                                            :searchable="true"
+                                            placeholder="Seleccione"
+                                            :options="addressOptions"
+                                            @input="concatAddress()"
+                                        />
+                                    </div>
+                                    <div class="col">
+                                        <input
+                                            v-model="manual_address_info[1]"
+                                            class="form-control"
+                                            type="text"
+                                            placeholder="Número"
+                                            @input="concatAddress()"
+                                        />
+                                    </div>
+                                    <div class="col">
+                                        <input
+                                            v-model="manual_address_info[2]"
+                                            class="form-control"
+                                            type="text"
+                                            placeholder="Letra"
+                                            @input="concatAddress()"
+                                        />
+                                    </div>
+                                    <div
+                                        class="col"
+                                        style="
+                                            width: 30px !important;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            height: 40px;
+                                        "
+                                    >
+                                        <span> # </span>
+                                    </div>
+
+                                    <div class="col">
+                                        <input
+                                            v-model="manual_address_info[3]"
+                                            class="form-control"
+                                            type="text"
+                                            placeholder="Número"
+                                            @input="concatAddress()"
+                                        />
+                                    </div>
+                                    <div class="col">
+                                        <input
+                                            v-model="manual_address_info[4]"
+                                            class="form-control"
+                                            type="text"
+                                            placeholder="Letra"
+                                            @input="concatAddress()"
+                                        />
+                                    </div>
+                                    <div
+                                        class="col"
+                                        style="
+                                            width: 30px !important;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            height: 40px;
+                                        "
+                                    >
+                                        <span> - </span>
+                                    </div>
+                                    <div class="col">
+                                        <input
+                                            v-model="manual_address_info[5]"
+                                            class="form-control"
+                                            type="text"
+                                            placeholder="Número"
+                                            @input="concatAddress()"
+                                        />
+                                    </div>
+                                    <div class="col-sm-12 col-md-2">
+                                        <input
+                                            v-model="manual_address_info[6]"
+                                            class="form-control"
+                                            type="text"
+                                            placeholder="Complemento"
+                                            @input="concatAddress()"
+                                        />
+                                    </div>
+                                    <div class="col-sm-12 col-md-3">
+                                        <input
+                                            v-model="manual_address_info[7]"
+                                            class="form-control"
+                                            type="text"
+                                            placeholder="Ciudad"
+                                            @input="concatAddress()"
+                                            autocomplete="address-level2"
+                                        />
+                                    </div>
+                                    <div class="col-sm-12 col-md-3">
+                                        <input
+                                            v-model="manual_address_info[8]"
+                                            class="form-control"
+                                            type="text"
+                                            placeholder="Departamento"
+                                            @input="concatAddress()"
+                                            autocomplete="address-level1"
+                                        />
+                                    </div>
+                                </div>
+                            </BCol>
+                            <BCol lg="12" class="mb-3 fs-15">
+                                <span
+                                    v-if="manual_address"
+                                    :class="{
+                                        'is-invalid':
+                                            submitted &&
+                                            v$.user.username.$error,
+                                        'preview-manual-address': manual_address_info[0],
+                                    }"
+                                    >{{ getAddress }}</span
+                                >
                             </BCol>
                         </BRow>
                     </BCardBody>
@@ -1433,6 +1674,30 @@ export default {
 </template>
 
 <style lang="scss" scoped>
+.preview-manual-address {
+    font-size: 0.8rem;
+    background: light-dark(
+        rgb(232, 240, 254),
+        rgba(70, 90, 126, 0.4)
+    ) !important;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+}
+.manual-address-inputs-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 25px;
+}
+
+.label-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
 .section {
     border: 1px solid;
 }
@@ -1465,5 +1730,11 @@ export default {
 
 .label-formFile:hover {
     cursor: pointer;
+}
+
+@media (width: 414px) {
+    .manual-address-inputs-box {
+        flex-direction: column;
+    }
 }
 </style>

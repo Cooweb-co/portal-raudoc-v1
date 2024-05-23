@@ -25,7 +25,15 @@ export default [
     name: "createUser",
     component: () => import("../views/pages/create-user.vue"),
     meta: {
-      title: "Create User"
+      title: "Creación de usuario"
+    },
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: "notFound",
+    component: () => import("../views/auth/errors/404-cover.vue"),
+    meta: {
+      title: "Página no encontrada"
     },
   },
   {
@@ -86,9 +94,18 @@ export default [
   },
 
   {
+    path: "/ver-radicado",
+    name: "buscar-radicado",
+    meta: {
+      title: "Buscar radicado",
+    },
+    component: () => import("../views/admin-doc/detailsDocuments/SearchDocument"),
+  },
+
+  {
     path: "/gestion-documental/radicado/:documentID",
     name: "projects-overview",
-    meta: { title: "Projects Overview", authRequired: true },
+    meta: { title: "Resumen de proyectos", authRequired: true },
     component: () => import("../views/admin-doc/detailsDocuments/Overview"),
   },
 

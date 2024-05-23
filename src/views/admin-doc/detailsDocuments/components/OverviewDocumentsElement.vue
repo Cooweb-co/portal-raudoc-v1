@@ -1,5 +1,5 @@
 <script setup>
-import transformDate from "@/helpers/transformDate";
+import {transformDate} from "@/helpers/transformDate";
 import { EyeOutlined } from "@ant-design/icons-vue";
 import { openDocument } from "@/services/docservice/doc.service";
 import { ref, defineProps } from "vue";
@@ -12,13 +12,17 @@ const props = defineProps({
 
 const name = ref(props.file?.name || "-");
 const extension = ref(props.file?.name.split(".").pop().toUpperCase() || "-");
-const fullNameClient = ref(props.file?.summary?.applicant?.fullName || "-");
 const startProccessAt = ref(
     transformDate(
         props.file?.startProccessAt?.seconds || props.file?.createdAt?.seconds
     )
 );
-const placement = ref("left");
+const placement = ref("right");
+const summary = ref(props.file?.summary?.summary || "No definido");
+const legalBasis = ref(props.file?.summary?.legalBasis || false);
+const additionalInformation = ref(props.file?.summary?.additionalInformation || false);
+
+
 const open = ref(false);
 
 const showDrawer = () => {
@@ -35,7 +39,6 @@ const goToDocument = () => {
     const path = `/Companies/BAQVERDE/${year}/Claims/${props.id}`;
     openDocument(props.file.name, path);
 };
-// const buttonWidth = 70;
 </script>
 
 <template>
@@ -71,12 +74,6 @@ const goToDocument = () => {
             </a-tooltip>
         </td>
         <td>{{ extension }}</td>
-        <td>
-            <a-tooltip>
-                <template #title> prompt text </template>
-                {{ fullNameClient }}
-            </a-tooltip>
-        </td>
         <td>{{ startProccessAt }}</td>
         <td class="">
             <div class="d-flex justify-content-center">
@@ -100,18 +97,18 @@ const goToDocument = () => {
         style="z-index: 100000 !important;"
     >
         <h5>Resumen</h5>
-        <p class="text-muted">{{ file?.summary?.summary || "No definido" }}</p>
+        <p class="text-muted">{{ summary }}</p>
         <h5 class="mt-2">Fundamentos legales:</h5>
-        <ol v-if="file?.summary?.legalBasis">
-            <li v-for="item in file?.summary?.legalBasis" :key="item" class="text-muted">
+        <ol v-if="legalBasis.length > 0">
+            <li v-for="item in legalBasis" :key="item" class="text-muted">
                 {{ item }}
             </li>
         </ol>
         <span v-else class="text-muted">No se encontraron fundamentos legales</span>
         <h5 class="mt-2">Información adicional:</h5>
-        <ul v-if="file?.summary?.additionalInformation">
+        <ul v-if="additionalInformation.length > 0">
             <li
-                v-for="item in file?.summary?.additionalInformation"
+                v-for="item in additionalInformation"
                 :key="item"
                 class="text-muted"
             >

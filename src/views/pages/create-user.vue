@@ -25,7 +25,7 @@ axios
   .request({
         method: "get",
         maxBodyLength: Infinity,
-        url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/TDRS_LIST_V1",
+        url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
         headers: {
             company: "BAQVERDE",
         }
@@ -45,7 +45,7 @@ const createUser = () => {
   .request({
         method: "post",
         maxBodyLength: Infinity,
-        url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CREATE_USER_V1",
+        url: `${process.env.VUE_APP_CF_BASE_URL}/CREATE_USER_V1`,
         headers: {
             company: "BAQVERDE",
             'Content-Type': 'application/json'
@@ -60,11 +60,11 @@ const createUser = () => {
         })
     })
     .then((response) => {
-        console.log(response.data);
+        // console.log(response.data);
         if(response.status == 200) {
             toast("Usuario creado exitosamente...", {
                 "type": "success",
-                "position": "bottom-right",
+                "position": "top-right",
                 "pauseOnHover": false,
                 "autoClose": 5000,
                 "dangerouslyHTMLString": true
@@ -80,7 +80,7 @@ const createUser = () => {
         }
         loading.value = false;
         setTimeout(() => {
-            router.push('/jobs/candidate-lists');
+            router.push('/administration/users');
         }, 4000);
     })
     .catch((error) => {
@@ -166,9 +166,10 @@ getAreas();
                     <label class="form-label">Rol</label>
                     <select v-model="v$.rol.$model" class="form-select" :class="{ 'border border-danger': v$.rol.$error }" name="" id="">
                         <option value="">Seleccione Rol</option>
-                        <option value="FUNCTIONARY">FUNCTIONARY</option>
-                        <option value="BOSS_OF_AREA">BOSS_OF_AREA</option>
+                        <option value="FUNCTIONARY">FUNCIONARIO</option>
+                        <option value="BOSS_OF_AREA">JEFE DE AREA</option>
                         <option value="DIRECTOR">DIRECTOR</option>
+                        <option value="RADICATOR">RADICADOR</option>
                     </select>
                     <p class="text-danger" :class="{ 'd-none': !v$.rol.$error }">
                         Valor incorrecto

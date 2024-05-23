@@ -4,22 +4,31 @@
 // import "@vueform/multiselect/themes/default.css";
 
 // import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-// import useVuelidate from "@vuelidate/core";
+
+import { useVuelidate } from "@vuelidate/core";
+import { required, email } from "@vuelidate/validators";
 import { toast } from "vue3-toastify";
-import { ref, watch, defineProps, computed } from "vue";
+// import ValidateLabel from "@/utils/ValidateLabel.vue";
+import { MESSAGE_REQUIRED } from "@/constants/rules.ts";
+
+import { ref, reactive, watch, defineProps, computed } from "vue";
 import axios from "axios";
+
 import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
-// import { message } from "ant-design-vue";
+import { transformTimeStampToDate } from "@/helpers/transformDate";
 
 const props = defineProps(["loading", "data"]);
 const files = ref([]);
 const dropzone = ref(false);
 const answered = ref(false);
+const loadingFile = ref(false);
+const loadingSendFile = ref(false);
 const documentNumber = ref("Número de radicado");
 const maxSize = 10000000;
-const domain = window.location.origin;
+// const domain = window.location.origin;
 const company = "BAQVERDE";
 const pathname = window.location.pathname.split("/");
+
 const selectedFile = async () => {
     const newFiles = document.getElementById("formFile").files;
     for (let i = 0; i < newFiles.length; i++) {
@@ -31,8 +40,6 @@ const selectedFile = async () => {
             files.value = [...files.value, newFiles[i]];
         }
     }
-    // const file = dropzoneFile.value;
-    // console.log("file::::", file);
 };
 
 const classDropZone = computed(() => {
@@ -42,8 +49,59 @@ const classDropZone = computed(() => {
     return styles + " border-primary text-primary";
 });
 
+const getDate = () => {
+    // Obtener la fecha y hora actual
+    // Get the current date and time
+    const currentDate = new Date();
+
+    // Convert the current date to milliseconds since January 1, 1970
+    const milliseconds = currentDate.getTime();
+
+    // Convert milliseconds to seconds and nanoseconds
+    const seconds = Math.floor(milliseconds / 1000); // Convert milliseconds to seconds
+    const nanoseconds = (milliseconds % 1000) * 1000000; // Convert remaining milliseconds to nanoseconds
+
+    // Create the timestamp object
+    const timestamp = { seconds: seconds, nanoseconds: nanoseconds };
+    const formatDate = transformTimeStampToDate(
+        timestamp,
+        "DD/MM/YYYY HH:mm:ss"
+    );
+    return formatDate;
+};
+
+const form = reactive({
+    entryDate: getDate(),
+    name: "",
+    company: "", //Opcional
+    email: "",
+    address: "",
+    city: "",
+    subject: "",
+    body: "",
+    senderName: "",
+    position: "",
+    senderCompany: company,
+});
+
+const rules = {
+    entryDate: { required: MESSAGE_REQUIRED },
+    name: { required },
+    company: {}, //Opcional
+    email: { required, email },
+    address: { required },
+    city: { required },
+    subject: { required },
+    body: { required },
+    senderName: { required },
+    position: { required },
+    senderCompany: { required },
+};
+
+// eslint-disable-next-line no-unused-vars
+const v$ = useVuelidate(rules, form);
+
 const uploadFile = async () => {
-    let idLoadFile;
     try {
         if (answered.value) {
             toast.error("Ya el radicado fue generado", {
@@ -56,77 +114,127 @@ const uploadFile = async () => {
             });
             return;
         }
+        loadingFile.value = true;
+        // Upload first file for add it QR
 
-        idLoadFile = toast("Cargando archivo..", {
-            isLoading: true,
-            hideProgressBar: true,
-            closeButton: false,
-            closeOnClick: false,
-        });
-
-        const headers = {
+        const date = transformTimeStampToDate(
+            props?.data?.rawEntryDate,
+            "DD/MM/YYYY HH:mm:ss"
+        );
+        const headersAddQR = {
             "Content-Type": "multipart/form-data",
         };
 
-        const bodyFormData = new FormData();
-        bodyFormData.append(
+        const bodyFormDataAddQR = new FormData();
+        bodyFormDataAddQR.append(
             "url",
-            `${domain}/r/${company}/${pathname[pathname.length - 1]}`
+            `https://portal.raudoc.com/r/${company}/${pathname[pathname.length - 1]}`
         );
-        bodyFormData.append("claimId", props.data.id);
-        bodyFormData.append("companyId", company);
-        for (const file of files.value) {
-            console.log("Filer for::", file);
-            bodyFormData.append("file", file);
-        }
+
+        bodyFormDataAddQR.append("codeRadicate", props?.data?.numberEntryClaim);
+        bodyFormDataAddQR.append("dateRadicate", date);
+        bodyFormDataAddQR.append(
+            "file",
+            files.value[0],
+            files.value[0]?.name || "pdfWithQR.pdf"
+        );
 
         let config = {
             method: "post",
             maxBodyLength: Infinity,
-            url: "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/ADD_QR_IN_PDF",
-            headers: headers,
-            data: bodyFormData,
+            url: `${process.env.VUE_APP_CF_BASE_URL}/ADD_QR_IN_PDF`,
+            headers: headersAddQR,
+            data: bodyFormDataAddQR,
+            responseType: "blob",
         };
 
-        const res = await axios.request(config)
+        const blob = (await axios.request(config))?.data;
+        const file = new File(
+            [new Blob([blob], { type: "application/pdf" })],
+            files.value[0]?.name || "pdfWithQR.pdf",
+            {
+                type: "application/pdf",
+            }
+        );
+
+        files.value[0] = file;
+
+        // Upload files for response
+
+        const headersGenerateRadicateOut = {
+            company: "BAQVERDE",
+            "Content-Type": "multipart/form-data",
+        };
+
+        const paramsGenerateRadicateOut = {
+            claimId: props.data.id,
+        };
+
+        const bodyFormDataGenerateRadicateOut = new FormData();
+        for (const file of files.value) {
+            bodyFormDataGenerateRadicateOut.append("files", file);
+        }
+
+        const resGenerateRadicateOut = await axios.post(
+            `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_GENERATE_RADICATE_OUT`,
+            bodyFormDataGenerateRadicateOut,
+            {
+                headers: headersGenerateRadicateOut,
+                params: paramsGenerateRadicateOut,
+            }
+        );
         answered.value = true;
-        documentNumber.value = res.data.idRadicate;
-        console.log(res.data);
-        toast.update(idLoadFile, {
-            render: "Archivo cargado con éxito",
+        documentNumber.value = resGenerateRadicateOut.data.idRadicate;
+        toast("Archivo cargado con éxito", {
             type: "success",
-            isLoading: false,
-            autoClose: 3000,
+            closeButton: true,
+            closeOnClick: true,
         });
+        loadingFile.value = false;
         setTimeout(() => location.reload(), 4000);
     } catch (error) {
         console.error("Error al subir el archivo:", error);
-        toast.update(idLoadFile, {
-            render: "Problemas al cargar el archivo",
+        toast("Problemas al cargar el archivo", {
             type: "error",
-            isLoading: false,
-            autoClose: 3000,
+            closeButton: true,
+            closeOnClick: true,
         });
     }
 };
 
-const sendFile = () => {
+const sendFile = async () => {
     try {
-        const idLoadFile = toast("Enviando archivo..", {
-            isLoading: true,
-            hideProgressBar: true,
-            closeButton: false,
-            closeOnClick: false,
+        loadingSendFile.value = true;
+        const data = JSON.stringify({
+            email: props.data?.email,
+            numberEntryClaim: props.data?.numberEntryClaim,
         });
-        setTimeout(() => {
-            toast.update(idLoadFile, {
-                render: "Archivo enviado con éxito",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
-        }, 5000);
+
+        const config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: `${process.env.VUE_APP_CF_BASE_URL}/sendEmailResponseClaim`,
+            headers: {
+                "Content-Type": "application/json",
+            },
+            data: data,
+        };
+
+        const response = await axios.request(config);
+        console.log(JSON.stringify(response.data));
+        loadingSendFile.value = false;
+        toast("Correo enviado correctamente", {
+            closeButton: true,
+            type: "success",
+            closeOnClick: true,
+        });
     } catch (error) {
+        loadingSendFile.value = false;
+        toast("Error al enviar el correo", {
+            closeButton: true,
+            type: "error",
+            closeOnClick: true,
+        });
         console.error(error);
     }
 };
@@ -165,7 +273,11 @@ const onFileDrop = (event) => {
 watch(
     () => props.data,
     (currentValue) => {
-        if (currentValue.numberOutClaim) return (answered.value = true);
+        if (
+            currentValue.numberOutClaim ||
+            currentValue.status == "No requiere respuesta"
+        )
+            return (answered.value = true);
         return;
     }
 );
@@ -187,94 +299,47 @@ watch(
             @drop="onFileDrop"
             class="w-100 h-100"
         >
-            <!-- <BCardBody>
-                <div class="mb-3 mb-lg-0">
-                            <label for="choices-priority-input" class="form-label">Prioridad</label>
-
-                            <Multiselect v-model="value2" :close-on-select="true" :searchable="true" :create-option="true"
-                                :options="[
-                                { value: 'Alta', label: 'Alta' },
-                                { value: 'Media', label: 'Media' },
-                                { value: 'Baja', label: 'Baja' },
-                                ]" />
-                            </div> 
-
-                <div class="row">
-                    <div class="mb-3 col-4">
-                        <label
-                            for="choices-privacy-status-input"
-                            class="form-label"
-                            >Plantillas de Respuestas</label
-                        >
-                        <Multiselect
-                            v-model="value3"
-                            :close-on-select="true"
-                            :searchable="true"
-                            :create-option="true"
-                            :options="[
-                                {
-                                    value: 'derecho-peticion',
-                                    label: 'Respuesta de Derecho de Petición ',
-                                },
-                                {
-                                    value: 'certificaiones',
-                                    label: 'Certificaciones',
-                                },
-                                {
-                                    value: 'cobro-coactivo',
-                                    label: 'Cobro Coactivo',
-                                },
-                            ]"
-                        />
-                    </div>
-                    <div class="col-8">
-                        <div class="text-end mb-2 pt-4">
-                            <BButton
-                                type="button"
-                                :disabled="isDisabledAI"
-                                :loading="loadingBtnAI"
-                                variant="info"
-                                :loadingFill="false"
-                                loadingText="Aplicando IA "
-                                class="w-sm me-1"
-                            >
-                                Previsualizar
-                                <i
-                                    class="ri-eye-fill align-bottom ms-1 align-bottom"
-                                ></i>
-                            </BButton>
-
-                            -->
-            <!-- <div
-                v-if="answered"
-                class="d-flex justify-content-center align-items-center"
-            >
-                <h1 class="text-lg">Ya se respondió el radicado</h1>
-            </div> -->
             <section>
                 <div
-                    class="d-flex justify-content-between align-items-center w-100"
+                    class="d-flex justify-content-between align-items-start align-items-sm-center w-100 mt-2 flex-column-reverse flex-sm-row"
                 >
-                    <div class="grid gx-2">
+                    <div class="grid gx-2 mt-2 mt-sm-0">
                         <BButton
                             type="submit"
-                            :variant="answered ? 'secondary' : 'success'"
-                            :disabled="answered ? true : false"
+                            :variant="answered ? 'secondary' : 'danger'"
+                            :disabled="answered ? true : false || loadingFile"
                             class="w-sm"
                             @click="uploadFile"
-                            >Generar Radicado</BButton
-                        >
+                            ><div class="button-content">
+                                <span>Generar respuesta</span>
+                                <span
+                                    v-if="loadingFile"
+                                    class="spinner-border spinner-border-sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                ></span></div
+                        ></BButton>
                         <BButton
                             type="button"
                             class="w-sm mx-2"
-                            variant="primary"
+                            variant="success"
                             v-if="answered"
                             @click="sendFile"
+                            :disabled="loadingSendFile"
                         >
-                            Enviar al peticionario
-                            <i
-                                class="ri-send-plane-fill align-bottom ms-1 align-bottom"
-                            ></i>
+                            <div class="button-content">
+                                <span>Enviar al peticionario</span>
+                                <span
+                                    v-if="loadingSendFile"
+                                    class="spinner-border spinner-border-sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                ></span>
+                                <i
+                                    class="ri-send-plane-fill align-bottom ms-1 align-bottom"
+                                    v-else
+                                ></i>
+                            </div>
                         </BButton>
                         <!-- <BButton type="submit" variant="primary" class="w-sm me-1">
                 Borrador
@@ -297,6 +362,167 @@ watch(
                     <ckeditor v-model="editorData" :editor="editor"></ckeditor>
                 </div>
             </BCardBody> -->
+                <!-- <BCard no-body class="mt-3">
+                    <BCardHeader>
+                        <h6>Generador de documentos</h6>
+                    </BCardHeader>
+                    <BCardBody>
+                        <BRow class="mb-3">
+                            <BCol lg="6" class="mb-3">
+                                <label for="name" class="form-label fw-bold"
+                                    >Nombre
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.name"
+                                    id="name"
+                                    :required="true"
+                                    placeholder="Ingrese el nombre del destinatario"
+                                />
+                                <ValidateLabel v-bind="{ v$ }" attribute="name" />
+                            </BCol>
+
+                            <BCol lg="6" class="mb-3">
+                                <label for="email" class="form-label fw-bold"
+                                    >Email
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.email"
+                                    id="email"
+                                    :required="true"
+                                    placeholder="Ingrese el correo del destinatario"
+                                />
+                            </BCol>
+
+                            <BCol lg="3" class="mb-3">
+                                <label for="company" class="form-label fw-bold"
+                                    >Compañía
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.company"
+                                    id="company"
+                                    :required="true"
+                                    placeholder="Ingrese la compañía del destinatario"
+                                />
+                            </BCol>
+
+                            <BCol lg="3" class="mb-3">
+                                <label for="address" class="form-label fw-bold"
+                                    >Dirección
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.address"
+                                    id="address"
+                                    :required="true"
+                                    placeholder="Ingrese la dirección del destinatario"
+                                />
+                            </BCol>
+
+                            <BCol lg="3" class="mb-3">
+                                <label for="city" class="form-label fw-bold"
+                                    >Ciudad
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.city"
+                                    id="city"
+                                    :required="true"
+                                    placeholder="Ingrese la ciudad del destinatario"
+                                />
+                            </BCol>
+
+                            <BCol lg="3" class="mb-3">
+                                <label
+                                    for="senderName"
+                                    class="form-label fw-bold"
+                                    >Nombre del remitente
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.senderName"
+                                    id="senderName"
+                                    :required="true"
+                                    placeholder="Ingrese el nombre del remitente"
+                                />
+                            </BCol>
+
+                            <BCol lg="4" class="mb-3">
+                                <label for="position" class="form-label fw-bold"
+                                    >Cargo del remitente
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.position"
+                                    id="position"
+                                    :required="true"
+                                    placeholder="Ingrese el cargo del remitente"
+                                />
+                            </BCol>
+
+                            <BCol lg="8" class="mb-3">
+                                <label for="subject" class="form-label fw-bold"
+                                    >Asunto
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    :required="true"
+                                    v-model="form.subject"
+                                    id="subject"
+                                    placeholder="Ingrese el asunto"
+                                />
+                            </BCol>
+
+                            <BCol lg="12" class="mb-3">
+                                <label for="body" class="form-label fw-bold"
+                                    >Contenido del correo
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <textarea
+                                    type="text"
+                                    class="form-control w-100"
+                                    v-model="form.body"
+                                    id="body"
+                                    :required="true"
+                                    placeholder="Ingrese el contenido del correo"
+                                />
+                            </BCol>
+                        </BRow>
+                    </BCardBody>
+                </BCard> -->
                 <div class="relative">
                     <BCard no-body class="mt-3">
                         <BCardHeader>
@@ -412,5 +638,12 @@ watch(
 
 .label-formFile:hover {
     cursor: pointer;
+}
+
+.button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 </style>

@@ -12,7 +12,7 @@ export default {
                 } else {
                     this.getInputElement(index).blur();
                     // Submit code
-                    console.log('submit code');
+                    // console.log('submit code');
                 }
             }
         }

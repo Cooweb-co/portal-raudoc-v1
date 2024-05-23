@@ -3,13 +3,13 @@ import {
     getDocument,
     getDocumentFilesUploads,
 } from "@/services/docservice/doc.service";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, defineProps } from "vue";
 import { useRoute } from "vue-router";
 import OverviewSummary from "./OverviewSummary.vue";
 import OverviewDocuments from "./OverviewDocuments.vue";
 import OverviewResponse from "./OverviewResponse.vue";
 
-import transformDate from "@/helpers/transformDate";
+import {transformDate} from "@/helpers/transformDate";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
 // import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo";
 import setState from "@/helpers/setState";
@@ -24,6 +24,13 @@ const expirationDate = ref("");
 const numberClaim = ref("");
 const loading = ref(false);
 const router = useRoute();
+
+const props = defineProps({
+    showOverviewResponse: {
+        type: Boolean,
+        required: true
+    }
+})
 
 onMounted(async () => {
     try {
@@ -81,6 +88,7 @@ onMounted(async () => {
             address: docData?.petitionerInformation?.address || "No definido",
             additionalInformation: docData?.additionalInformation || [],
             legalBasis: docData?.legalBasis || [],
+            rawEntryDate: docData?.createdAt
         };
         numberClaim.value =
             data.value.numberEntryClaim ||
@@ -224,17 +232,17 @@ const isClaimOut = () => {
 
                     <BTab title="Documentos" class="fw-semibold pt-2" v-if="isClaimOut()">
                         <OverviewDocuments :data="data" :files="filesEntry" :loading="loading"
-                            :title="'Documentos de salida'" :typeOfPerson="'Nombre del Empleado'" />
+                            :title="'Documentos de salida'" />
                     </BTab>
                     <BTab title="Documentos" class="fw-semibold pt-2" v-else>
                         <OverviewDocuments :data="data" :files="filesEntry" :loading="loading"
-                            :title="'Documentos de entrada'" :typeOfPerson="'Nombre del cliente'" />
+                            :title="'Documentos de entrada'" />
                         <OverviewDocuments :data="data" :files="filesOut" :loading="loading"
-                            :title="'Documentos de salida'" :typeOfPerson="'Nombre del Empleado'" />
+                            :title="'Documentos de salida'" />
 
                     </BTab>
                     <OverviewResponse :loading="loading" :data="data"
-                        v-if="!numberClaim.startsWith('BV-')" />
+                        v-if="!numberClaim.startsWith('BV-') && props.showOverviewResponse" />
                 </BTabs>
             </BCol>
         </BRow>

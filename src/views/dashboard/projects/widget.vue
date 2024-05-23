@@ -1,10 +1,11 @@
 <script setup>
 import {
     SendIcon,
-    AwardIcon,
+    CheckSquareIcon,
     ClockIcon,
     CornerDownRightIcon,
 } from "@zhuowenli/vue-feather-icons";
+import { CountTo } from "vue3-count-to";
 import { ref, onMounted } from "vue";
 import { state } from "@/state/modules/auth";
 import axios from "axios";
@@ -17,8 +18,7 @@ const projectsWidgets = ref();
 onMounted(async () => {
     try {
         loading.value = true;
-        const url =
-            "https://us-central1-raudoc-gestion-agil.cloudfunctions.net/GET_COUNT_CLAIMS_BY_USER";
+        const url = `${process.env.VUE_APP_CF_BASE_URL}/GET_COUNT_CLAIMS_BY_USER`;
         const config = {
             params: {
                 uid: user.value.uid,
@@ -28,7 +28,7 @@ onMounted(async () => {
                 "Content-Type": "application/json",
             },
         };
-       
+
         const dataForCard = await axios.post(url, {}, config);
         if (dataForCard.data.length > 0) {
             loading.value = false;
@@ -37,19 +37,19 @@ onMounted(async () => {
             loading.value = false;
             projectsWidgets.value = [
                 {
-                    value: "Peticiones Recibidas",
+                    value: "Recibidas",
                     count: 0,
                 },
                 {
-                    value: "Peticiones Respondidas",
+                    value: "Respondidas",
                     count: 0,
                 },
                 {
-                    value: "Peticiones por responder",
+                    value: "Por responder",
                     count: 0,
                 },
                 {
-                    value: "Documentos Procesados",
+                    value: "Procesados",
                     count: 0,
                 },
             ];
@@ -59,19 +59,19 @@ onMounted(async () => {
         loading.value = false;
         projectsWidgets.value = [
             {
-                value: "Peticiones Recibidas",
+                value: "Recibidas",
                 count: 0,
             },
             {
-                value: "Peticiones Respondidas",
+                value: "Respondidas",
                 count: 0,
             },
             {
-                value: "Peticiones por responder",
+                value: "Por responder",
                 count: 0,
             },
             {
-                value: "Documentos Procesados",
+                value: "Procesados",
                 count: 0,
             },
         ];
@@ -95,90 +95,104 @@ onMounted(async () => {
             <a-skeleton :paragraph="{ rows: 2 }" active avatar />
         </BCol>
     </BRow>
-    <BCol sm="3" v-for="(item, index) of projectsWidgets" :key="index" v-else>
-        <BCard no-body class="card-animate">
-            <BCardBody>
-                <div class="d-flex align-items-center">
-                    <div class="avatar-sm flex-shrink-0">
-                        <span
-                            class="avatar-title rounded-2 fs-2"
-                            :class="{
-                                'bg-primary-subtle text-primary':
-                                    item.value.toUpperCase() === 'primary' ||
-                                    'DOCUMENTOS PROCESADOS',
-                                'bg-warning-subtle text-warning':
-                                    item.value.toUpperCase() ===
-                                    'PETICIONES POR RESPONDER',
-                                'bg-info-subtle text-info':
-                                    item.value.toUpperCase() === 'info',
-                            }"
-                        >
-                            <template
-                                v-if="
-                                    item.value.toUpperCase() ==
-                                    'PETICIONES RESPONDIDAS'
-                                "
-                            >
-                                <SendIcon
-                                    size="24"
-                                    class="text-primary"
-                                ></SendIcon>
-                            </template>
 
-                            <template
-                                v-if="
-                                    item.value.toUpperCase() ==
-                                    'PETICIONES RECIBIDAS'
-                                "
+    <BRow>
+        <BCol
+            v-for="(item, index) of projectsWidgets"
+            :key="index"
+            id="element"
+            sm="3"
+        >
+            <BCard no-body class="card-animate">
+                <BCardBody>
+                    <div class="d-flex align-items-center px-1">
+                        <div class="avatar-sm flex-shrink-0">
+                            <span
+                                class="avatar-title rounded-2 fs-2"
+                                :class="{
+                                    'bg-primary-subtle text-primary':
+                                        item.value.toUpperCase() ===
+                                            'primary' || 'PROCESADOS',
+                                    'bg-warning-subtle text-warning':
+                                        item.value.toUpperCase() ===
+                                        'POR RESPONDER',
+                                    'bg-info-subtle text-info':
+                                        item.value.toUpperCase() === 'info',
+                                }"
                             >
-                                <CornerDownRightIcon
-                                    size="24"
-                                    class="text-primary"
-                                ></CornerDownRightIcon>
-                            </template>
+                                <template
+                                    v-if="
+                                        item.value.toUpperCase() ==
+                                        'RESPONDIDAS'
+                                    "
+                                >
+                                    <SendIcon
+                                        size="24"
+                                        class="text-primary"
+                                    ></SendIcon>
+                                </template>
 
-                            <template
-                                v-if="
-                                    item.value.toUpperCase() ==
-                                    'PETICIONES POR RESPONDER'
-                                "
-                            >
-                                <ClockIcon
-                                    size="24"
-                                    class="text-primary"
-                                ></ClockIcon>
-                            </template>
+                                <template
+                                    v-if="
+                                        item.value.toUpperCase() == 'RECIBIDAS'
+                                    "
+                                >
+                                    <CornerDownRightIcon
+                                        size="24"
+                                        class="text-primary"
+                                    ></CornerDownRightIcon>
+                                </template>
 
-                            <template
-                                v-if="
-                                    item.value.toUpperCase() ==
-                                    'DOCUMENTOS PROCESADOS'
-                                "
+                                <template
+                                    v-if="
+                                        item.value.toUpperCase() ==
+                                        'POR RESPONDER'
+                                    "
+                                >
+                                    <ClockIcon
+                                        size="24"
+                                        class="text-primary"
+                                    ></ClockIcon>
+                                </template>
+
+                                <template
+                                    v-if="
+                                        item.value.toUpperCase() == 'PROCESADOS'
+                                    "
+                                >
+                                    <CheckSquareIcon
+                                        size="24"
+                                        class="text-primary"
+                                    ></CheckSquareIcon>
+                                </template>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1 overflow-hidden ms-3">
+                            <p
+                                class="text-uppercase fw-medium text-muted text-truncate mb-3"
                             >
-                                <AwardIcon
-                                    size="24"
-                                    class="text-primary"
-                                ></AwardIcon>
-                            </template>
-                        </span>
-                    </div>
-                    <div class="flex-grow-1 overflow-hidden ms-3">
-                        <p
-                            class="text-uppercase fw-medium text-muted text-truncate mb-3"
-                        >
-                            {{ item.value }}
-                        </p>
-                        <div class="d-flex align-items-center mb-3">
-                            <h4 class="fs-4 flex-grow-1 mb-0">
-                                <span class="counter-value">{{
-                                    item.count
-                                }}</span>
-                                
-                            </h4>
+                                {{ item.value }}
+                            </p>
+                            <div class="d-flex align-items-center mb-3">
+                                <h4 class="fs-4 flex-grow-1 mb-0">
+                                    <count-to
+                                        :duration="1000"
+                                        :startVal="0"
+                                        :endVal="item.count"
+                                    ></count-to>
+                                </h4>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </BCardBody>
-        </BCard>
-    </BCol>
+                </BCardBody>
+            </BCard>
+        </BCol>
+    </BRow>
 </template>
+
+<style>
+#element {
+    background-color: white;
+    min-width: 16em;
+}
+</style>

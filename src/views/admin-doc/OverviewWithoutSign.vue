@@ -2,7 +2,7 @@
 import OverviewMain from "@/views/admin-doc/detailsDocuments/components/OverviewMain.vue";
 import ModalOTPVerification from "./detailsDocuments/components/ModalOTPVerification.vue";
 import { ref } from "vue";
-const showModal = ref(true);
+const showModal = ref(false);
 const handleShowModal = (newValue) => {
     showModal.value = newValue;
 };
@@ -13,6 +13,6 @@ const handleShowModal = (newValue) => {
             v-if="showModal"
             @handleShowModal="handleShowModal"
         />
-        <OverviewMain v-else />
+        <OverviewMain :showOverviewResponse="false" v-else />
     </main>
 </template>

@@ -166,7 +166,7 @@ export default {
       if (plus) {
         Array.prototype.forEach.call(plus, (e) => {
           e.addEventListener("click", (event) => {
-            console.log(event.target.previousElementSibling.value);
+            // console.log(event.target.previousElementSibling.value);
 
             if (parseInt(e.previousElementSibling.value) < 10) {
               event.target.previousElementSibling.value++;
@@ -276,7 +276,7 @@ export default {
       console.log('this.newproductvalue');
     },
     productvalue(value) {
-      console.log(this.newproductvalue);
+      // console.log(this.newproductvalue);
       this.newproductvalue.forEach(e => {
         console.log('the value', e);
       });

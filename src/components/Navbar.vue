@@ -58,7 +58,7 @@ const name = computed(() => {
 });
 
 const rol = computed(() => {
-    switch (user.value.idRole) {
+    switch (user?.value?.idRole) {
         case "FUNCTIONARY":
             return "Funcionario";
         case "ADMIN":
@@ -76,11 +76,64 @@ const rol = computed(() => {
 
 function capitalizeFirstLetter(str) {
     return str?.charAt(0)?.toUpperCase() + str?.slice(1)?.toLowerCase() || "";
-    // return str;
 }
 
 const toggleHamburgerMenu = () => {
-    // Aquí va tu lógica de toggleHamburgerMenu
+    var windowSize = document.documentElement.clientWidth;
+    let layoutType = document.documentElement.getAttribute("data-layout");
+
+    document.documentElement.setAttribute("data-sidebar-visibility", "show");
+    let visiblilityType = document.documentElement.getAttribute(
+        "data-sidebar-visibility"
+    );
+
+    if (windowSize > 767)
+        document.querySelector(".hamburger-icon").classList.toggle("open");
+
+    //For collapse horizontal menu
+    if (document.documentElement.getAttribute("data-layout") === "horizontal") {
+        document.body.classList.contains("menu")
+            ? document.body.classList.remove("menu")
+            : document.body.classList.add("menu");
+    }
+
+    //For collapse vertical menu
+
+    if (
+        visiblilityType === "show" &&
+        (layoutType === "vertical" || layoutType === "semibox")
+    ) {
+        if (windowSize < 1025 && windowSize > 767) {
+            document.body.classList.remove("vertical-sidebar-enable");
+            document.documentElement.getAttribute("data-sidebar-size") == "sm"
+                ? document.documentElement.setAttribute("data-sidebar-size", "")
+                : document.documentElement.setAttribute(
+                      "data-sidebar-size",
+                      "sm"
+                  );
+        } else if (windowSize > 1025) {
+            document.body.classList.remove("vertical-sidebar-enable");
+            document.documentElement.getAttribute("data-sidebar-size") == "lg"
+                ? document.documentElement.setAttribute(
+                      "data-sidebar-size",
+                      "sm"
+                  )
+                : document.documentElement.setAttribute(
+                      "data-sidebar-size",
+                      "lg"
+                  );
+        } else if (windowSize <= 767) {
+            document.body.classList.add("vertical-sidebar-enable");
+            document.documentElement.setAttribute("data-sidebar-size", "lg");
+        }
+    }
+
+    //Two column menu
+    if (document.documentElement.getAttribute("data-layout") == "twocolumn") {
+        document.body.classList.contains("twocolumn-panel")
+            ? document.body.classList.remove("twocolumn-panel")
+            : document.body.classList.add("twocolumn-panel");
+    }
 };
 
 // const toggleMenu = () => {
@@ -92,7 +145,33 @@ const toggleHamburgerMenu = () => {
 // };
 
 const initFullScreen = () => {
-    // Aquí va tu lógica de initFullScreen
+    document.body.classList.toggle("fullscreen-enable");
+    if (
+        !document.fullscreenElement &&
+        /* alternative standard method */
+        !document.mozFullScreenElement &&
+        !document.webkitFullscreenElement
+    ) {
+        // current working methods
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        } 
+        else if (document.documentElement.mozRequestFullScreen) {
+            document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+            document.documentElement.webkitRequestFullscreen(
+                Element.ALLOW_KEYBOARD_INPUT
+            );
+        }
+    } else {
+        if (document.cancelFullScreen) {
+            document.cancelFullScreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.webkitCancelFullScreen) {
+            document.webkitCancelFullScreen();
+        }
+    }
 };
 
 // const setLanguage = (locale, country, flag) => {
@@ -217,7 +296,7 @@ onMounted(() => {
 
                     <button
                         type="button"
-                        class="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger d-none"
+                        class="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger"
                         id="topnav-hamburger-icon"
                     >
                         <span class="hamburger-icon">
@@ -495,12 +574,12 @@ onMounted(() => {
               </router-link>
             </div>
           </BDropdown> -->
-
-                    <div class="ms-1 header-item d-none d-sm-flex">
+                    <!-- Full screen -->
+                    <div class="ms-1 header-item d-sm-flex">
                         <BButton
                             type="button"
                             variant="ghost-secondary"
-                            class="btn-icon btn-topbar rounded-circle d-none"
+                            class="btn-icon btn-topbar rounded-circle"
                             data-toggle="fullscreen"
                             @click="initFullScreen"
                         >
@@ -883,12 +962,18 @@ onMounted(() => {
                             </span>
                         </template>
                         <h6 class="dropdown-header">Hola {{ name }}!</h6>
-                        <router-link class="dropdown-item" to="/pages/profile"
+                        <!-- <router-link class="dropdown-item" to="/pages/profile"
                             ><i
                                 class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"
                             ></i>
                             <span class="align-middle"> Perfil</span>
-                        </router-link>
+                        </router-link> -->
+                        <div class="dropdown-item" to="/pages/profile"
+                            ><i
+                                class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"
+                            ></i>
+                            <span class="align-middle"> Perfil</span>
+                        </div>
                         <!-- <router-link class="dropdown-item" to="/chat">
               <i class=" mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i>
               <span class="align-middle"> Messages</span>

@@ -2,7 +2,8 @@
 import Layout from "@/layouts/main.vue";
 import PageHeader from "@/components/page-header";
 import TableDocuments from "@/views/tickets/components/TableDocuments";
-import ClaimsCounter from "@/views/tickets/components/ClaimsCounter";
+// import ClaimsCounter from "@/views/tickets/components/ClaimsCounter";
+import Widget from "@/views/dashboard/projects/widget.vue";
 
 </script>
 
@@ -11,7 +12,7 @@ import ClaimsCounter from "@/views/tickets/components/ClaimsCounter";
         <div>
             <PageHeader title="LISTA DE ENTRADAS" pageTitle="Radicados" />
 
-            <ClaimsCounter />
+            <Widget />
 
             <TableDocuments />
         </div>

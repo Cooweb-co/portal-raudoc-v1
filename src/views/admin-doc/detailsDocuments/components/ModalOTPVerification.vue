@@ -1,6 +1,7 @@
 <script setup>
 import { toast } from "vue3-toastify";
 import { onMounted, ref, computed, defineEmits } from "vue";
+import { useRouter } from "vue-router";
 const emit = defineEmits(["handleShowModal"]);
 onMounted(async () => {
     sendCodeToEmail();
@@ -19,6 +20,7 @@ const intervalId = ref(null);
 const errorForm = ref(false);
 const counter = ref(0);
 const reCaptcha = ref(true);
+const router = useRouter()
 
 const styleInputForm = computed(() => {
     const styleInput = "otp-letter-input border-bottom text-center";
@@ -80,7 +82,37 @@ const clearAllInputs = () => {
     code5.value = "";
     code6.value = "";
 };
-const moveToNext = (index) => {
+
+const clearPreviousVModelInput = (index) => {
+    switch (index) {
+        case 2:
+            code1.value = "";
+            break;
+        case 3:
+            code2.value = "";
+            break;
+        case 4:
+            code3.value = "";
+            break;
+        case 5:
+            code4.value = "";
+            break;
+        case 6:
+            code5.value = "";
+            break;
+        default:
+            break;
+    }
+};
+const moveToNextOrPrevious = (index, event) => {
+    if (event.which == 8) {
+        if (index !== 1) {
+            const previousInput = getInputElement(index - 1);
+            clearPreviousVModelInput(index)
+            previousInput.value = "";
+            previousInput.focus();
+        }
+    }
     if (getInputElement(index).value.length === 1) {
         if (index !== 6) {
             getInputElement(index + 1).focus();
@@ -101,7 +133,7 @@ const moveToNext = (index) => {
 const handleCancelButton = () => {
     clearAllInputs();
     clearInterval(intervalId.value);
-    this.$router.push({ path: "/login" });
+    router.push({ path: "/login" });
 };
 const getEmail = async () => {
     try {
@@ -166,7 +198,7 @@ const sendCodeToEmail = async () => {
                 <input
                     type="text"
                     :class="styleInputForm"
-                    v-on:keyup="moveToNext(1)"
+                    v-on:keyup="moveToNextOrPrevious(1, $event)"
                     v-model="code1"
                     maxLength="1"
                     id="digit-1-input"
@@ -175,7 +207,7 @@ const sendCodeToEmail = async () => {
                 <input
                     type="text"
                     :class="styleInputForm"
-                    v-on:keyup="moveToNext(2)"
+                    v-on:keyup="moveToNextOrPrevious(2, $event)"
                     v-model="code2"
                     maxLength="1"
                     id="digit-2-input"
@@ -184,7 +216,7 @@ const sendCodeToEmail = async () => {
                 <input
                     type="text"
                     :class="styleInputForm"
-                    v-on:keyup="moveToNext(3)"
+                    v-on:keyup="moveToNextOrPrevious(3, $event)"
                     v-model="code3"
                     maxLength="1"
                     id="digit-3-input"
@@ -193,7 +225,7 @@ const sendCodeToEmail = async () => {
                 <input
                     type="text"
                     :class="styleInputForm"
-                    v-on:keyup="moveToNext(4)"
+                    v-on:keyup="moveToNextOrPrevious(4, $event)"
                     v-model="code4"
                     maxLength="1"
                     id="digit-4-input"
@@ -202,7 +234,7 @@ const sendCodeToEmail = async () => {
                 <input
                     type="text"
                     :class="styleInputForm"
-                    v-on:keyup="moveToNext(5)"
+                    v-on:keyup="moveToNextOrPrevious(5, $event)"
                     v-model="code5"
                     maxLength="1"
                     id="digit-5-input"
@@ -211,7 +243,7 @@ const sendCodeToEmail = async () => {
                 <input
                     type="text"
                     :class="styleInputForm"
-                    v-on:keyup="moveToNext(6)"
+                    v-on:keyup="moveToNextOrPrevious(6, $event)"
                     v-model="code6"
                     maxLength="1"
                     id="digit-6-input"
