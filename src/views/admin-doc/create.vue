@@ -24,7 +24,12 @@ import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
 import Modal from "../modals/Modal.vue";
 import moment from "moment";
 import store from "@/state/store";
-import { FileTextIcon, AlertOctagonIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
+import {
+    FileTextIcon,
+    AlertOctagonIcon,
+    Trash2Icon,
+    CpuIcon,
+} from "@zhuowenli/vue-feather-icons";
 
 // import {
 //   onSnapshot,
@@ -40,6 +45,7 @@ import {
     getDocStatus,
     // deleteDocument,
     deleteDocumentByName,
+    updateClaimSummary,
 } from "../../services/docservice/doc.service";
 import axios from "axios";
 
@@ -236,6 +242,8 @@ export default {
                 loadingAI.value = false;
                 isListeningEnabled.value = false;
                 unsubscribe = null;
+                form.subject = "";
+                form.description = "";
             } else {
                 console.warn("No hay suscripción activa para desuscribirse.");
             }
@@ -365,16 +373,43 @@ export default {
         const deleteRecord = async (name) => {
             files.value = files.value.filter((file) => name != file.name);
 
-            await processUploadedFiles(name);
-
             filesToUpload.value = filesToUpload.value.filter(
                 (file) => name != file.name
             );
+            await processUploadedFiles(name);
+            await changeDocumentAI(uploadedFiles.value[0]?.name);
+        };
+
+        const changeDocumentAI = async (name) => {
+            uploadedFiles.value.forEach(async (file) => {
+                if (file.name == name) {
+                    loadingAI.value = true;
+                    const res = await updateClaimSummary(
+                        companyID.value,
+                        documentID.value,
+                        file?.uniqueFileName
+                    );
+                    if (!res) {
+                        loadingAI.value = false;
+                        form.subject = "";
+                        form.description = "";
+                        toast.error("Este documento no cuenta con un resumen", {
+                            duration: 3000,
+                            position: toast.POSITION.TOP_RIGHT,
+                            autoClose: 3000,
+                        });
+                        return;
+                    }
+                    documentAI.value = file;
+                    isListeningEnabled.value = true;
+                    startListening();
+                }
+                return;
+            });
         };
 
         const processUploadedFiles = async (name) => {
             const updatedFiles = [];
-
             for (let i = 0; i < uploadedFiles.value.length; i++) {
                 const file = uploadedFiles.value[i];
 
@@ -661,6 +696,7 @@ export default {
             saveLoading,
             submitLoading,
             addressOptions,
+            changeDocumentAI,
             qrModal,
             loadingAI,
             newDate,
@@ -917,7 +953,8 @@ export default {
         Modal,
         FileTextIcon,
         AlertOctagonIcon,
-        Trash2Icon
+        Trash2Icon,
+        CpuIcon,
     },
 };
 </script>
@@ -1102,14 +1139,25 @@ export default {
                                                 ></strong>
                                             </div>
                                         </div>
-                                        <div class="flex-shrink-0 ms-3">
+                                        <div class="flex-shrink-0 ms-3 gap-1">
+                                            <BButton
+                                                variant="info"
+                                                size="sm"
+                                                class="me-1"
+                                                data-dz-remove=""
+                                                @click="
+                                                    changeDocumentAI(file.name)
+                                                "
+                                            >
+                                                <CpuIcon />
+                                            </BButton>
                                             <BButton
                                                 variant="danger"
                                                 size="sm"
                                                 data-dz-remove=""
                                                 @click="deleteRecord(file.name)"
                                             >
-                                            <Trash2Icon />
+                                                <Trash2Icon />
                                             </BButton>
                                         </div>
                                     </div>
@@ -1485,6 +1533,10 @@ export default {
                                         {
                                             value: 'Cédula extranjería',
                                             label: 'Cédula extranjería',
+                                        },
+                                        {
+                                            value: 'NIT',
+                                            label: 'NIT',
                                         },
                                     ]"
                                 />

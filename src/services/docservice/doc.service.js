@@ -6,6 +6,7 @@ import {
     getDocs,
     collection,
     deleteDoc,
+    updateDoc,
     query,
     where,
 } from "firebase/firestore";
@@ -159,7 +160,12 @@ export async function getDocStatus(companyId, claimId) {
     }
 }
 
-export const deleteDocumentByName = async (companyId, claimId, fileId, year) => {
+export const deleteDocumentByName = async (
+    companyId,
+    claimId,
+    fileId,
+    year
+) => {
     try {
         // Define the query to find the document with the specific name
         const collectionPath = `Companies/${companyId}/Claims/${claimId}/Files`;
@@ -204,6 +210,65 @@ export const deleteFile = async (companyId, year, claimId, uniqueFileName) => {
         return true;
     } catch (error) {
         console.error("Error al eliminar el archivo:", error);
+        return false;
+    }
+};
+
+export const updateClaimSummary = async (companyId, claimId, uniqueValue) => {
+    try {
+        // Definir la ruta de la colección
+        const collectionPath = `Companies/${companyId}/Claims/${claimId}/Files`;
+        console.log("collectionPath", collectionPath);
+        console.log("uniqueValue", uniqueValue);
+
+        // Crear la consulta para encontrar el documento con el valor específico
+        const q = query(
+            collection(firestore, collectionPath),
+            where("name", "==", uniqueValue) // Cambiar "property" al nombre de la propiedad que contiene el valor único
+        );
+
+        // Ejecutar la consulta
+        const querySnapshot = await getDocs(q);
+
+        // Verificar si se encontró algún documento
+        if (!querySnapshot.empty) {
+            let summary = null;
+            // eslint-disable-next-line no-unused-vars
+            let docId = null;
+
+            querySnapshot.forEach((docSnapshot) => {
+                docId = docSnapshot.id;
+                summary = docSnapshot.data().summary;
+            });
+
+            // Verificar que se haya encontrado el summary
+            if (summary) {
+                // Actualizar el documento padre con el summary
+                const parentDocRef = doc(
+                    firestore,
+                    `Companies/${companyId}/Claims/${claimId}`
+                );
+                console.log(summary)
+                await updateDoc(parentDocRef, { ...summary  });
+
+                console.log(
+                    `Documento padre actualizado con summary: ${summary}`
+                );
+                return true;
+            } else {
+                console.error(
+                    "No se encontró la propiedad 'summary' en el documento."
+                );
+                return false;
+            }
+        } else {
+            console.error(
+                "No se encontró ningún documento con el valor especificado."
+            );
+            return false;
+        }
+    } catch (error) {
+        console.error("Error al actualizar el documento:", error);
         return false;
     }
 };
