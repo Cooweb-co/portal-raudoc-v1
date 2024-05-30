@@ -46,7 +46,6 @@ export const onListenClaimData = async (claimId, companyId, callback) => {
         return onSnapshot(
             doc(firestore, "Companies", companyId, "Claims", claimId),
             (doc) => {
-                // console.log("onListenClaimData::::OnSnapshot", doc.data());
                 callback(doc.data());
             }
         );
@@ -59,7 +58,6 @@ export const onListenClaimData = async (claimId, companyId, callback) => {
 export const saveFile = async (pathDocument, urlPDF, fileName) => {
     // eslint-disable-next-line no-useless-catch
     try {
-        // console.log("saveFile:::", pathDocument, urlPDF, fileName);
 
         await firestore.doc(pathDocument).collection("Files").add({
             name: fileName,
@@ -88,7 +86,7 @@ export const getDocument = async (companyId, claimId) => {
         if (docSnap.exists()) {
             return docSnap.data();
         } else {
-            console.log("No existe el document!");
+            console.error("No existe el document!");
             return null;
         }
     } catch (error) {
@@ -115,7 +113,7 @@ export const getDocumentFilesUploads = async (companyId, claimId) => {
             });
             return documents;
         } else {
-            console.log("No existen documentos en la colección!");
+            console.error("No existen documentos en la colección!");
             return null;
         }
     } catch (error) {
@@ -218,8 +216,6 @@ export const updateClaimSummary = async (companyId, claimId, uniqueValue) => {
     try {
         // Definir la ruta de la colección
         const collectionPath = `Companies/${companyId}/Claims/${claimId}/Files`;
-        console.log("collectionPath", collectionPath);
-        console.log("uniqueValue", uniqueValue);
 
         // Crear la consulta para encontrar el documento con el valor específico
         const q = query(
@@ -248,12 +244,8 @@ export const updateClaimSummary = async (companyId, claimId, uniqueValue) => {
                     firestore,
                     `Companies/${companyId}/Claims/${claimId}`
                 );
-                console.log(summary)
                 await updateDoc(parentDocRef, { ...summary  });
 
-                console.log(
-                    `Documento padre actualizado con summary: ${summary}`
-                );
                 return true;
             } else {
                 console.error(
