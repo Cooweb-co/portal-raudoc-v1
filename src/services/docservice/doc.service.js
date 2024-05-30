@@ -218,6 +218,8 @@ export const updateClaimSummary = async (companyId, claimId, uniqueValue) => {
     try {
         // Definir la ruta de la colección
         const collectionPath = `Companies/${companyId}/Claims/${claimId}/Files`;
+        console.log("collectionPath", collectionPath);
+        console.log("uniqueValue", uniqueValue);
 
         // Crear la consulta para encontrar el documento con el valor específico
         const q = query(
@@ -246,7 +248,8 @@ export const updateClaimSummary = async (companyId, claimId, uniqueValue) => {
                     firestore,
                     `Companies/${companyId}/Claims/${claimId}`
                 );
-                await updateDoc(parentDocRef, { summary });
+                console.log(summary)
+                await updateDoc(parentDocRef, { ...summary  });
 
                 console.log(
                     `Documento padre actualizado con summary: ${summary}`
