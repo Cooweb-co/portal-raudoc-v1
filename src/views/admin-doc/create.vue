@@ -1388,6 +1388,9 @@ export default {
                                         {
                                             value: 'Cédula extranjería',
                                             label: 'Cédula extranjería',
+                                        },{
+                                            value: 'NIT',
+                                            label: 'NIT',
                                         },
                                     ]"
                                 />
