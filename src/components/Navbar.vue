@@ -1,23 +1,23 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 // import { layoutMethods } from '@/state/helpers';
-import Notification from "@/components/NavbarNotification";
 import { state } from "../state/modules/auth";
 import { BButton } from "bootstrap-vue-next";
 // import i18n from '../i18n';
 
-import { Trash2Icon } from "@zhuowenli/vue-feather-icons";
+// import Notification from "@/components/NavbarNotification";
+// import { Trash2Icon } from "@zhuowenli/vue-feather-icons";
 
-const notifications = ref([
-    {
-        id: "2Ebr1u9Thu29DUm7aVBZ",
-        numberClaim: "EXT-BV-2024-00041",
-    },
-    {
-        id: "5LbwcASOOEMtS0tLSqEx",
-        numberClaim: "EXT-BV-2024-00050",
-    },
-]);
+// const notifications = ref([
+//     {
+//         id: "2Ebr1u9Thu29DUm7aVBZ",
+//         numberClaim: "EXT-BV-2024-00041",
+//     },
+//     {
+//         id: "5LbwcASOOEMtS0tLSqEx",
+//         numberClaim: "EXT-BV-2024-00050",
+//     },
+// ]);
 
 // const languages = ref([
 //   {
@@ -203,30 +203,30 @@ const isCustomDropdown = () => {
     // Aquí va tu lógica de isCustomDropdown
 };
 
-const selectNotifications = ref([]);
+// const selectNotifications = ref([]);
 
-const setSelectNotifications = (id) => {
-    selectNotifications.value.push(id);
-};
+// const setSelectNotifications = (id) => {
+//     selectNotifications.value.push(id);
+// };
 
-const deselectNotifications = (id) => {
-    selectNotifications.value = selectNotifications.value.filter(
-        (element) => element != id
-    );
-};
+// const deselectNotifications = (id) => {
+//     selectNotifications.value = selectNotifications.value.filter(
+//         (element) => element != id
+//     );
+// };
 
-const deleteNotification = () => {
-    for (let i = 0; i < selectNotifications.value.length; i++) {
-        notifications.value = notifications.value.filter(
-            (element) => element.id != selectNotifications.value[i]
-        );
-    }
-};
+// const deleteNotification = () => {
+//     for (let i = 0; i < selectNotifications.value.length; i++) {
+//         notifications.value = notifications.value.filter(
+//             (element) => element.id != selectNotifications.value[i]
+//         );
+//     }
+// };
 
-const markAsRead = () => {
-    selectNotifications.value = [];
-    notifications.value = [];
-};
+// const markAsRead = () => {
+//     selectNotifications.value = [];
+//     notifications.value = [];
+// };
 
 onMounted(() => {
     if (process.env.VUE_APP_I18N_LOCALE) {
@@ -594,7 +594,10 @@ onMounted(() => {
             </BButton>
           </div> -->
 
-                    <BDropdown
+
+                    <!-- ---------------------------------- Botón de notificaciones ---------------------------------------------------------------  -->
+
+                    <!-- <BDropdown
                         variant="ghost-dark"
                         dropstart
                         class="ms-1 dropdown"
@@ -667,235 +670,6 @@ onMounted(() => {
                                     ><Trash2Icon
                                 /></BButton>
                             </div>
-                            <!-- <BTab title=" All (4) " class="tab-pane fade py-2 ps-2 show" id="all-noti-tab" role="tabpanel">
-                <simplebar data-simplebar style="max-height: 300px" class="pe-2">
-                  <div class="text-reset notification-item d-block dropdown-item position-relative">
-                    <div class="d-flex">
-                      <div class="avatar-xs me-3 flex-shrink-0">
-                        <span class="avatar-title bg-info-subtle text-info rounded-circle fs-16">
-                          <i class="bx bx-badge-check"></i>
-                        </span>
-                      </div>
-                      <div class="flex-grow-1">
-                        <BLink href="#!" class="stretched-link">
-                          <h6 class="mt-0 mb-2 lh-base">
-                            Your <b>Elite</b> author Graphic Optimization
-                            <span class="text-secondary">reward</span> is
-                            ready!
-                          </h6>
-                        </BLink>
-                        <p class="mb-0 fs-11 fw-medium text-uppercase text-muted">
-                          <span><i class="mdi mdi-clock-outline"></i> Just 30 sec ago</span>
-                        </p>
-                      </div>
-                      <div class="px-2 fs-15">
-                        <input class="form-check-input" type="checkbox" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="text-reset notification-item d-block dropdown-item position-relative">
-                    <div class="d-flex">
-                      <img src="@/assets/images/users/avatar-2.jpg" class="me-3 rounded-circle avatar-xs flex-shrink-0"
-                        alt="user-pic" />
-                      <div class="flex-grow-1">
-                        <BLink href="#!" class="stretched-link">
-                          <h6 class="mt-0 mb-1 fs-13 fw-semibold">
-                            Angela Bernier
-                          </h6>
-                        </BLink>
-                        <div class="fs-13 text-muted">
-                          <p class="mb-1">
-                            Answered to your comment on the cash flow forecast's graph 🔔.
-                          </p>
-                        </div>
-                        <p class="mb-0 fs-11 fw-medium text-uppercase text-muted">
-                          <span><i class="mdi mdi-clock-outline"></i> 48 min ago</span>
-                        </p>
-                      </div>
-                      <div class="px-2 fs-15">
-                        <input class="form-check-input" type="checkbox" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="text-reset notification-item d-block dropdown-item position-relative">
-                    <div class="d-flex">
-                      <div class="avatar-xs me-3 flex-shrink-0">
-                        <span class="avatar-title bg-danger-subtle text-danger rounded-circle fs-16">
-                          <i class="bx bx-message-square-dots"></i>
-                        </span>
-                      </div>
-                      <div class="flex-grow-1">
-                        <BLink href="#!" class="stretched-link">
-                          <h6 class="mt-0 mb-2 fs-13 lh-base">
-                            You have received <b class="text-success">20</b> new messages in the conversation
-                          </h6>
-                        </BLink>
-                        <p class="mb-0 fs-11 fw-medium text-uppercase text-muted">
-                          <span><i class="mdi mdi-clock-outline"></i> 2 hrs
-                            ago</span>
-                        </p>
-                      </div>
-                      <div class="px-2 fs-15">
-                        <input class="form-check-input" type="checkbox" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="text-reset notification-item d-block dropdown-item position-relative">
-                    <div class="d-flex">
-                      <img src="@/assets/images/users/avatar-8.jpg" class="me-3 rounded-circle avatar-xs flex-shrink-0"
-                        alt="user-pic" />
-                      <div class="flex-grow-1">
-                        <BLink href="#!" class="stretched-link">
-                          <h6 class="mt-0 mb-1 fs-13 fw-semibold">
-                            Maureen Gibson
-                          </h6>
-                        </BLink>
-                        <div class="fs-13 text-muted">
-                          <p class="mb-1">
-                            We talked about a project on linkedin.
-                          </p>
-                        </div>
-                        <p class="mb-0 fs-11 fw-medium text-uppercase text-muted">
-                          <span><i class="mdi mdi-clock-outline"></i> 4 hrs
-                            ago</span>
-                        </p>
-                      </div>
-                      <div class="px-2 fs-15">
-                        <input class="form-check-input" type="checkbox" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="my-3 text-center">
-                    <BButton type="button" variant="soft-success">
-                      View All Notifications
-                      <i class="ri-arrow-right-line align-middle"></i>
-                    </BButton>
-                  </div>
-                </simplebar>
-              </BTab>
-
-              <BTab title="Messages" class="tab-pane fade py-2 ps-2" id="messages-tab" role="tabpanel"
-                aria-labelledby="messages-tab">
-                <simplebar data-simplebar style="max-height: 300px" class="pe-2">
-                  
-                  <div class="text-reset notification-item d-block dropdown-item">
-                    <div class="d-flex">
-                      <img src="@/assets/images/users/avatar-3.jpg" class="me-3 rounded-circle avatar-xs"
-                        alt="user-pic" />
-                      <div class="flex-grow-1">
-                        <BLink href="#!" class="stretched-link">
-                          <h6 class="mt-0 mb-1 fs-13 fw-semibold">
-                            James Lemire
-                          </h6>
-                        </BLink>
-                        <div class="fs-13 text-muted">
-                          <p class="mb-1">
-                            We talked about a project on linkedin.
-                          </p>
-                        </div>
-                        <p class="mb-0 fs-11 fw-medium text-uppercase text-muted">
-                          <span><i class="mdi mdi-clock-outline"></i> 30 min ago</span>
-                        </p>
-                      </div>
-                      <div class="px-2 fs-15">
-                        <input class="form-check-input" type="checkbox" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="text-reset notification-item d-block dropdown-item">
-                    <div class="d-flex">
-                      <img src="@/assets/images/users/avatar-2.jpg" class="me-3 rounded-circle avatar-xs"
-                        alt="user-pic" />
-                      <div class="flex-grow-1">
-                        <BLink href="#!" class="stretched-link">
-                          <h6 class="mt-0 mb-1 fs-13 fw-semibold">
-                            Angela Bernier
-                          </h6>
-                        </BLink>
-                        <div class="fs-13 text-muted">
-                          <p class="mb-1">
-                            Answered to your comment on the cash flow
-                            forecast's graph 🔔.
-                          </p>
-                        </div>
-                        <p class="mb-0 fs-11 fw-medium text-uppercase text-muted">
-                          <span><i class="mdi mdi-clock-outline"></i> 2 hrs
-                            ago</span>
-                        </p>
-                      </div>
-                      <div class="px-2 fs-15">
-                        <input class="form-check-input" type="checkbox" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="text-reset notification-item d-block dropdown-item">
-                    <div class="d-flex">
-                      <img src="@/assets/images/users/avatar-6.jpg" class="me-3 rounded-circle avatar-xs"
-                        alt="user-pic" />
-                      <div class="flex-grow-1">
-                        <BLink href="#!" class="stretched-link">
-                          <h6 class="mt-0 mb-1 fs-13 fw-semibold">
-                            Kenneth Brown
-                          </h6>
-                        </BLink>
-                        <div class="fs-13 text-muted">
-                          <p class="mb-1">
-                            Mentionned you in his comment on 📃 invoice
-                            #12501.
-                          </p>
-                        </div>
-                        <p class="mb-0 fs-11 fw-medium text-uppercase text-muted">
-                          <span><i class="mdi mdi-clock-outline"></i> 10 hrs
-                            ago</span>
-                        </p>
-                      </div>
-                      <div class="px-2 fs-15">
-                        <input class="form-check-input" type="checkbox" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="text-reset notification-item d-block dropdown-item">
-                    <div class="d-flex">
-                      <img src="@/assets/images/users/avatar-8.jpg" class="me-3 rounded-circle avatar-xs"
-                        alt="user-pic" />
-                      <div class="flex-grow-1">
-                        <BLink href="#!" class="stretched-link">
-                          <h6 class="mt-0 mb-1 fs-13 fw-semibold">
-                            Maureen Gibson
-                          </h6>
-                        </BLink>
-                        <div class="fs-13 text-muted">
-                          <p class="mb-1">
-                            We talked about a project on linkedin.
-                          </p>
-                        </div>
-                        <p class="mb-0 fs-11 fw-medium text-uppercase text-muted">
-                          <span><i class="mdi mdi-clock-outline"></i> 3 days
-                            ago</span>
-                        </p>
-                      </div>
-                      <div class="px-2 fs-15">
-                        <input class="form-check-input" type="checkbox" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="my-3 text-center">
-                    <BButton type="button" variant="soft-success">
-                      View All Messages
-                      <i class="ri-arrow-right-line align-middle"></i>
-                    </BButton>
-                  </div>
-                </simplebar>
-              </BTab> -->
-
                             <BTab title="Notificaciones" class="p-3 pt-2">
                                 <Notification
                                     v-for="notification in notifications"
@@ -929,7 +703,7 @@ onMounted(() => {
                                 </simplebar>
                             </BTab>
                         </BTabs>
-                    </BDropdown>
+                    </BDropdown> -->
 
                     <BDropdown
                         variant="link"
@@ -968,12 +742,12 @@ onMounted(() => {
                             ></i>
                             <span class="align-middle"> Perfil</span>
                         </router-link> -->
-                        <div class="dropdown-item" to="/pages/profile"
+                        <!-- <div class="dropdown-item" to="/pages/profile"
                             ><i
                                 class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"
                             ></i>
                             <span class="align-middle"> Perfil</span>
-                        </div>
+                        </div> -->
                         <!-- <router-link class="dropdown-item" to="/chat">
               <i class=" mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i>
               <span class="align-middle"> Messages</span>
