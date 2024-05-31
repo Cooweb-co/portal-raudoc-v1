@@ -34,7 +34,7 @@ axios
         tdrs.value = response.data;
     })
     .catch((error) => {
-        console.log(error);
+        console.error(error);
     });
 }
 
@@ -60,7 +60,6 @@ const createUser = () => {
         })
     })
     .then((response) => {
-        // console.log(response.data);
         if(response.status == 200) {
             toast("Usuario creado exitosamente...", {
                 "type": "success",
@@ -92,7 +91,7 @@ const createUser = () => {
                 "autoClose": 5000,
                 "dangerouslyHTMLString": true
             })
-        console.log(error);
+        console.error(error);
     });
 }
 
@@ -169,6 +168,7 @@ getAreas();
                         <option value="FUNCTIONARY">FUNCIONARIO</option>
                         <option value="BOSS_OF_AREA">JEFE DE AREA</option>
                         <option value="DIRECTOR">DIRECTOR</option>
+                        <option value="RADICATOR">RADICADOR</option>
                     </select>
                     <p class="text-danger" :class="{ 'd-none': !v$.rol.$error }">
                         Valor incorrecto

@@ -29,6 +29,14 @@ export default [
     },
   },
   {
+    path: '/:pathMatch(.*)*',
+    name: "notFound",
+    component: () => import("../views/auth/errors/404-cover.vue"),
+    meta: {
+      title: "Página no encontrada"
+    },
+  },
+  {
     path: "/register",
     name: "Register",
     component: () => import("../views/account/register.vue"),
@@ -83,6 +91,15 @@ export default [
       title: "Consulta de radicado",
     },
     component: () => import("../views/admin-doc/OverviewWithoutSign"),
+  },
+
+  {
+    path: "/ver-radicado",
+    name: "buscar-radicado",
+    meta: {
+      title: "Buscar radicado",
+    },
+    component: () => import("../views/admin-doc/detailsDocuments/SearchDocument"),
   },
 
   {

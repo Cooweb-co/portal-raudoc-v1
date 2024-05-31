@@ -232,13 +232,13 @@ const isClaimOut = () => {
 
                     <BTab title="Documentos" class="fw-semibold pt-2" v-if="isClaimOut()">
                         <OverviewDocuments :data="data" :files="filesEntry" :loading="loading"
-                            :title="'Documentos de salida'" :typeOfPerson="'Nombre del Empleado'" />
+                            :title="'Documentos de salida'" />
                     </BTab>
                     <BTab title="Documentos" class="fw-semibold pt-2" v-else>
                         <OverviewDocuments :data="data" :files="filesEntry" :loading="loading"
-                            :title="'Documentos de entrada'" :typeOfPerson="'Nombre del cliente'" />
+                            :title="'Documentos de entrada'" />
                         <OverviewDocuments :data="data" :files="filesOut" :loading="loading"
-                            :title="'Documentos de salida'" :typeOfPerson="'Nombre del Empleado'" />
+                            :title="'Documentos de salida'" />
 
                     </BTab>
                     <OverviewResponse :loading="loading" :data="data"

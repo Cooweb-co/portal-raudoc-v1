@@ -1,10 +1,10 @@
 <script setup>
 import { SearchOutlined, EyeOutlined } from "@ant-design/icons-vue";
-import CalendarFilter from "./CalendarFilter.vue";
+// import CalendarFilter from "./CalendarFilter.vue";
 import { ref, reactive, onBeforeMount, computed } from "vue";
 import axios from "axios";
 import moment from "moment";
-import {transformDate} from "@/helpers/transformDate";
+import { transformDate } from "@/helpers/transformDate";
 import setState from "@/helpers/setState";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
 
@@ -17,9 +17,9 @@ const searchInput = ref();
 const filteredInfo = ref(null);
 const sortedInfo = ref(null);
 
-let dateStart = ref(null);
-let dateEnd = ref(null);
-const originDataSource = ref([]);
+// let dateStart = ref(null);
+// let dateEnd = ref(null);
+// const originDataSource = ref([]);
 const loading = ref(false);
 
 onBeforeMount(async () => {
@@ -29,10 +29,7 @@ onBeforeMount(async () => {
         "Content-Type": "application/json",
     };
     await axios
-        .get(
-            `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_LIST_V1`,
-            { headers }
-        )
+        .get(`${process.env.VUE_APP_CF_BASE_URL}/CLAIM_LIST_V1`, { headers })
         .then((response) => {
             response.data.map((data) => {
                 dataSource.push({
@@ -81,8 +78,6 @@ onBeforeMount(async () => {
             console.error("Error:", error);
         });
 });
-
-
 
 const handleTableChange = (pag, filters, sorter) => {
     filteredInfo.value = filters;
@@ -230,7 +225,6 @@ const columns = computed(() => {
                 },
             ],
             onFilter: (value, record) => record.status.indexOf(value) === 0,
-            defaultFilteredValue: ["En termino","Por vencer", "Vencido"],
         },
         // {
         //     title: "Prioridad",
@@ -290,47 +284,47 @@ const handleReset = (clearFilters) => {
 
 //Filtro de fechas
 
-const filterDateReceived = (filterDate) => {
-    filterForDate(filterDate);
-};
+// const filterDateReceived = (filterDate) => {
+//     filterForDate(filterDate);
+// };
 
-const filterForDate = (dates) => {
-    if (!dates) return "";
-    const validateString = dates.includes(" to ");
+// const filterForDate = (dates) => {
+//     if (!dates) return "";
+//     const validateString = dates.includes(" to ");
 
-    if (originDataSource.value.length > 0) clearFilterDate();
+//     if (originDataSource.value.length > 0) clearFilterDate();
 
-    if (!validateString) {
-        originDataSource.value = [...dataSource.value];
-        dataSource.value = dataSource.value.filter((data) => {
-            const fechaMoment = moment(data.entryDate, "DD MMM, YYYY");
-            return fechaMoment.isSameOrAfter(dates);
-        });
-    } else {
-        const datesArray = dates?.split(" to ");
-        for (let i = 0; i < datesArray.length; i++) {
-            // const dateObject = convertToDateISO(datesArray[i]);
-            if (i == 0) dateStart.value = datesArray[i];
-            else dateEnd.value = datesArray[i];
-        }
-        originDataSource.value = [...dataSource.value];
-        dataSource.value = dataSource.value.filter((data) => {
-            const fechaMoment = moment(data.entryDate, "DD MMM, YYYY");
-            return fechaMoment.isBetween(
-                dateStart.value,
-                dateEnd.value,
-                null,
-                "[]"
-            );
-        });
-    }
-};
+//     if (!validateString) {
+//         originDataSource.value = [...dataSource.value];
+//         dataSource.value = dataSource.value.filter((data) => {
+//             const fechaMoment = moment(data.entryDate, "DD MMM, YYYY");
+//             return fechaMoment.isSameOrAfter(dates);
+//         });
+//     } else {
+//         const datesArray = dates?.split(" to ");
+//         for (let i = 0; i < datesArray.length; i++) {
+//             // const dateObject = convertToDateISO(datesArray[i]);
+//             if (i == 0) dateStart.value = datesArray[i];
+//             else dateEnd.value = datesArray[i];
+//         }
+//         originDataSource.value = [...dataSource.value];
+//         dataSource.value = dataSource.value.filter((data) => {
+//             const fechaMoment = moment(data.entryDate, "DD MMM, YYYY");
+//             return fechaMoment.isBetween(
+//                 dateStart.value,
+//                 dateEnd.value,
+//                 null,
+//                 "[]"
+//             );
+//         });
+//     }
+// };
 
-const clearFilterDate = () => {
-    if (originDataSource.value.length <= 0) return "";
-    dataSource.value = [...originDataSource.value];
-    originDataSource.value = [];
-};
+// const clearFilterDate = () => {
+//     if (originDataSource.value.length <= 0) return "";
+//     dataSource.value = [...originDataSource.value];
+//     originDataSource.value = [];
+// };
 
 const setVariantState = (text) => {
     return setVariantStateInfo(text);
@@ -356,12 +350,12 @@ const setVariantState = (text) => {
 </script>
 
 <template>
-    <div>
+    <!-- <div>
         <CalendarFilter
             @filterDate="filterDateReceived"
             :clearFilterDate="clearFilterDate"
         />
-    </div>
+    </div> -->
     <div>
         <a-table
             :dataSource="dataSource"
@@ -616,5 +610,21 @@ const setVariantState = (text) => {
 .actionButtonTableRadicates:hover {
     background: #dddddd;
     transition: background 250ms;
+}
+</style>
+<style>
+:where(.css-dev-only-do-not-override-1hsjdkk).ant-btn-primary:not(:disabled) {
+    background-color: #0dcaf0 !important;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+:where(.css-dev-only-do-not-override-1hsjdkk).ant-btn-primary:not(
+        :disabled
+    ):hover {
+    background-color: #31d2f2 !important;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
 }
 </style>

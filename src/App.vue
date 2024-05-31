@@ -30,6 +30,7 @@ onMounted(() => {
 <style>
 *::-webkit-scrollbar {
     width: 6px; /* width of the entire scrollbar */
+    height: 6px; /* width of the entire scrollbar */
 }
 
 *::-webkit-scrollbar-track {

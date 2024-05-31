@@ -20,10 +20,12 @@ const props = defineProps(["loading", "data"]);
 const files = ref([]);
 const dropzone = ref(false);
 const answered = ref(false);
+const loadingFile = ref(false);
+const loadingSendFile = ref(false);
 const showInputCompany = ref(false);
 const documentNumber = ref("Número de radicado");
 const maxSize = 10000000;
-const domain = window.location.origin;
+// const domain = window.location.origin;
 const company = "BAQVERDE";
 const pathname = window.location.pathname.split("/");
 
@@ -99,7 +101,6 @@ const rules = {
 const v$ = useVuelidate(rules, form);
 
 const uploadFile = async () => {
-    let idLoadFile;
     try {
         if (answered.value) {
             toast.error("Ya el radicado fue generado", {
@@ -112,14 +113,7 @@ const uploadFile = async () => {
             });
             return;
         }
-
-        idLoadFile = toast("Cargando archivo..", {
-            isLoading: true,
-            hideProgressBar: true,
-            closeButton: false,
-            closeOnClick: false,
-        });
-
+        loadingFile.value = true;
         // Upload first file for add it QR
 
         const date = transformTimeStampToDate(
@@ -133,7 +127,7 @@ const uploadFile = async () => {
         const bodyFormDataAddQR = new FormData();
         bodyFormDataAddQR.append(
             "url",
-            `${domain}/r/${company}/${pathname[pathname.length - 1]}`
+            `https://portal.raudoc.com/r/${company}/${pathname[pathname.length - 1]}`
         );
 
         bodyFormDataAddQR.append("codeRadicate", props?.data?.numberEntryClaim);
@@ -190,52 +184,56 @@ const uploadFile = async () => {
         );
         answered.value = true;
         documentNumber.value = resGenerateRadicateOut.data.idRadicate;
-        toast.update(idLoadFile, {
-            render: "Archivo cargado con éxito",
+        toast("Archivo cargado con éxito", {
             type: "success",
-            isLoading: false,
-            autoClose: 3000,
+            closeButton: true,
+            closeOnClick: true,
         });
+        loadingFile.value = false;
         setTimeout(() => location.reload(), 4000);
     } catch (error) {
         console.error("Error al subir el archivo:", error);
-        toast.update(idLoadFile, {
-            render: "Problemas al cargar el archivo",
+        toast("Problemas al cargar el archivo", {
             type: "error",
-            isLoading: false,
-            autoClose: 3000,
+            closeButton: true,
+            closeOnClick: true,
         });
     }
 };
 
-const preview = async () => {
-    console.log(form);
-    const result = await v$.value.$validate();
-    if (result) {
-        return;
-    } else {
-        console.warn("Llena los campos");
-        return;
-    }
-};
-
-const sendFile = () => {
+const sendFile = async () => {
     try {
-        const idLoadFile = toast("Enviando archivo..", {
-            isLoading: true,
-            hideProgressBar: true,
-            closeButton: false,
-            closeOnClick: false,
+        loadingSendFile.value = true;
+        const data = JSON.stringify({
+            email: props.data?.email,
+            numberEntryClaim: props.data?.numberEntryClaim,
         });
-        setTimeout(() => {
-            toast.update(idLoadFile, {
-                render: "Archivo enviado con éxito",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
-        }, 5000);
+
+        const config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: `${process.env.VUE_APP_CF_BASE_URL}/sendEmailResponseClaim`,
+            headers: {
+                "Content-Type": "application/json",
+            },
+            data: data,
+        };
+
+        axios.request(config);
+        // console.log(JSON.stringify(response.data));
+        loadingSendFile.value = false;
+        toast("Correo enviado correctamente", {
+            closeButton: true,
+            type: "success",
+            closeOnClick: true,
+        });
     } catch (error) {
+        loadingSendFile.value = false;
+        toast("Error al enviar el correo", {
+            closeButton: true,
+            type: "error",
+            closeOnClick: true,
+        });
         console.error(error);
     }
 };
@@ -320,30 +318,39 @@ watch(
                         <BButton
                             type="submit"
                             :variant="answered ? 'secondary' : 'danger'"
-                            :disabled="answered ? true : false"
+                            :disabled="answered ? true : false || loadingFile"
                             class="w-sm"
                             @click="uploadFile"
-                            >Generar Radicado</BButton
-                        >
-                        <BButton
-                            type="submit"
-                            :variant="answered ? 'secondary' : 'primary'"
-                            :disabled="answered ? true : false"
-                            class="w-sm ms-2"
-                            @click="preview"
-                            >Vista previa</BButton
-                        >
+                            ><div class="button-content">
+                                <span>Generar respuesta</span>
+                                <span
+                                    v-if="loadingFile"
+                                    class="spinner-border spinner-border-sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                ></span></div
+                        ></BButton>
                         <BButton
                             type="button"
                             class="w-sm mx-2"
                             variant="success"
                             v-if="answered"
                             @click="sendFile"
+                            :disabled="loadingSendFile"
                         >
-                            Enviar al peticionario
-                            <i
-                                class="ri-send-plane-fill align-bottom ms-1 align-bottom"
-                            ></i>
+                            <div class="button-content">
+                                <span>Enviar al peticionario</span>
+                                <span
+                                    v-if="loadingSendFile"
+                                    class="spinner-border spinner-border-sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                ></span>
+                                <i
+                                    class="ri-send-plane-fill align-bottom ms-1 align-bottom"
+                                    v-else
+                                ></i>
+                            </div>
                         </BButton>
                     </div>
                     <span class="h-100 text-center"
@@ -537,7 +544,7 @@ watch(
                             </BCol>
                         </BRow>
                     </BCardBody>
-                </BCard>
+                </BCard> -->
                 <div class="relative">
                     <BCard no-body class="mt-3">
                         <BCardHeader>
@@ -653,6 +660,13 @@ watch(
 
 .label-formFile:hover {
     cursor: pointer;
+}
+
+.button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 </style>
 <style>

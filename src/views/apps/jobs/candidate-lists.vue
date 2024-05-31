@@ -94,7 +94,7 @@ export default {
             })
             .catch((error) => {
                 this.loading = false;
-                console.log(error);
+                console.error(error);
             });
     },
     methods: {
@@ -244,15 +244,12 @@ export default {
                                                 data.idRole == 'FUNCTIONARY',
                                             'bg-danger-subtle text-danger':
                                                 data.idRole == 'BOSS_OF_AREA',
-                                            'bg-primary-subtle text-primary':
-                                                data.idRole == 'DIRECTOR' ||
-                                                data.idRole == 'SUPER ADMIN',
                                             'bg-warning-subtle text-warning':
                                                 data.idRole ==
-                                                'ADMINISTRADOR DE SISTEMA',
+                                                'ADMIN' || data.idRole == 'DIRECTOR',
                                             'bg-info-subtle text-info':
                                                 data.idRole ==
-                                                'SUPERVISOR DE SISTEMA',
+                                                'RADICATOR',
                                         }"
                                         >{{ data.role }}</span
                                     >

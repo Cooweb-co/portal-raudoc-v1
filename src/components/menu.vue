@@ -23,7 +23,6 @@ import {
     // LifeBuoyIcon,
     // GitMergeIcon
 } from "@zhuowenli/vue-feather-icons";
-
 export default {
     components: {
         HomeIcon,
@@ -63,6 +62,12 @@ export default {
                     ? this.$store.state.layout.layoutType
                     : {} || {};
             },
+        },
+        getIdRole() {
+            const idRole = JSON.parse(
+                this.$store.state?.auth?.currentUserInfo
+            )?.idRole;
+            return idRole === "ADMIN" ? true : false;
         },
     },
 
@@ -473,7 +478,7 @@ export default {
                         <span data-key="t-components">Administración</span>
                     </li>
 
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="getIdRole">
                         <router-link
                             class="nav-link menu-link"
                             to="/administracion/usuarios"
