@@ -83,6 +83,8 @@ export default {
         const timerExtractingInformationAI = ref(null);
         const dropzone = ref(false);
         const manual_address = ref(false);
+        const radicated = ref(false);
+        const urlPage = ref(process.env.VUE_APP_URLPAGE);
         const manual_address_info = ref(["", "", "", "", "", "", "", "", ""]);
         const address_info = ref([
             "" /* Dirección */,
@@ -688,11 +690,13 @@ export default {
             loadingBtnAI,
             documentID,
             getAddress,
+            urlPage,
             address_info,
             claimData,
             form,
             v$,
             mode,
+            radicated,
             saveLoading,
             submitLoading,
             addressOptions,
@@ -856,6 +860,7 @@ export default {
                     this.submitLoading = false;
                     this.radicate = response.data;
                     this.qrModal = true;
+                    this.radicated = true;
                     toast.success("Radicado emitido exitosamente!", {
                         position: toast.POSITION.TOP_RIGHT,
                         autoClose: 3000,
@@ -883,7 +888,12 @@ export default {
         },
         closeModal() {
             this.qrModal = false;
+        },
+        newClaim() {
             location.reload();
+        },
+        async showSticker() {
+            alert("Esto no funciona");
         },
     },
     async mounted() {
@@ -964,29 +974,68 @@ export default {
     <Modal
         v-if="qrModal"
         title=""
-        size="small"
+        size="medium"
         :hideIconClose="true"
+        :no-scroll="true"
         @close="closeModal"
     >
-        <template #content>
-            <div
-                class="d-flex flex-column justify-content-center align-items-center gap-3"
-            >
-                <div>
-                    <h4 class="text-success fw-bold fs-4">
-                        {{ radicate?.idRadicate }}
-                    </h4>
-                </div>
-                <div class="pb-4">
-                    <a-qrcode
-                        error-level="H"
-                        :value="
-                            'http://portal.raudoc.com/r/BAQVERDE/' + documentID
-                        "
-                        icon=""
+        <template #title>
+            <BCol lg="8" class="mx-4">
+                <picture
+                    class="w-100 row d-flex justify-content-start align-items-center mt-2"
+                >
+                    <img
+                        src="/BAQVERDE.png"
+                        alt="BAQVERDE"
+                        style="width: 25%"
+                        class="col-4"
                     />
-                </div>
-            </div>
+                    <img
+                        src="@/assets/images/logo-dark.png"
+                        alt="RAUDOC"
+                        style="width: 35%"
+                        class="col-8"
+                    />
+                </picture>
+            </BCol>
+        </template>
+        <template #content>
+            <BRow class="mx-4">
+                <BCol
+                    class="d-flex flex-column justify-content-center align-items-center gap-3"
+                    lg="4"
+                    md="12"
+                    sm="12"
+                >
+                    <div>
+                        <a-qrcode
+                            error-level="H"
+                            :size="200"
+                            :value="`${urlPage}/r/BAQVERDE/${documentID}`"
+                            icon=""
+                        /></div
+                ></BCol>
+                <BCol lg="8" md="12" sm="12" class="ps-4">
+                    <BRow
+                        class="w-100 d-flex flex-column justify-content-start align-items-center gap-1 mx-2"
+                    >
+                        <span
+                            ><b>Radicado:</b>
+                            <b class="text-success">{{
+                                radicate?.idRadicate
+                            }}</b></span
+                        >
+                        <span><b>Fecha Rad:</b> {{ form.date }}</span>
+                        <span><b>Destino:</b> {{ form.area }}</span>
+                        <span
+                            ><b>Rem/Des:</b>
+                            {{ form.names + " " + form.lastNames }}</span
+                        >
+                        <span><b>Asunto:</b> {{ form.subject }}</span>
+                        <span><b>No. Folios:</b> {{ form.folios }}</span>
+                    </BRow>
+                </BCol>
+            </BRow>
         </template>
     </Modal>
 
@@ -1032,7 +1081,7 @@ export default {
                     </div>
                 </BButton>
                 <BButton
-                    v-else
+                    v-else-if="!radicated && showRadicationButton"
                     type="submit"
                     variant="danger"
                     class="w-sm"
@@ -1048,6 +1097,24 @@ export default {
                         ></span>
                         <span>Radicar Documento</span>
                     </div>
+                </BButton>
+                <BButton
+                    v-if="radicated"
+                    type="submit"
+                    variant="success"
+                    class="w-sm me-2"
+                    @click="showSticker"
+                >
+                    <span>Ver Sticker</span>
+                </BButton>
+                <BButton
+                    v-if="radicated"
+                    type="submit"
+                    variant="info"
+                    class="w-sm"
+                    @click="newClaim"
+                >
+                    <span>Nuevo radicado</span>
                 </BButton>
             </div>
         </BRow>
@@ -1087,6 +1154,7 @@ export default {
                                     multiple
                                     class="input-file"
                                     @change="selectedFile"
+                                    :disabled="radicated"
                                 />
                                 <label
                                     for="formFile"
@@ -1196,7 +1264,7 @@ export default {
                                 class="form-control"
                                 id="project-title-input"
                                 placeholder="Ingrese asunto del radicado"
-                                :disabled="loadingAI"
+                                :disabled="loadingAI || radicated"
                             />
                             <ValidateLabel
                                 v-bind="{ v$ }"
@@ -1222,7 +1290,7 @@ export default {
                             <textarea
                                 class="form-control"
                                 v-model="form.description"
-                                :disabled="loadingAI"
+                                :disabled="loadingAI || radicated"
                                 style="min-height: 255px"
                             ></textarea>
                             <ValidateLabel
@@ -1261,6 +1329,7 @@ export default {
                                     placeholder="Seleccione"
                                     :options="trds"
                                     @select="clearSelectInput"
+                                    :disabled="radicated"
                                 />
 
                                 <ValidateLabel
@@ -1296,6 +1365,7 @@ export default {
                                 <Multiselect
                                     v-model="form.inputMethod"
                                     :required="true"
+                                    :disabled="radicated"
                                     :close-on-select="true"
                                     :searchable="true"
                                     :create-option="true"
@@ -1342,6 +1412,7 @@ export default {
                                     :create-option="true"
                                     placeholder="Seleccione"
                                     :options="series"
+                                    :disabled="radicated"
                                 />
                                 <ValidateLabel
                                     v-bind="{ v$ }"
@@ -1362,6 +1433,7 @@ export default {
                                     :create-option="true"
                                     placeholder="Seleccione"
                                     :options="subseries"
+                                    :disabled="radicated"
                                 />
                                 <ValidateLabel
                                     v-bind="{ v$ }"
@@ -1382,6 +1454,7 @@ export default {
                                     :create-option="true"
                                     placeholder="Seleccione"
                                     :options="isDocs"
+                                    :disabled="radicated"
                                 />
                                 <ValidateLabel
                                     v-bind="{ v$ }"
@@ -1398,6 +1471,7 @@ export default {
                                     v-model="form.untilDate"
                                     :config="rangeDateconfig"
                                     class="form-control flatpickr-input"
+                                    :disabled="radicated"
                                 ></flat-pickr>
                                 <ValidateLabel
                                     v-bind="{ v$ }"
@@ -1422,6 +1496,7 @@ export default {
                                     }"
                                     id="folios"
                                     placeholder="Ingrese folios"
+                                    :disabled="radicated"
                                 />
 
                                 <ValidateLabel
@@ -1444,6 +1519,7 @@ export default {
                                     }"
                                     id="RadicadoExterno"
                                     placeholder="# Radicado externo"
+                                    :disabled="radicated"
                                 />
                             </BCol>
                             <BCol lg="6" class="mb-3">
@@ -1462,6 +1538,7 @@ export default {
                                     :searchable="true"
                                     placeholder="Seleccione"
                                     :options="peopleList"
+                                    :disabled="radicated"
                                 />
                                 <ValidateLabel
                                     v-bind="{ v$ }"
@@ -1494,6 +1571,7 @@ export default {
                                     :searchable="true"
                                     :create-option="true"
                                     placeholder="Seleccione"
+                                    :disabled="radicated"
                                     :options="[
                                         { value: 'Natural', label: 'Natural' },
                                         {
@@ -1520,6 +1598,7 @@ export default {
                                     :searchable="true"
                                     :create-option="true"
                                     placeholder="Seleccione"
+                                    :disabled="radicated"
                                     :options="[
                                         { value: 'Cédula', label: 'Cédula' },
                                         {
@@ -1557,6 +1636,7 @@ export default {
                                     class="form-control"
                                     v-model="form.idNumber"
                                     id="username"
+                                    :disabled="radicated"
                                     placeholder="Ingrese numero de documento"
                                 />
 
@@ -1576,6 +1656,7 @@ export default {
                                     type="text"
                                     class="form-control"
                                     v-model="form.contactPhone"
+                                    :disabled="radicated"
                                     placeholder="Ingrese telefono de contacto"
                                     autocomplete="tel"
                                 />
@@ -1596,6 +1677,7 @@ export default {
                                     class="form-control"
                                     v-model="form.names"
                                     id="username"
+                                    :disabled="radicated"
                                     placeholder="Ingrese nombres"
                                     autocomplete="name"
                                 />
@@ -1616,6 +1698,7 @@ export default {
                                     type="text"
                                     class="form-control"
                                     v-model="form.lastNames"
+                                    :disabled="radicated"
                                     placeholder="Ingrese apellidos"
                                     autocomplete="family-name"
                                 />
@@ -1637,6 +1720,7 @@ export default {
                                     class="form-control"
                                     v-model="form.email"
                                     id="username"
+                                    :disabled="radicated"
                                     placeholder="Ingrese email"
                                     autocomplete="email"
                                 />
@@ -1666,6 +1750,7 @@ export default {
                                             v-model="manual_address"
                                             class="form-check-input"
                                             type="checkbox"
+                                            :disabled="radicated"
                                         />
                                     </div>
                                 </div>
@@ -1688,6 +1773,7 @@ export default {
                                                 id="place"
                                                 class="form-control"
                                                 type="text"
+                                                :disabled="radicated"
                                                 placeholder="Ingrese la dirección"
                                                 @input="getAddress()"
                                             />
@@ -1698,6 +1784,7 @@ export default {
                                                 id="place"
                                                 class="form-control"
                                                 type="text"
+                                                :disabled="radicated"
                                                 placeholder="Ingrese el departamento"
                                                 autocomplete="address-level1"
                                                 @input="getAddress()"
@@ -1709,6 +1796,7 @@ export default {
                                                 id="place"
                                                 class="form-control"
                                                 type="text"
+                                                :disabled="radicated"
                                                 placeholder="Ingrese la ciudad"
                                                 autocomplete="address-level2"
                                                 @input="getAddress()"
@@ -1726,6 +1814,7 @@ export default {
                                             v-model="manual_address_info[0]"
                                             :close-on-select="true"
                                             :searchable="true"
+                                            :disabled="radicated"
                                             placeholder="Seleccione"
                                             :options="addressOptions"
                                             @input="concatAddress()"
@@ -1736,6 +1825,7 @@ export default {
                                             v-model="manual_address_info[1]"
                                             class="form-control"
                                             type="text"
+                                            :disabled="radicated"
                                             placeholder="Número"
                                             @input="concatAddress()"
                                         />
@@ -1745,6 +1835,7 @@ export default {
                                             v-model="manual_address_info[2]"
                                             class="form-control"
                                             type="text"
+                                            :disabled="radicated"
                                             placeholder="Letra"
                                             @input="concatAddress()"
                                         />
@@ -1767,6 +1858,7 @@ export default {
                                             v-model="manual_address_info[3]"
                                             class="form-control"
                                             type="text"
+                                            :disabled="radicated"
                                             placeholder="Número"
                                             @input="concatAddress()"
                                         />
@@ -1776,6 +1868,7 @@ export default {
                                             v-model="manual_address_info[4]"
                                             class="form-control"
                                             type="text"
+                                            :disabled="radicated"
                                             placeholder="Letra"
                                             @input="concatAddress()"
                                         />
@@ -1796,6 +1889,7 @@ export default {
                                         <input
                                             v-model="manual_address_info[5]"
                                             class="form-control"
+                                            :disabled="radicated"
                                             type="text"
                                             placeholder="Número"
                                             @input="concatAddress()"
@@ -1805,6 +1899,7 @@ export default {
                                         <input
                                             v-model="manual_address_info[6]"
                                             class="form-control"
+                                            :disabled="radicated"
                                             type="text"
                                             placeholder="Complemento"
                                             @input="concatAddress()"
@@ -1814,6 +1909,7 @@ export default {
                                         <input
                                             v-model="manual_address_info[7]"
                                             class="form-control"
+                                            :disabled="radicated"
                                             type="text"
                                             placeholder="Ciudad"
                                             @input="concatAddress()"
@@ -1825,6 +1921,7 @@ export default {
                                             v-model="manual_address_info[8]"
                                             class="form-control"
                                             type="text"
+                                            :disabled="radicated"
                                             placeholder="Departamento"
                                             @input="concatAddress()"
                                             autocomplete="address-level1"
@@ -1916,5 +2013,11 @@ export default {
     .manual-address-inputs-box {
         flex-direction: column;
     }
+}
+
+.multiselect.is-disabled,
+.form-control:disabled {
+    background-color: #e9ebec !important;
+    cursor: not-allowed !important;
 }
 </style>
