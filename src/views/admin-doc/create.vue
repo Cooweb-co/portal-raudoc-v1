@@ -1022,7 +1022,7 @@ export default {
                         <span
                             ><b>Radicado:</b>
                             <b class="text-success">{{
-                                radicate?.idRadicate
+                                " " + radicate?.idRadicate
                             }}</b></span
                         >
                         <span><b>Fecha Rad:</b> {{ form.date }}</span>
