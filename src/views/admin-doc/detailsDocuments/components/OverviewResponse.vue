@@ -1,8 +1,10 @@
 <script setup>
+import Multiselect from "@vueform/multiselect";
+import "@vueform/multiselect/themes/default.css";
 import { useVuelidate } from "@vuelidate/core";
 import { required, email } from "@vuelidate/validators";
 import { toast } from "vue3-toastify";
-import ValidateLabel from "@/utils/ValidateLabel.vue";
+// import ValidateLabel from "@/utils/ValidateLabel.vue";
 import { ref, reactive, watch, defineProps, computed } from "vue";
 import axios from "axios";
 import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
@@ -23,9 +25,10 @@ const answered = ref(false);
 const loadingFile = ref(false);
 const loadingSendFile = ref(false);
 const showInputCompany = ref(false);
+const secondAddressee = ref(false);
+const nameSecondAddressee = ref("");
 const documentNumber = ref("Número de radicado");
 const maxSize = 10000000;
-// const domain = window.location.origin;
 const company = "BAQVERDE";
 const pathname = window.location.pathname.split("/");
 
@@ -73,21 +76,26 @@ const getDate = () => {
 const form = reactive({
     entryDate: getDate(),
     name: "",
-    company: "", //Opcional
+    typeOfDocument: "",
+    numberOfDocument: "",
     email: "",
+    // company: "", //Opcional
     address: "",
     city: "",
     subject: "",
     body: "",
     senderName: "",
     position: "",
+    senderArea: "",
     senderCompany: company,
 });
 
 const rules = {
     entryDate: { required: MESSAGE_REQUIRED },
     name: { required },
-    company: {}, //Opcional
+    typeOfDocument: { required },
+    numberOfDocument: { required },
+    // company: {}, //Opcional
     email: { required, email },
     address: { required },
     city: { required },
@@ -95,6 +103,7 @@ const rules = {
     body: { required },
     senderName: { required },
     position: { required },
+    senderArea: { required },
     senderCompany: { required },
 };
 
@@ -102,15 +111,21 @@ const v$ = useVuelidate(rules, form);
 
 const uploadFile = async () => {
     try {
+        console.log(v$.value);
+        v$.value.$touch();
         if (answered.value) {
             toast.error("Ya el radicado fue generado", {
                 autoClose: 1000,
             });
             return;
-        } else if (files.value.length <= 0) {
-            toast.error("No has subido ningún archivo", {
-                autoClose: 1000,
-            });
+        }
+        // else if (files.value.length <= 0) {
+        //     toast.error("No has subido ningún archivo", {
+        //         autoClose: 1000,
+        //     });
+        //     return;
+        // }
+        else if (v$.value.$invalid) {
             return;
         }
         loadingFile.value = true;
@@ -127,7 +142,9 @@ const uploadFile = async () => {
         const bodyFormDataAddQR = new FormData();
         bodyFormDataAddQR.append(
             "url",
-            `https://portal.raudoc.com/r/${company}/${pathname[pathname.length - 1]}`
+            `https://portal.raudoc.com/r/${company}/${
+                pathname[pathname.length - 1]
+            }`
         );
 
         bodyFormDataAddQR.append("codeRadicate", props?.data?.numberEntryClaim);
@@ -238,6 +255,42 @@ const sendFile = async () => {
     }
 };
 
+const seeResponseClaim = async () => {
+    const data = JSON.stringify({
+        name: form.name,
+        lastName: "Apellido",
+        typeOfDocument: form.typeOfDocument,
+        numberOfDocument: form.numberOfDocument,
+        email: form.email,
+        address: form.address,
+        city: form.city,
+        subject: form.subject,
+        body: form.body,
+        senderName: form.senderName,
+        position: form.position,
+        senderArea: form.senderArea,
+        senderCompany: form.senderCompany,
+    });
+    const config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: `${process.env.VUE_APP_CF_BASE_URL}/doc/create-response`,
+        headers: {
+            Accept: "/",
+            "Content-Type": "application/json",
+        },
+        data: data,
+    };
+    axios
+        .request(config)
+        .then((response) => {
+            console.log(JSON.stringify(response.data));
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+};
+
 const deleteRecord = (name) => {
     files.value = files.value.filter((file) => name != file.name);
 };
@@ -269,19 +322,25 @@ const onFileDrop = (event) => {
     }
 };
 
+const getCity = (address) => {
+    const addressSplit = address.split(",");
+    return addressSplit[1]?.trim();
+};
+
 watch(
     () => props.data,
     (currentValue) => {
         const user = JSON.parse(state.currentUserInfo);
-        console.log(currentValue);
-        console.log(user);
         form.name = currentValue.fullName || "";
+        form.typeOfDocument = currentValue.identificationType || "";
+        form.numberOfDocument = currentValue.identificationNumber || "";
         form.email = currentValue.email || "";
         form.address = currentValue.address || "";
-        // form.city = currentValue.fullName || "";
+        form.city = getCity(currentValue.fullName) || "";
         form.subject = "Res - " + currentValue.subject || "Res - ";
         form.senderName = user.name || "";
         form.position = setIdRole(user.idRole);
+        form.senderArea = currentValue.serie || "";
         if (currentValue.personType.toUpperCase() == "JURÍDICA")
             showInputCompany.value = true;
         if (
@@ -352,6 +411,21 @@ watch(
                                 ></i>
                             </div>
                         </BButton>
+                        <a-tooltip>
+                            <template #title>Previsualizar respuesta</template>
+                            <BButton
+                                type="button"
+                                variant="info"
+                                class="w-auto mx-2 d-inline-flex align-items-center justify-content-center"
+                                @click="seeResponseClaim"
+                            >
+                                <img
+                                    src="@/assets/images/svg/overviewDocuments/eye.svg"
+                                    alt="Eye"
+                                />
+                                <!-- <EyeIcon size="22" /> -->
+                            </BButton>
+                        </a-tooltip>
                     </div>
                     <span class="h-100 text-center"
                         >#{{
@@ -385,30 +459,36 @@ watch(
                                         id="subject"
                                         placeholder="Ingrese el asunto"
                                     />
+                                    <span v-if="v$.$error" class="text-danger">
+                                        <span
+                                            v-if="v$.subject.required.$invalid"
+                                            >Este campo es obligatorio</span
+                                        >
+                                    </span>
                                 </BCol>
-                                <BCol lg="12" class="mt-3">
-                                    <!-- <Editor
-                                        api-key="ji1qaja7dyxcn3yt3piim2mby69mwiyra2yv5z6oheq8yweu"
-                                        v-model="form.body"
-                                        :init="{
-                                            plugins:
-                                                'lists link image table code help wordcount',
-                                            language: 'es'
-                                        }"
-                                    />-->
-                                    <!--<VueEditor v-model="form.body"/>-->
-                                    <div class="ck-content w-full">
+                                <BCol lg="12" class="mt-3 h-100">
+                                    <div class="ck-content w-full h-100">
+                                        <span
+                                            v-if="v$.$error"
+                                            class="text-danger"
+                                        >
+                                            <span
+                                                v-if="v$.body.required.$invalid"
+                                                >Escribe el cuerpo del
+                                                documento</span
+                                            >
+                                        </span>
                                         <ckeditor
                                             :editor="Editor"
                                             v-model="form.body"
                                             :config="editorSettings"
-                                            class="w-full"
+                                            class="w-100 h-100"
                                         ></ckeditor>
                                     </div>
                                 </BCol>
                             </BCol>
                             <BCol lg="4">
-                                <BCol lg="12" class="mb-3">
+                                <BCol lg="12">
                                     <label for="name" class="form-label fw-bold"
                                         >Destinatario
                                         <span class="text-danger fw-bold"
@@ -423,10 +503,116 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el nombre del destinatario"
                                     />
-                                    <ValidateLabel
-                                        v-bind="{ v$ }"
-                                        attribute="name"
+                                    <span v-if="v$.$error" class="text-danger">
+                                        <span v-if="v$.name.required.$invalid"
+                                            >Este campo es obligatorio</span
+                                        >
+                                    </span>
+                                    <div class="fs-15 mt-2">
+                                        <label
+                                            for=""
+                                            class="pe-2 fw-bold text-muted"
+                                            >Agregar segundo destinatario</label
+                                        >
+                                        <input
+                                            v-model="secondAddressee"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                        />
+                                    </div>
+                                </BCol>
+
+                                <BCol
+                                    lg="12"
+                                    class="mb-3"
+                                    v-if="secondAddressee"
+                                >
+                                    <label for="name" class="form-label fw-bold"
+                                        >Nombre del segundo del destinatario
+                                    </label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        v-model="nameSecondAddressee"
+                                        id="name"
+                                        :required="true"
+                                        placeholder="Ingrese el nombre del segundo del destinatario"
                                     />
+                                </BCol>
+
+                                <BCol lg="12" class="mb-3">
+                                    <label for="name" class="form-label fw-bold"
+                                        >Tipo de documento
+                                        <span class="text-danger fw-bold"
+                                            >*</span
+                                        ></label
+                                    >
+                                    <Multiselect
+                                        v-model="form.typeOfDocument"
+                                        :required="true"
+                                        :close-on-select="true"
+                                        :searchable="true"
+                                        :create-option="true"
+                                        placeholder="Seleccione"
+                                        :disabled="radicated"
+                                        :options="[
+                                            {
+                                                value: 'Cédula',
+                                                label: 'Cédula',
+                                            },
+                                            {
+                                                value: 'TI',
+                                                label: 'TI',
+                                            },
+                                            {
+                                                value: 'Pasaporte',
+                                                label: 'Pasaporte',
+                                            },
+                                            {
+                                                value: 'Cédula extranjería',
+                                                label: 'Cédula extranjería',
+                                            },
+                                            {
+                                                value: 'NIT',
+                                                label: 'NIT',
+                                            },
+                                        ]"
+                                    />
+                                    <span v-if="v$.$error" class="text-danger">
+                                        <span
+                                            v-if="
+                                                v$.typeOfDocument.required
+                                                    .$invalid
+                                            "
+                                            >Este campo es obligatorio</span
+                                        >
+                                    </span>
+                                </BCol>
+
+                                <BCol lg="12" class="mb-3">
+                                    <label for="name" class="form-label fw-bold"
+                                        >Número de documento
+                                        <span class="text-danger fw-bold"
+                                            >*</span
+                                        ></label
+                                    >
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        v-model="form.numberOfDocument"
+                                        id="name"
+                                        :required="true"
+                                        placeholder="Ingrese el número del documento del destinatario"
+                                    />
+                                    <span v-if="v$.$error" class="text-danger">
+                                        <span
+                                            v-if="
+                                                v$.numberOfDocument.required
+                                                    .$invalid
+                                            "
+                                            >Este campo es obligatorio</span
+                                        >
+                                    </span>
                                 </BCol>
 
                                 <BCol lg="12" class="mb-3">
@@ -446,9 +632,17 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el correo del destinatario"
                                     />
+                                    <span v-if="v$.$error" class="text-danger">
+                                        <span v-if="v$.email.required.$invalid"
+                                            >Este campo es obligatorio</span
+                                        >
+                                        <span v-if="v$.email.email.$invalid"
+                                            >El email no es válido</span
+                                        >
+                                    </span>
                                 </BCol>
 
-                                <BCol
+                                <!-- <BCol
                                     lg="12"
                                     class="mb-3"
                                     v-if="showInputCompany"
@@ -466,7 +660,7 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese la compañía del destinatario"
                                     />
-                                </BCol>
+                                </BCol> -->
 
                                 <BCol lg="12" class="mb-3">
                                     <label
@@ -485,6 +679,12 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese la dirección del destinatario"
                                     />
+                                    <span v-if="v$.$error" class="text-danger">
+                                        <span
+                                            v-if="v$.address.required.$invalid"
+                                            >Este campo es obligatorio</span
+                                        >
+                                    </span>
                                 </BCol>
 
                                 <BCol lg="12" class="mb-3">
@@ -502,6 +702,11 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese la ciudad del destinatario"
                                     />
+                                    <span v-if="v$.$error" class="text-danger">
+                                        <span v-if="v$.city.required.$invalid"
+                                            >Este campo es obligatorio</span
+                                        >
+                                    </span>
                                 </BCol>
 
                                 <BCol lg="12" class="mb-3">
@@ -521,6 +726,39 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el nombre del remitente"
                                     />
+                                    <span v-if="v$.$error" class="text-danger">
+                                        <span
+                                            v-if="
+                                                v$.senderName.required.$invalid
+                                            "
+                                            >Este campo es obligatorio</span
+                                        >
+                                    </span>
+                                </BCol>
+
+                                <BCol lg="12" class="mb-3">
+                                    <label for="name" class="form-label fw-bold"
+                                        >Area del remitente
+                                        <span class="text-danger fw-bold"
+                                            >*</span
+                                        ></label
+                                    >
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        v-model="form.senderArea"
+                                        id="name"
+                                        :required="true"
+                                        placeholder="Ingrese el area del remitente"
+                                    />
+                                    <span v-if="v$.$error" class="text-danger">
+                                        <span
+                                            v-if="
+                                                v$.senderArea.required.$invalid
+                                            "
+                                            >Este campo es obligatorio</span
+                                        >
+                                    </span>
                                 </BCol>
 
                                 <BCol lg="12" class="mb-3">
@@ -540,11 +778,17 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el cargo del remitente"
                                     />
+                                    <span v-if="v$.$error" class="text-danger">
+                                        <span
+                                            v-if="v$.position.required.$invalid"
+                                            >Este campo es obligatorio</span
+                                        >
+                                    </span>
                                 </BCol>
                             </BCol>
                         </BRow>
                     </BCardBody>
-                </BCard> -->
+                </BCard>
                 <div class="relative">
                     <BCard no-body class="mt-3">
                         <BCardHeader>
@@ -671,8 +915,19 @@ watch(
 </style>
 <style>
 .ck-editor__editable {
-    min-height: 55vh !important;
+    /* min-height: 100% !important; */
     margin-bottom: 1em;
+}
+
+.ck-editor,
+.ck-reset,
+.ck-content,
+.ck-editor__main {
+    height: 100% !important;
+}
+
+.ck-editor__editable {
+    height: 85% !important;
 }
 .ck-powered-by {
     display: none !important;
