@@ -333,7 +333,7 @@ const setVariantState = computed(() => {
                                         <td>{{ data.externalRadicate }}</td>
                                     </tr>
                                     <tr>
-                                        <td class="fw-medium">Asiganado a:</td>
+                                        <td class="fw-medium">Asignado a:</td>
                                         <td>
                                             <!-- <div class="avatar-group">
                                                 <BLink
