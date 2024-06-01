@@ -143,7 +143,7 @@ export default {
         <BRow class="g-4 mb-4">
             <BCol sm="auto">
                 <div>
-                    <BLink href="/create-user" class="btn btn-primary"
+                    <BLink href="/creacion-usuario" class="btn btn-primary"
                         ><i class="ri-add-line align-bottom me-1"></i> Agregar
                         usuario</BLink
                     >

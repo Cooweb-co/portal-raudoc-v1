@@ -28,6 +28,8 @@ import 'bootstrap/dist/js/bootstrap.bundle'
 
 import Vue3Toasity from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
+import CKEditor from '@ckeditor/ckeditor5-vue';
+
 
 // import { Button } from 'ant-design-vue';
 // import 'ant-design-vue/dist/reset.css';
@@ -77,4 +79,5 @@ app.use(  Vue3Toasity,
     .use(i18n)
     .use(Antd)
     .use(VCalendar, {})
+    .use(CKEditor)
     .use(vClickOutside).mount('#app');

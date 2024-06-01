@@ -79,7 +79,7 @@ const createUser = () => {
         }
         loading.value = false;
         setTimeout(() => {
-            router.push('/administration/users');
+            router.push('/administracion/usuarios');
         }, 4000);
     })
     .catch((error) => {
