@@ -264,3 +264,34 @@ export const updateClaimSummary = async (companyId, claimId, uniqueValue) => {
         return false;
     }
 };
+
+export const getUserRoleByName = async (company, nameUser) => {
+    try {
+        // Define the query to find the user with the specific name
+        const collectionPath = `Companies/${company}/Users`;
+        const q = query(
+            collection(firestore, collectionPath),
+            where("name", "==", nameUser)
+        );
+
+        // Execute the query
+        const querySnapshot = await getDocs(q);
+
+        // Check if any user was found
+        if (!querySnapshot.empty) {
+            let idRole = null;
+            querySnapshot.forEach((docSnapshot) => {
+                // Get the idRole field from the document
+                const userData = docSnapshot.data();
+                idRole = userData.idRole;
+            });
+            return idRole;
+        } else {
+            console.error("No se encontró ningún usuario con el nombre especificado.");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error al buscar el usuario:", error);
+        return null;
+    }
+};
