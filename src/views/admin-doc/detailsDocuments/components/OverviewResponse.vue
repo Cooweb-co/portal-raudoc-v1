@@ -11,7 +11,6 @@ import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
 import { Editor } from "@camilo__lp/custom-editor-vue3";
 
 import { state } from "@/state/modules/auth";
-import { MESSAGE_REQUIRED } from "@/constants/rules.ts";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
 import setIdRole from "@/helpers/setIdRole";
 const editorSettings = {
@@ -92,7 +91,7 @@ const form = reactive({
 });
 
 const rules = {
-    entryDate: { required: MESSAGE_REQUIRED },
+    entryDate: { required},
     name: { required },
     copyName: {},
     typeOfDocument: { required },
@@ -253,7 +252,6 @@ const sendFile = async () => {
 };
 
 const seeResponseClaim = async () => {
-    console.log(v$.value);
     v$.value.$touch();
     if(v$.value.$invalid) {
         return;
@@ -345,7 +343,7 @@ watch(
         form.address = decomposeAddress(currentValue.address)?.address || "";
         form.city = decomposeAddress(currentValue.address)?.city || "";
         form.subject = "Res - " + currentValue.subject || "Res - ";
-        form.senderName = user.name || "";
+        form.senderName = currentValue.assignedTo|| "";
         form.position = setIdRole(user.idRole);
         form.senderArea = currentValue.serie || "";
         if (currentValue.personType.toUpperCase() == "JURÍDICA")
@@ -466,7 +464,7 @@ watch(
                                         id="subject"
                                         placeholder="Ingrese el asunto"
                                     />
-                                    <span v-if="v$.$invalid" class="text-danger">
+                                    <span v-if="v$.$errors.subject" class="text-danger">
                                         <span
                                             v-if="v$.subject.required.$invalid"
                                             >Este campo es obligatorio</span
