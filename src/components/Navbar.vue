@@ -396,7 +396,7 @@ onMounted(() => {
                     />
                 </picture>
                 <div class="d-flex align-items-center">
-                    <BDropdown
+                    <!-- <BDropdown
                         class="dropdown d-md-none topbar-head-dropdown header-item"
                         variant="ghost-secondary"
                         dropstart
@@ -433,7 +433,7 @@ onMounted(() => {
                                 </div>
                             </form>
                         </BDropdownItem>
-                    </BDropdown>
+                    </BDropdown> -->
 
                     <!-- <BDropdown class="dropdown" variant="ghost-secondary" dropstart
             :offset="{ alignmentAxis: 57, crossAxis: 0, mainAxis: -42 }"
