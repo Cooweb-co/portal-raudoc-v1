@@ -14,6 +14,7 @@ import { Editor } from "@camilo__lp/custom-editor-vue3";
 import { getUserRoleByName } from "@/services/docservice/doc.service";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
 import setIdRole from "@/helpers/setIdRole";
+import capitalizedText from "@/helpers/capitalizedText";
 const editorSettings = {
     placeholder: "Escribe acá la respuesta para el ciudadano.",
 };
@@ -70,7 +71,6 @@ const getDate = () => {
         timestamp,
         "DD [de] MMMM [de] YYYY"
     );
-    console.log(formatDate);
     return formatDate;
 };
 
@@ -248,7 +248,6 @@ const sendFile = async () => {
         };
 
         axios.request(config);
-        // console.log(JSON.stringify(response.data));
         loadingSendFile.value = false;
         toast("Correo enviado correctamente", {
             closeButton: true,
@@ -370,9 +369,9 @@ watch(
         form.address = decomposeAddress(currentValue.address)?.address || "";
         form.city = decomposeAddress(currentValue.address)?.city || "";
         form.subject = "Res - " + currentValue.subject || "Res - ";
-        form.senderName = currentValue.assignedTo || "";
+        form.senderName = capitalizedText(currentValue.assignedTo) || "";
         form.position = setIdRole(idRole);
-        form.senderArea = currentValue.serie || "";
+        form.senderArea = capitalizedText(currentValue.serie) || "";
         if (currentValue.personType.toUpperCase() == "JURÍDICA")
             showInputCompany.value = true;
         if (
