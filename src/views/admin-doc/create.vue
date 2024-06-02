@@ -26,7 +26,7 @@ import moment from "moment";
 import store from "@/state/store";
 import {
     FileTextIcon,
-    AlertOctagonIcon,
+    // AlertOctagonIcon,
     Trash2Icon,
     CpuIcon,
 } from "@zhuowenli/vue-feather-icons";
@@ -962,7 +962,7 @@ export default {
         ValidateLabel,
         Modal,
         FileTextIcon,
-        AlertOctagonIcon,
+        // AlertOctagonIcon,
         Trash2Icon,
         CpuIcon,
     },
@@ -1162,14 +1162,6 @@ export default {
                                     >o Clic acá para selecciona un
                                     archivo</label
                                 >
-                                <span
-                                    class="text-success d-flex justify-content-center align-items-center gap-1"
-                                    style="opacity: 0.8; font-size: 0.6rem"
-                                >
-                                    <AlertOctagonIcon size="10" /> Solo se
-                                    analizará con la IA el primer archivo
-                                    subido.
-                                </span>
                             </div>
                             <div
                                 class="vstack gap-2 mt-2"
@@ -1208,25 +1200,39 @@ export default {
                                             </div>
                                         </div>
                                         <div class="flex-shrink-0 ms-3 gap-1">
-                                            <BButton
-                                                variant="info"
-                                                size="sm"
-                                                class="me-1"
-                                                data-dz-remove=""
-                                                @click="
-                                                    changeDocumentAI(file.name)
-                                                "
-                                            >
-                                                <CpuIcon />
-                                            </BButton>
-                                            <BButton
-                                                variant="danger"
-                                                size="sm"
-                                                data-dz-remove=""
-                                                @click="deleteRecord(file.name)"
-                                            >
-                                                <Trash2Icon />
-                                            </BButton>
+                                            <a-tooltip>
+                                                <template #title
+                                                    >Aplicar resumen</template
+                                                >
+                                                <BButton
+                                                    variant="info"
+                                                    size="sm"
+                                                    class="me-1"
+                                                    data-dz-remove=""
+                                                    @click="
+                                                        changeDocumentAI(
+                                                            file.name
+                                                        )
+                                                    "
+                                                >
+                                                    <CpuIcon />
+                                                </BButton>
+                                            </a-tooltip>
+                                            <a-tooltip>
+                                                <template #title
+                                                    >Borrar documento</template
+                                                >
+                                                <BButton
+                                                    variant="danger"
+                                                    size="sm"
+                                                    data-dz-remove=""
+                                                    @click="
+                                                        deleteRecord(file.name)
+                                                    "
+                                                >
+                                                    <Trash2Icon />
+                                                </BButton>
+                                            </a-tooltip>
                                         </div>
                                     </div>
                                 </div>
