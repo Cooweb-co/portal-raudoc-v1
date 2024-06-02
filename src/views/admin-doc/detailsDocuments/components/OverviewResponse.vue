@@ -26,7 +26,7 @@ const loadingFile = ref(false);
 const loadingSendFile = ref(false);
 const showInputCompany = ref(false);
 const secondAddressee = ref(false);
-const nameSecondAddressee = ref("");
+const copyName = ref("");
 const documentNumber = ref("Número de radicado");
 const maxSize = 10000000;
 const company = "BAQVERDE";
@@ -76,6 +76,7 @@ const getDate = () => {
 const form = reactive({
     entryDate: getDate(),
     name: "",
+    copyName: "",
     typeOfDocument: "",
     numberOfDocument: "",
     email: "",
@@ -93,6 +94,7 @@ const form = reactive({
 const rules = {
     entryDate: { required: MESSAGE_REQUIRED },
     name: { required },
+    copyName: {},
     typeOfDocument: { required },
     numberOfDocument: { required },
     // company: {}, //Opcional
@@ -111,8 +113,6 @@ const v$ = useVuelidate(rules, form);
 
 const uploadFile = async () => {
     try {
-        console.log(v$.value);
-        v$.value.$touch();
         if (answered.value) {
             toast.error("Ya el radicado fue generado", {
                 autoClose: 1000,
@@ -125,9 +125,6 @@ const uploadFile = async () => {
         //     });
         //     return;
         // }
-        else if (v$.value.$invalid) {
-            return;
-        }
         loadingFile.value = true;
         // Upload first file for add it QR
 
@@ -256,14 +253,20 @@ const sendFile = async () => {
 };
 
 const seeResponseClaim = async () => {
+    console.log(v$.value);
+    v$.value.$touch();
+    if(v$.value.$invalid) {
+        return;
+    }
     const data = JSON.stringify({
+        entryDate: form.entryDate,
         name: form.name,
-        lastName: "Apellido",
+        copyName: form.copyName,
         typeOfDocument: form.typeOfDocument,
         numberOfDocument: form.numberOfDocument,
         email: form.email,
-        address: form.address,
-        city: form.city,
+        address: decomposeAddress(form.address)?.address,
+        city: decomposeAddress(form.address)?.city,
         subject: form.subject,
         body: form.body,
         senderName: form.senderName,
@@ -271,24 +274,25 @@ const seeResponseClaim = async () => {
         senderArea: form.senderArea,
         senderCompany: form.senderCompany,
     });
-    const config = {
-        method: "post",
-        maxBodyLength: Infinity,
-        url: `${process.env.VUE_APP_CF_BASE_URL}/doc/create-response`,
-        headers: {
-            Accept: "/",
-            "Content-Type": "application/json",
-        },
-        data: data,
-    };
-    axios
-        .request(config)
-        .then((response) => {
-            console.log(JSON.stringify(response.data));
-        })
-        .catch((error) => {
-            console.log(error);
-        });
+    console.log(data);
+    // const config = {
+    //     method: "post",
+    //     maxBodyLength: Infinity,
+    //     url: `${process.env.VUE_APP_CF_BASE_URL}/doc/create-response`,
+    //     headers: {
+    //         Accept: "/",
+    //         "Content-Type": "application/json",
+    //     },
+    //     data: data,
+    // };
+    // axios
+    //     .request(config)
+    //     .then((response) => {
+    //         console.log(JSON.stringify(response.data));
+    //     })
+    //     .catch((error) => {
+    //         console.log(error);
+    //     });
 };
 
 const deleteRecord = (name) => {
@@ -322,9 +326,12 @@ const onFileDrop = (event) => {
     }
 };
 
-const getCity = (address) => {
+const decomposeAddress = (address) => {
     const addressSplit = address.split(",");
-    return addressSplit[1]?.trim();
+    return {
+        address: addressSplit[0]?.trim(),
+        city: addressSplit[1]?.trim() + ", " + addressSplit[2]?.trim(),
+    };
 };
 
 watch(
@@ -335,8 +342,8 @@ watch(
         form.typeOfDocument = currentValue.identificationType || "";
         form.numberOfDocument = currentValue.identificationNumber || "";
         form.email = currentValue.email || "";
-        form.address = currentValue.address || "";
-        form.city = getCity(currentValue.fullName) || "";
+        form.address = decomposeAddress(currentValue.address)?.address || "";
+        form.city = decomposeAddress(currentValue.address)?.city || "";
         form.subject = "Res - " + currentValue.subject || "Res - ";
         form.senderName = user.name || "";
         form.position = setIdRole(user.idRole);
@@ -459,7 +466,7 @@ watch(
                                         id="subject"
                                         placeholder="Ingrese el asunto"
                                     />
-                                    <span v-if="v$.$error" class="text-danger">
+                                    <span v-if="v$.$invalid" class="text-danger">
                                         <span
                                             v-if="v$.subject.required.$invalid"
                                             >Este campo es obligatorio</span
@@ -469,7 +476,7 @@ watch(
                                 <BCol lg="12" class="mt-3 h-100">
                                     <div class="ck-content w-full h-100">
                                         <span
-                                            v-if="v$.$error"
+                                            v-if="v$.$invalid"
                                             class="text-danger"
                                         >
                                             <span
@@ -503,7 +510,7 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el nombre del destinatario"
                                     />
-                                    <span v-if="v$.$error" class="text-danger">
+                                    <span v-if="v$.$invalid" class="text-danger">
                                         <span v-if="v$.name.required.$invalid"
                                             >Este campo es obligatorio</span
                                         >
@@ -512,7 +519,7 @@ watch(
                                         <label
                                             for=""
                                             class="pe-2 fw-bold text-muted"
-                                            >Agregar segundo destinatario</label
+                                            >Agregar otros destinatarios</label
                                         >
                                         <input
                                             v-model="secondAddressee"
@@ -528,15 +535,15 @@ watch(
                                     v-if="secondAddressee"
                                 >
                                     <label for="name" class="form-label fw-bold"
-                                        >Nombre del segundo del destinatario
+                                        >Nombres de los otros destinatarios
                                     </label>
                                     <input
                                         type="text"
                                         class="form-control"
-                                        v-model="nameSecondAddressee"
+                                        v-model="copyName"
                                         id="name"
                                         :required="true"
-                                        placeholder="Ingrese el nombre del segundo del destinatario"
+                                        placeholder="Ingrese los nombres separados por comas"
                                     />
                                 </BCol>
 
@@ -578,7 +585,7 @@ watch(
                                             },
                                         ]"
                                     />
-                                    <span v-if="v$.$error" class="text-danger">
+                                    <span v-if="v$.$invalid" class="text-danger">
                                         <span
                                             v-if="
                                                 v$.typeOfDocument.required
@@ -604,7 +611,7 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el número del documento del destinatario"
                                     />
-                                    <span v-if="v$.$error" class="text-danger">
+                                    <span v-if="v$.$invalid" class="text-danger">
                                         <span
                                             v-if="
                                                 v$.numberOfDocument.required
@@ -632,7 +639,7 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el correo del destinatario"
                                     />
-                                    <span v-if="v$.$error" class="text-danger">
+                                    <span v-if="v$.$invalid" class="text-danger">
                                         <span v-if="v$.email.required.$invalid"
                                             >Este campo es obligatorio</span
                                         >
@@ -679,7 +686,7 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese la dirección del destinatario"
                                     />
-                                    <span v-if="v$.$error" class="text-danger">
+                                    <span v-if="v$.$invalid" class="text-danger">
                                         <span
                                             v-if="v$.address.required.$invalid"
                                             >Este campo es obligatorio</span
@@ -702,7 +709,7 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese la ciudad del destinatario"
                                     />
-                                    <span v-if="v$.$error" class="text-danger">
+                                    <span v-if="v$.$invalid" class="text-danger">
                                         <span v-if="v$.city.required.$invalid"
                                             >Este campo es obligatorio</span
                                         >
@@ -726,7 +733,7 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el nombre del remitente"
                                     />
-                                    <span v-if="v$.$error" class="text-danger">
+                                    <span v-if="v$.$invalid" class="text-danger">
                                         <span
                                             v-if="
                                                 v$.senderName.required.$invalid
@@ -751,7 +758,7 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el area del remitente"
                                     />
-                                    <span v-if="v$.$error" class="text-danger">
+                                    <span v-if="v$.$invalid" class="text-danger">
                                         <span
                                             v-if="
                                                 v$.senderArea.required.$invalid
@@ -778,7 +785,7 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el cargo del remitente"
                                     />
-                                    <span v-if="v$.$error" class="text-danger">
+                                    <span v-if="v$.$invalid" class="text-danger">
                                         <span
                                             v-if="v$.position.required.$invalid"
                                             >Este campo es obligatorio</span
