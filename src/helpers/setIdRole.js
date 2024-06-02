@@ -3,19 +3,19 @@ export default function setIdRole(state) {
     let newState;
     switch (role) {
         case "FUNCTIONARY":
-            newState = "FUNCIONARIO";
+            newState = "Funcionario";
             break;
         case "BOSS_OF_AREA":
-            newState = "JEFE DE AREA";
+            newState = "Jefe de área";
             break;
         case "DIRECTOR":
-            newState = "DIRECTOR";
+            newState = "Director";
             break;
         case "ADMIN":
-            newState = "ADMINISTRADOR";
+            newState = "Administrador";
             break;
         case "RADICATOR":
-            newState = "RADICADOR";
+            newState = "Radicador";
             break;
         default:
             newState = role;
