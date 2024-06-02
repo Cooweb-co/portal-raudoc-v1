@@ -7,10 +7,11 @@ import { toast } from "vue3-toastify";
 // import ValidateLabel from "@/utils/ValidateLabel.vue";
 import { ref, reactive, watch, defineProps, computed } from "vue";
 import axios from "axios";
-import { FileTextIcon } from "@zhuowenli/vue-feather-icons";
+import { FileTextIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
 import { Editor } from "@camilo__lp/custom-editor-vue3";
 
-import { state } from "@/state/modules/auth";
+// import { state } from "@/state/modules/auth";
+import { getUserRoleByName } from "@/services/docservice/doc.service";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
 import setIdRole from "@/helpers/setIdRole";
 const editorSettings = {
@@ -67,8 +68,9 @@ const getDate = () => {
     const timestamp = { seconds: seconds, nanoseconds: nanoseconds };
     const formatDate = transformTimeStampToDate(
         timestamp,
-        "DD/MM/YYYY HH:mm:ss"
+        "DD [de] MMMM [de] YYYY"
     );
+    console.log(formatDate);
     return formatDate;
 };
 
@@ -358,8 +360,9 @@ const decomposeAddress = (address) => {
 
 watch(
     () => props.data,
-    (currentValue) => {
-        const user = JSON.parse(state.currentUserInfo);
+    async (currentValue) => {
+        // const user = JSON.parse(state.currentUserInfo);
+        const idRole = await getUserRoleByName(company, props.data?.assignedTo);
         form.name = currentValue.fullName || "";
         form.typeOfDocument = currentValue.identificationType || "";
         form.numberOfDocument = currentValue.identificationNumber || "";
@@ -368,7 +371,7 @@ watch(
         form.city = decomposeAddress(currentValue.address)?.city || "";
         form.subject = "Res - " + currentValue.subject || "Res - ";
         form.senderName = currentValue.assignedTo || "";
-        form.position = setIdRole(user.idRole);
+        form.position = setIdRole(idRole);
         form.senderArea = currentValue.serie || "";
         if (currentValue.personType.toUpperCase() == "JURÍDICA")
             showInputCompany.value = true;
@@ -478,7 +481,7 @@ watch(
                     </BCardHeader>
                     <BCardBody>
                         <BRow class="mb-3">
-                            <BCol lg="8">
+                            <BCol lg="8" class="row-container-form">
                                 <BCol lg="12">
                                     <label
                                         for="subject"
@@ -931,7 +934,7 @@ watch(
                                                         deleteRecord(file.name)
                                                     "
                                                 >
-                                                    borrar
+                                                    <Trash2Icon />
                                                 </BButton>
                                             </div>
                                         </div>
@@ -979,6 +982,12 @@ watch(
     justify-content: center;
     gap: 10px;
 }
+
+@media (max-width: 1000px) {
+    .row-container-form {
+        height: 100% !important;
+    }
+}
 </style>
 <style>
 .ck-editor__editable {
@@ -994,7 +1003,7 @@ watch(
 }
 
 .ck-editor__editable {
-    height: 85% !important;
+    height: 79.3% !important;
 }
 .ck-powered-by {
     display: none !important;
