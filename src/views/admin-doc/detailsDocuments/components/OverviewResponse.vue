@@ -23,9 +23,9 @@ const dropzone = ref(false);
 const answered = ref(false);
 const loadingFile = ref(false);
 const loadingSendFile = ref(false);
+const loadingPreview = ref(false);
 const showInputCompany = ref(false);
 const secondAddressee = ref(false);
-const copyName = ref("");
 const documentNumber = ref("Número de radicado");
 const maxSize = 10000000;
 const company = "BAQVERDE";
@@ -91,7 +91,7 @@ const form = reactive({
 });
 
 const rules = {
-    entryDate: { required},
+    entryDate: { required },
     name: { required },
     copyName: {},
     typeOfDocument: { required },
@@ -127,6 +127,19 @@ const uploadFile = async () => {
         loadingFile.value = true;
         // Upload first file for add it QR
 
+        const pdfBlob = await createPDF();
+        if (pdfBlob) {
+            const pdfFile = new File(
+                [pdfBlob],
+                "radicado-respuesta-" + props?.data?.numberEntryClaim ||
+                    new Date().toISOString() + ".pdf",
+                {
+                    type: "application/pdf",
+                }
+            );
+            files.value = [pdfFile, ...files.value];
+        }
+
         const date = transformTimeStampToDate(
             props?.data?.rawEntryDate,
             "DD/MM/YYYY HH:mm:ss"
@@ -138,7 +151,7 @@ const uploadFile = async () => {
         const bodyFormDataAddQR = new FormData();
         bodyFormDataAddQR.append(
             "url",
-            `https://portal.raudoc.com/r/${company}/${
+            `${process.env.VUE_APP_URLPAGE}/r/${company}/${
                 pathname[pathname.length - 1]
             }`
         );
@@ -251,9 +264,9 @@ const sendFile = async () => {
     }
 };
 
-const seeResponseClaim = async () => {
+const createPDF = async () => {
     v$.value.$touch();
-    if(v$.value.$invalid) {
+    if (v$.value.$invalid) {
         return;
     }
     const data = JSON.stringify({
@@ -272,25 +285,36 @@ const seeResponseClaim = async () => {
         senderArea: form.senderArea,
         senderCompany: form.senderCompany,
     });
-    console.log(data);
-    // const config = {
-    //     method: "post",
-    //     maxBodyLength: Infinity,
-    //     url: `${process.env.VUE_APP_CF_BASE_URL}/doc/create-response`,
-    //     headers: {
-    //         Accept: "/",
-    //         "Content-Type": "application/json",
-    //     },
-    //     data: data,
-    // };
-    // axios
-    //     .request(config)
-    //     .then((response) => {
-    //         console.log(JSON.stringify(response.data));
-    //     })
-    //     .catch((error) => {
-    //         console.log(error);
-    //     });
+    const config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: `${process.env.VUE_APP_CF_BASE_URL}/doc/create-response`,
+        headers: {
+            Accept: "/",
+            "Content-Type": "application/json",
+        },
+        responseType: "blob",
+        data: data,
+    };
+    try {
+        const response = await axios.request(config);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+const seeResponseClaim = async () => {
+    try {
+        loadingPreview.value = true;
+        const response = await createPDF();
+        const pdfBlob = response;
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        window.open(pdfUrl);
+        loadingPreview.value = false;
+    } catch (error) {
+        console.error(error);
+    }
 };
 
 const deleteRecord = (name) => {
@@ -343,7 +367,7 @@ watch(
         form.address = decomposeAddress(currentValue.address)?.address || "";
         form.city = decomposeAddress(currentValue.address)?.city || "";
         form.subject = "Res - " + currentValue.subject || "Res - ";
-        form.senderName = currentValue.assignedTo|| "";
+        form.senderName = currentValue.assignedTo || "";
         form.position = setIdRole(user.idRole);
         form.senderArea = currentValue.serie || "";
         if (currentValue.personType.toUpperCase() == "JURÍDICA")
@@ -419,12 +443,20 @@ watch(
                         <a-tooltip>
                             <template #title>Previsualizar respuesta</template>
                             <BButton
+                                v-if="!answered"
                                 type="button"
                                 variant="info"
                                 class="w-auto mx-2 d-inline-flex align-items-center justify-content-center"
                                 @click="seeResponseClaim"
                             >
+                                <span
+                                    v-if="loadingPreview"
+                                    class="spinner-border spinner-border-sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                ></span>
                                 <img
+                                    v-else
                                     src="@/assets/images/svg/overviewDocuments/eye.svg"
                                     alt="Eye"
                                 />
@@ -464,7 +496,10 @@ watch(
                                         id="subject"
                                         placeholder="Ingrese el asunto"
                                     />
-                                    <span v-if="v$.$errors.subject" class="text-danger">
+                                    <span
+                                        v-if="v$.$errors.subject"
+                                        class="text-danger"
+                                    >
                                         <span
                                             v-if="v$.subject.required.$invalid"
                                             >Este campo es obligatorio</span
@@ -508,7 +543,10 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el nombre del destinatario"
                                     />
-                                    <span v-if="v$.$invalid" class="text-danger">
+                                    <span
+                                        v-if="v$.$invalid"
+                                        class="text-danger"
+                                    >
                                         <span v-if="v$.name.required.$invalid"
                                             >Este campo es obligatorio</span
                                         >
@@ -538,7 +576,7 @@ watch(
                                     <input
                                         type="text"
                                         class="form-control"
-                                        v-model="copyName"
+                                        v-model="form.copyName"
                                         id="name"
                                         :required="true"
                                         placeholder="Ingrese los nombres separados por comas"
@@ -583,7 +621,10 @@ watch(
                                             },
                                         ]"
                                     />
-                                    <span v-if="v$.$invalid" class="text-danger">
+                                    <span
+                                        v-if="v$.$invalid"
+                                        class="text-danger"
+                                    >
                                         <span
                                             v-if="
                                                 v$.typeOfDocument.required
@@ -609,7 +650,10 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el número del documento del destinatario"
                                     />
-                                    <span v-if="v$.$invalid" class="text-danger">
+                                    <span
+                                        v-if="v$.$invalid"
+                                        class="text-danger"
+                                    >
                                         <span
                                             v-if="
                                                 v$.numberOfDocument.required
@@ -637,7 +681,10 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el correo del destinatario"
                                     />
-                                    <span v-if="v$.$invalid" class="text-danger">
+                                    <span
+                                        v-if="v$.$invalid"
+                                        class="text-danger"
+                                    >
                                         <span v-if="v$.email.required.$invalid"
                                             >Este campo es obligatorio</span
                                         >
@@ -684,7 +731,10 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese la dirección del destinatario"
                                     />
-                                    <span v-if="v$.$invalid" class="text-danger">
+                                    <span
+                                        v-if="v$.$invalid"
+                                        class="text-danger"
+                                    >
                                         <span
                                             v-if="v$.address.required.$invalid"
                                             >Este campo es obligatorio</span
@@ -707,7 +757,10 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese la ciudad del destinatario"
                                     />
-                                    <span v-if="v$.$invalid" class="text-danger">
+                                    <span
+                                        v-if="v$.$invalid"
+                                        class="text-danger"
+                                    >
                                         <span v-if="v$.city.required.$invalid"
                                             >Este campo es obligatorio</span
                                         >
@@ -731,7 +784,10 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el nombre del remitente"
                                     />
-                                    <span v-if="v$.$invalid" class="text-danger">
+                                    <span
+                                        v-if="v$.$invalid"
+                                        class="text-danger"
+                                    >
                                         <span
                                             v-if="
                                                 v$.senderName.required.$invalid
@@ -756,7 +812,10 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el area del remitente"
                                     />
-                                    <span v-if="v$.$invalid" class="text-danger">
+                                    <span
+                                        v-if="v$.$invalid"
+                                        class="text-danger"
+                                    >
                                         <span
                                             v-if="
                                                 v$.senderArea.required.$invalid
@@ -783,7 +842,10 @@ watch(
                                         :required="true"
                                         placeholder="Ingrese el cargo del remitente"
                                     />
-                                    <span v-if="v$.$invalid" class="text-danger">
+                                    <span
+                                        v-if="v$.$invalid"
+                                        class="text-danger"
+                                    >
                                         <span
                                             v-if="v$.position.required.$invalid"
                                             >Este campo es obligatorio</span
