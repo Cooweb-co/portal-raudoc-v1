@@ -1015,7 +1015,7 @@ export default {
                             icon=""
                         /></div
                 ></BCol>
-                <BCol lg="8" md="12" sm="12" class="ps-4">
+                <BCol lg="8" md="12" sm="12" class="ps-4 d-flex align-items-center">
                     <BRow
                         class="w-100 d-flex flex-column justify-content-start align-items-center gap-1 mx-2"
                     >
@@ -1031,7 +1031,7 @@ export default {
                             ><b>Rem/Des:</b>
                             {{ form.names + " " + form.lastNames }}</span
                         >
-                        <span><b>Asunto:</b> {{ form.subject }}</span>
+                        <span class="text-truncate inline-block"><b>Asunto:</b> {{ form.subject }}</span>
                         <span><b>No. Folios:</b> {{ form.folios }}</span>
                     </BRow>
                 </BCol>
