@@ -141,7 +141,6 @@ const uploadFile = async () => {
             );
             files.value = [pdfFile, ...files.value];
         }
-
         const date = transformTimeStampToDate(
             props?.data?.rawEntryDate,
             "DD/MM/YYYY HH:mm:ss"
@@ -371,7 +370,7 @@ watch(
         form.subject = "Res - " + currentValue.subject || "Res - ";
         form.senderName = capitalizedText(currentValue.assignedTo) || "";
         form.position = setIdRole(idRole);
-        form.senderArea = capitalizedText(currentValue.serie) || "";
+        form.senderArea = capitalizedText(currentValue.area) || "";
         if (currentValue.personType.toUpperCase() == "JURÍDICA")
             showInputCompany.value = true;
         if (
