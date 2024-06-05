@@ -128,13 +128,11 @@ const uploadFile = async () => {
         // }
         loadingFile.value = true;
         // Upload first file for add it QR
-
         const pdfBlob = await createPDF();
         if (pdfBlob) {
             const pdfFile = new File(
                 [pdfBlob],
-                "radicado-respuesta-" + props?.data?.numberEntryClaim ||
-                    new Date().toISOString() + ".pdf",
+                `radicado-respuesta-${props?.data?.numberEntryClaim || new Date().toISOString()}.pdf`,
                 {
                     type: "application/pdf",
                 }
