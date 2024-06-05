@@ -62,6 +62,7 @@ export default {
         const documentID = ref(null);
         const documentAI = ref(null);
         const companyID = ref("BAQVERDE");
+        const urlSticker = ref(null);
         const year = ref(new Date().getFullYear());
         const claimData = ref(null);
         const mode = ref("Entry");
@@ -689,7 +690,9 @@ export default {
             files,
             loadingBtnAI,
             documentID,
+            companyID,
             getAddress,
+            urlSticker,
             urlPage,
             address_info,
             claimData,
@@ -785,7 +788,7 @@ export default {
             try {
                 const config = {
                     headers: {
-                        company: "BAQVERDE",
+                        company: this.companyID,
                         "Content-Type": "application/json", // Puedes ajustar el tipo de contenido según sea necesario
                     },
                 };
@@ -841,7 +844,7 @@ export default {
                 this.handleSaveChanges();
                 const config = {
                     headers: {
-                        company: "BAQVERDE",
+                        company: this.companyID,
                         "Content-Type": "application/json", // Puedes ajustar el tipo de contenido según sea necesario
                     },
                 };
@@ -857,6 +860,7 @@ export default {
                 );
 
                 if (response) {
+                    this.generateSticker();
                     this.submitLoading = false;
                     this.radicate = response.data;
                     this.qrModal = true;
@@ -886,14 +890,46 @@ export default {
                 console.error(error);
             }
         },
+
+        async generateSticker() {
+            let data = JSON.stringify({
+                company: this.companyID,
+                uid: this.documentID,
+            });
+
+            let config = {
+                method: "post",
+                maxBodyLength: Infinity,
+                url: `${process.env.VUE_APP_CF_BASE_URL}/doc/create-qr`,
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                data: data,
+            };
+
+            axios
+                .request(config)
+                .then((response) => {
+                    const res = response.data;
+                    console.log(res);
+                    this.urlSticker = res.url;
+                    // console.log(JSON.stringify(response.data));
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        },
+
         closeModal() {
             this.qrModal = false;
         },
+
         newClaim() {
             location.reload();
         },
-        async showSticker() {
-            alert("Esto no funciona");
+
+        showSticker() {
+            window.open(this.urlSticker, "_blank");
         },
     },
     async mounted() {
@@ -1015,7 +1051,12 @@ export default {
                             icon=""
                         /></div
                 ></BCol>
-                <BCol lg="8" md="12" sm="12" class="ps-4 d-flex align-items-center">
+                <BCol
+                    lg="8"
+                    md="12"
+                    sm="12"
+                    class="ps-4 d-flex align-items-center"
+                >
                     <BRow
                         class="w-100 d-flex flex-column justify-content-start align-items-center gap-1 mx-2"
                     >
@@ -1031,7 +1072,9 @@ export default {
                             ><b>Rem/Des:</b>
                             {{ form.names + " " + form.lastNames }}</span
                         >
-                        <span class="text-truncate inline-block"><b>Asunto:</b> {{ form.subject }}</span>
+                        <span class="text-truncate inline-block"
+                            ><b>Asunto:</b> {{ form.subject }}</span
+                        >
                         <span><b>No. Folios:</b> {{ form.folios }}</span>
                     </BRow>
                 </BCol>
