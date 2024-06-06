@@ -904,6 +904,7 @@ export default {
                 headers: {
                     "Content-Type": "application/json",
                 },
+                responseType: 'arraybuffer',
                 data: data,
             };
 
@@ -911,8 +912,9 @@ export default {
                 .request(config)
                 .then((response) => {
                     const res = response.data;
-                    console.log(res);
-                    this.urlSticker = res.url;
+                    const blob = new Blob([res], { type: 'application/pdf' });
+                    const url = window.URL.createObjectURL(blob);
+                    this.urlSticker = url;
                     // console.log(JSON.stringify(response.data));
                 })
                 .catch((error) => {
