@@ -1,16 +1,20 @@
 <script setup>
 import { defineProps } from "vue";
 import Timeline from "./Timelime.vue";
-const props = defineProps({
+defineProps({
     data: Object,
     loading: Boolean,
     numberClaim: String,
+    showPrivateClaim: Boolean,
 });
-console.log(props);
 </script>
 <template>
     <BTab title="Historial" class="fw-semibold pt-2">
-      <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" />
-      <Timeline :numberClaim="numberClaim" v-else />
+        <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" />
+        <Timeline
+            v-else
+            :numberClaim="numberClaim"
+            :showPrivateClaim="showPrivateClaim"
+        />
     </BTab>
 </template>

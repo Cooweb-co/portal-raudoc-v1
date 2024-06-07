@@ -27,7 +27,7 @@ const loading = ref(false);
 const router = useRoute();
 
 const props = defineProps({
-    showPublicClaim: {
+    showPrivateClaim: {
         type: Boolean,
         required: true
     }
@@ -243,8 +243,8 @@ const isClaimOut = () => {
 
                     </BTab>
                     <OverviewResponse :loading="loading" :data="data"
-                        v-if="!numberClaim.startsWith('BV-') && props.showPublicClaim" />
-                    <OverviewTracking :data="data" :loading="loading" :numberClaim="numberClaim" />
+                        v-if="!numberClaim.startsWith('BV-') && props.showPrivateClaim" />
+                    <OverviewTracking :data="data" :loading="loading" :numberClaim="numberClaim" :showPrivateClaim="showPrivateClaim" />
                 </BTabs>
             </BCol>
         </BRow>

@@ -6,6 +6,6 @@ import Layout from "@/layouts/main.vue";
 
 <template>
     <Layout>
-        <OverviewMain :showPublicClaim="true" />
+        <OverviewMain :showPrivateClaim="true" />
     </Layout>
 </template>

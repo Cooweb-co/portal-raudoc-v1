@@ -1,7 +1,8 @@
 <script setup>
-import { defineProps } from "vue";
+import { defineProps, computed, ref, onMounted } from "vue";
 
-defineProps({
+const phoneScreen = ref(false);
+const props = defineProps({
     createdAt: String,
     name: String,
     content: {
@@ -11,17 +12,49 @@ defineProps({
     action: String,
     position: String,
 });
+
+onMounted(() => {
+    window.addEventListener("resize", () => {
+        phoneScreen.value = window.innerWidth < 375;
+    });
+});
+
+const actionIcon = computed(() => {
+    const action = props.action.toLowerCase();
+    switch (action) {
+        case "respondido":
+            return "ri-check-line";
+        case "aprobado":
+            return "ri-thumb-up-line";
+        case "elaborado":
+            return "ri-attachment-2";
+        case "devolución":
+            return "ri-file-close-line";
+        case "transferido":
+            return "ri-send-plane-2-line";
+        case "asignado":
+            return "ri-user-line";
+        case "iniciado":
+            return "ri-run-line";
+        case "en gestión":
+            return "ri-time-line";
+        default:
+            return "ri-stack-line";
+    }
+});
 </script>
 <template>
     <div :class="'timeline-item ' + position">
-        <i class="icon ri-stack-line"></i>
+        <div class="d-flex align-items-center justify-content-center">
+            <i :class="'icon ' + actionIcon"></i>
+        </div>
         <div class="date">
             <b>{{ action }}</b>
             <p>{{ createdAt }}</p>
         </div>
         <div class="content shadow-none">
             <div class="d-flex">
-                <div class="flex-shrink-0">
+                <div :class="`flex-shrink-0 ${phoneScreen ? 'd-none' : ''}`">
                     <img
                         src="@/assets/images/users/user-dummy-img.jpg"
                         alt=""
@@ -31,9 +64,9 @@ defineProps({
                 <div class="flex-grow-1 ms-3">
                     <h5 class="fs-15 fw-bold">
                         {{ name }}
-                        <small class="text-muted fs-13 fw-normal"
-                            >{{ createdAt ? "- " + createdAt : "" }}</small
-                        >
+                        <small class="text-muted fs-13 fw-normal">{{
+                            createdAt ? "- " + createdAt : ""
+                        }}</small>
                     </h5>
                     <div v-if="Array.isArray(content)">
                         <div
@@ -51,7 +84,9 @@ defineProps({
                             </p>
                         </div>
                     </div>
-                    <span class="text-muted fs-14 fw-normal" v-else>{{ content }}</span>
+                    <span class="text-muted fs-14 fw-normal" v-else>{{
+                        content
+                    }}</span>
                 </div>
             </div>
         </div>
