@@ -6,6 +6,6 @@ import Layout from "@/layouts/main.vue";
 
 <template>
     <Layout>
-        <OverviewMain :showOverviewResponse="true" />
+        <OverviewMain :showPublicClaim="true" />
     </Layout>
 </template>
