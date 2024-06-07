@@ -8,6 +8,7 @@ import { useRoute } from "vue-router";
 import OverviewSummary from "./OverviewSummary.vue";
 import OverviewDocuments from "./OverviewDocuments.vue";
 import OverviewResponse from "./OverviewResponse.vue";
+import OverviewTracking from "./OverviewTracking.vue";
 
 import {transformDate} from "@/helpers/transformDate";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
@@ -26,7 +27,7 @@ const loading = ref(false);
 const router = useRoute();
 
 const props = defineProps({
-    showOverviewResponse: {
+    showPrivateClaim: {
         type: Boolean,
         required: true
     }
@@ -242,7 +243,8 @@ const isClaimOut = () => {
 
                     </BTab>
                     <OverviewResponse :loading="loading" :data="data"
-                        v-if="!numberClaim.startsWith('BV-') && props.showOverviewResponse" />
+                        v-if="!numberClaim.startsWith('BV-') && props.showPrivateClaim" />
+                    <OverviewTracking :data="data" :loading="loading" :numberClaim="numberClaim" :showPrivateClaim="showPrivateClaim" />
                 </BTabs>
             </BCol>
         </BRow>
