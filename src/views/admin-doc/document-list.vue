@@ -37,7 +37,7 @@ const setNewDay = (day) => {
 const updateArray = async (i, array) => {
   try {
     array[i].days = newDay.value
-    await axios.put('http://127.0.0.1:5001/raudoc-gestion-agil-dev/us-central1/tdrs/', { newTrds: trds.value, company: "BAQVERDE" })
+    await axios.put(process.env.VUE_APP_CF_BASE_URL + '/tdrs/', { newTrds: trds.value, company: "BAQVERDE" })
   } catch (error) {
     console.log(error);
   }
