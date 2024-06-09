@@ -155,8 +155,7 @@ const initFullScreen = () => {
         // current working methods
         if (document.documentElement.requestFullscreen) {
             document.documentElement.requestFullscreen();
-        } 
-        else if (document.documentElement.mozRequestFullScreen) {
+        } else if (document.documentElement.mozRequestFullScreen) {
             document.documentElement.mozRequestFullScreen();
         } else if (document.documentElement.webkitRequestFullscreen) {
             document.documentElement.webkitRequestFullscreen(
@@ -388,11 +387,13 @@ onMounted(() => {
             </div>
           </form> -->
                 </div>
-                <picture class="d-flex justify-content-center align-items-end">
+                <picture
+                    class="d-flex justify-content-center align-items-center mx-auto w-full"
+                >
                     <img
                         src="/BAQVERDE.png"
                         alt="BAQVERDE"
-                        style="width: 20%"
+                        class="company-logo"
                     />
                 </picture>
                 <div class="d-flex align-items-center">
@@ -594,7 +595,6 @@ onMounted(() => {
             </BButton>
           </div> -->
 
-
                     <!-- ---------------------------------- Botón de notificaciones ---------------------------------------------------------------  -->
 
                     <!-- <BDropdown
@@ -791,3 +791,20 @@ onMounted(() => {
         </div>
     </header>
 </template>
+
+<style scoped>
+.company-logo {
+    width: 20%;
+}
+
+@media (max-width: 425px) {
+    .company-logo {
+        width: 30%;
+    }
+}
+@media (max-width: 340px) {
+    .company-logo {
+        width: 45%;
+    }
+}
+</style>
