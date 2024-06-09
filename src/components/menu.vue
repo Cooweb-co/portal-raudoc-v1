@@ -241,6 +241,9 @@ export default {
                 }
             }
         },
+        closeMenu() {
+          document.body.classList.remove("vertical-sidebar-enable");
+        },
 
         updateMenu(e, event) {
             document.body.classList.remove("twocolumn-panel");
@@ -381,6 +384,7 @@ export default {
                         <router-link
                             class="nav-link menu-link"
                             to="/dashboard/projects"
+                            @click.prevent="closeMenu()"
                         >
                             <HomeIcon width="24" height="24" />
                             <span data-key="t-dashboard">Dashboard</span>
@@ -396,6 +400,7 @@ export default {
                         <router-link
                             class="nav-link menu-link"
                             to="/radicacion/radicar-documento"
+                            @click.prevent="closeMenu()"
                         >
                             <FilePlusIcon width="24" height="24" />
                             <span data-key="t-dashboard"
@@ -408,6 +413,7 @@ export default {
                         <router-link
                             class="nav-link menu-link"
                             to="/gestion-documental/lista-radicados"
+                            @click.prevent="closeMenu()"
                         >
                             <FileTextIcon width="24" height="24" />
                             <span data-key="t-dashboard"
@@ -482,6 +488,7 @@ export default {
                         <router-link
                             class="nav-link menu-link"
                             to="/administracion/usuarios"
+                            @click.prevent="closeMenu()"
                         >
                             <UsersIcon width="24" height="24" />
                             <span data-key="t-dashboard"
@@ -494,6 +501,7 @@ export default {
                         <router-link
                             class="nav-link menu-link"
                             to="/gestion-documental/document-list"
+                            @click.prevent="closeMenu()"
                         >
                             <SettingsIcon width="24" height="24" />
                             <span data-key="t-dashboard"
