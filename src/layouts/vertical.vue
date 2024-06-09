@@ -125,7 +125,7 @@ export default {
         <div>
             <!-- ========== Left Sidebar Start ========== -->
             <!-- ========== App Menu ========== -->
-            <div class="app-menu navbar-menu" style="z-index: 1000 !important;">
+            <div class="app-menu navbar-menu" style="z-index: 2000 !important;">
                 <!-- LOGO -->
                 <div class="navbar-brand-box">
                     <!-- Dark Logo-->
