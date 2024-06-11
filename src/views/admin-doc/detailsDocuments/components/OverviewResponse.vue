@@ -10,15 +10,18 @@ import axios from "axios";
 import { FileTextIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
 import { Editor } from "@camilo__lp/custom-editor-vue3";
 
-// import { state } from "@/state/modules/auth";
+import { state } from "@/state/modules/auth";
 import { getUserRoleByName } from "@/services/docservice/doc.service";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
 import setIdRole from "@/helpers/setIdRole";
 import capitalizedText from "@/helpers/capitalizedText";
+
+import { setTracking } from "@/helpers/tracking";
 const editorSettings = {
     placeholder: "Escribe acá la respuesta para el ciudadano.",
 };
 
+const user = JSON.parse(state.currentUserInfo);
 const props = defineProps(["loading", "data"]);
 const files = ref([]);
 const dropzone = ref(false);
@@ -132,7 +135,9 @@ const uploadFile = async () => {
         if (pdfBlob) {
             const pdfFile = new File(
                 [pdfBlob],
-                `radicado-respuesta-${props?.data?.numberEntryClaim || new Date().toISOString()}.pdf`,
+                `radicado-respuesta-${
+                    props?.data?.numberEntryClaim || new Date().toISOString()
+                }.pdf`,
                 {
                     type: "application/pdf",
                 }
@@ -251,6 +256,28 @@ const sendFile = async () => {
             type: "success",
             closeOnClick: true,
         });
+        await setTracking(
+            props.data?.id,
+            company,
+            "Sistema",
+            "Respuesta generada por la entidad",
+            "Respondido",
+            false
+        );
+
+        console.log(user);
+        await setTracking(
+            props.data?.id,
+            company,
+            user.name,
+            [
+                ["Destinatario", props.data.fullName],
+                ["Método de envío", "correo electrónico"],
+                ["Correo", props.data.email],
+            ],
+            "Respondido",
+            true
+        );
     } catch (error) {
         loadingSendFile.value = false;
         toast("Error al enviar el correo", {
@@ -357,7 +384,6 @@ const decomposeAddress = (address) => {
 watch(
     () => props.data,
     async (currentValue) => {
-        // const user = JSON.parse(state.currentUserInfo);
         const idRole = await getUserRoleByName(company, props.data?.assignedTo);
         form.name = currentValue.fullName || "";
         form.typeOfDocument = currentValue.identificationType || "";

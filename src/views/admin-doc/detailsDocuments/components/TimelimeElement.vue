@@ -15,7 +15,7 @@ const props = defineProps({
 
 onMounted(() => {
     window.addEventListener("resize", () => {
-        phoneScreen.value = window.innerWidth < 375;
+        phoneScreen.value = window.innerWidth < 400;
     });
 });
 
