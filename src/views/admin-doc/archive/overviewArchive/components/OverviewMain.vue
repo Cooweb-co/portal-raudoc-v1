@@ -5,14 +5,13 @@ import {
     getArchivesFilesUploads,
     getProcessedFolderDocument,
 } from "@/services/docservice/doc.service";
-import { ref, onMounted, computed, defineProps } from "vue";
+import { ref, onMounted, defineProps } from "vue";
 import { useRoute } from "vue-router";
 import OverviewSummary from "./OverviewSummary.vue";
 import OverviewDocuments from "./OverviewDocuments.vue";
 import OverviewTracking from "./OverviewTracking.vue";
 
-import {transformDate} from "@/helpers/transformDate";
-import setVariantStateInfo from "@/helpers/setVariantStateInfo";
+import { transformDate } from "@/helpers/transformDate";
 // import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo";
 import setState from "@/helpers/setState";
 
@@ -34,9 +33,9 @@ const expedienteId = router.params.archiveID;
 const props = defineProps({
     showPrivateClaim: {
         type: Boolean,
-        required: true
-    }
-})
+        required: true,
+    },
+});
 
 console.log(props);
 
@@ -53,7 +52,9 @@ onMounted(async () => {
         }
 
         if (docData?.expirationDate && docData?.expirationDate.seconds) {
-            const formattedDate = transformDate(docData?.expirationDate.seconds); // Formatear fecha
+            const formattedDate = transformDate(
+                docData?.expirationDate.seconds
+            ); // Formatear fecha
             expirationDate.value = formattedDate; // Guardar la fecha formateada
         }
         data.value = {
@@ -88,15 +89,15 @@ onMounted(async () => {
                 "No definido",
             fullName:
                 docData?.petitionerInformation?.firstNames +
-                " " +
-                docData?.petitionerInformation?.lastNames || "No definido",
+                    " " +
+                    docData?.petitionerInformation?.lastNames || "No definido",
             email: docData?.petitionerInformation?.email || "No definido",
             phoneNumber:
                 docData?.petitionerInformation?.phoneNumber || "No definido",
             address: docData?.petitionerInformation?.address || "No definido",
             additionalInformation: docData?.additionalInformation || [],
             legalBasis: docData?.legalBasis || [],
-            rawEntryDate: docData?.createdAt
+            rawEntryDate: docData?.createdAt,
         };
         numberClaim.value =
             data.value.numberEntryClaim ||
@@ -106,8 +107,9 @@ onMounted(async () => {
             if (Array.isArray(data)) {
                 for (let i = 0; i < data.length; i++) {
                     const file = data[i];
-                    if(file?.name?.includes('-out')) filesOut.value = [...filesOut.value, file]
-                    else filesEntry.value = [...filesEntry.value, file]
+                    if (file?.name?.includes("-out"))
+                        filesOut.value = [...filesOut.value, file];
+                    else filesEntry.value = [...filesEntry.value, file];
                 }
             } else {
                 filesOut.value = [];
@@ -125,20 +127,14 @@ onMounted(async () => {
     loading.value = true;
     try {
         const docData = await getProcessedFolderDocument(expedienteId);
-        console.log(docData);
         dataArchive.value = docData;
         const files = await getArchivesFilesUploads(expedienteId);
-        console.log(files);
         filesArchive.value = files;
         loading.value = false;
     } catch (error) {
         console.error("Error al obtener el documento:", error);
         loading.value = false;
     }
-});
-
-const setVariantState = computed(() => {
-    return setVariantStateInfo(data.value.status);
 });
 
 const isClaimOut = () => {
@@ -165,43 +161,47 @@ const isClaimOut = () => {
                                 <BCol md>
                                     <BRow class="align-items-center g-3">
                                         <BCol md>
-                                            <a-skeleton v-if="loading" :paragraph="{ rows: 1 }" active />
+                                            <a-skeleton
+                                                v-if="loading"
+                                                :paragraph="{ rows: 1 }"
+                                                active
+                                            />
 
                                             <div v-else>
                                                 <h4 class="fw-bold">
-                                                    Expediente-demo-{{ expedienteId }}
+                                                    Expediente-demo-{{
+                                                        expedienteId
+                                                    }}
                                                 </h4>
-                                                <div class="hstack gap-3 flex-wrap">
+                                                <div
+                                                    class="hstack gap-3 flex-wrap"
+                                                >
                                                     <div>
-                                                        <i class="ri-building-line align-bottom me-1"></i>
-                                                        {{ data.area }}
+                                                        <i
+                                                            class="ri-building-line align-bottom me-1"
+                                                        ></i>
+                                                        Comercial
                                                     </div>
                                                     <div class="vr"></div>
                                                     <div>
                                                         Fecha de creación :
-                                                        <span class="fw-medium">{{
-                                                data.entryDate
-                                            }}</span>
+                                                        <span class="fw-medium"
+                                                            >12/06/2024</span
+                                                        >
                                                     </div>
                                                     <div class="vr"></div>
-                                                    <div>
-                                                        Fecha limite :
-                                                        <span class="fw-medium">{{
-                                                    data.expirationDate
-                                                }}</span>
-                                                    </div>
                                                     <div class="vr"></div>
-                                                    <BBadge pill :variant="setVariantState
-                                                ">{{
-                                                data.status
-                                            }}</BBadge>
+                                                    <BBadge
+                                                        pill
+                                                        variant="primary"
+                                                        >Nuevo</BBadge
+                                                    >
                                                 </div>
                                             </div>
                                         </BCol>
                                     </BRow>
                                 </BCol>
-                                <BCol md="auto">
-                                </BCol>
+                                <BCol md="auto"> </BCol>
                             </BRow>
                         </BCardBody>
                     </div>
@@ -211,20 +211,44 @@ const isClaimOut = () => {
 
         <BRow>
             <BCol lg="12">
-                <BTabs variant="link" nav-class="nav-tabs-custom border-bottom-0">
+                <BTabs
+                    variant="link"
+                    nav-class="nav-tabs-custom border-bottom-0"
+                >
                     <!-- Resumen -->
-                    <OverviewSummary :data="dataArchive" :files="filesArchive" :expedienteId="expedienteId" :loading="loading" />
+                    <OverviewSummary
+                        :data="dataArchive"
+                        :files="filesArchive"
+                        :expedienteId="expedienteId"
+                        :loading="loading"
+                    />
 
-                    <BTab title="Documentos" class="fw-semibold pt-2" v-if="isClaimOut()">
-                        <OverviewDocuments :data="data" :files="filesEntry" :loading="loading"
-                            :title="'Documentos de salida'" />
+                    <BTab
+                        title="Documentos"
+                        class="fw-semibold pt-2"
+                        v-if="isClaimOut()"
+                    >
+                        <OverviewDocuments
+                            :data="data"
+                            :files="filesEntry"
+                            :loading="loading"
+                            :title="'Documentos de salida'"
+                        />
                     </BTab>
                     <BTab title="Documentos" class="fw-semibold pt-2" v-else>
-                        <OverviewDocuments :data="data" :files="filesArchive" :loading="loading"
-                            :title="'Archivos del expediente'" />
-
+                        <OverviewDocuments
+                            :data="data"
+                            :files="filesArchive"
+                            :loading="loading"
+                            :title="'Archivos del expediente'"
+                        />
                     </BTab>
-                    <OverviewTracking :data="data" :loading="loading" :numberClaim="numberClaim" :showPrivateClaim="showPrivateClaim" />
+                    <OverviewTracking
+                        :data="data"
+                        :loading="loading"
+                        :numberClaim="numberClaim"
+                        :showPrivateClaim="showPrivateClaim"
+                    />
                 </BTabs>
             </BCol>
         </BRow>
