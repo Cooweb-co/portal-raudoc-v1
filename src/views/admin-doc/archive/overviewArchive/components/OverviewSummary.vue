@@ -3,6 +3,9 @@ import { computed, ref } from "vue";
 import { defineProps } from "vue";
 import { FileTextIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
 import { watch } from "vue";
+import { getFirebaseBackend } from "../../../../../authUtils.js";
+import { uploadBytes, ref as storageRef } from "firebase/storage";
+const storage = getFirebaseBackend().storage;
 
 const props = defineProps({
     data: Object,
@@ -13,6 +16,7 @@ const props = defineProps({
 console.log(props.data);
 const dropzone = ref(false);
 const files = ref([]);
+const filesToUpload = ref([]);
 const classDropZone = computed(() => {
     const styles =
         "mt-4 w-100 d-flex flex-column justify-content-center align-items-center drop-area mb-5";
@@ -35,6 +39,7 @@ const selectedFile = async () => {
     const newFiles = document.getElementById("formFile").files;
     for (let i = 0; i < newFiles.length; i++) {
         files.value = [...files.value, newFiles[i]];
+        filesToUpload.value.push(newFiles[i]);
     }
 };
 
@@ -44,14 +49,39 @@ const onFileDrop = (event) => {
     dropzone.value = false;
     for (let i = 0; i < newFiles.length; i++) {
         files.value = [...files.value, newFiles[i]];
+        filesToUpload.value.push(newFiles[i]);
     }
     console.log(files.value);
+};
+
+const uploadDocument = async () => {
+    for (let i = 0; i < filesToUpload.value.length; i++) {
+        const file = filesToUpload.value[i];
+        try {
+            // Encontrar la posición del último punto en el nombre del archivo
+            const dotIndex = file?.name?.lastIndexOf(".");
+            const randomNumber = Math.floor(Math.random() * 900) + 100;
+            // Dividir el nombre del archivo en base y extensión
+            const baseName = file?.name?.substring(0, dotIndex);
+            const extension = file?.name?.substring(dotIndex);
+
+            // Formar el nuevo nombre del archivo
+            const uniqueFileName = `${baseName}-${randomNumber}${extension}`;
+            const folder = `Companies/DEMO/2024/Archives/${props.expedienteId}`;
+            const storagePath = `${folder}/${uniqueFileName}`;
+            const fileRef = storageRef(storage, storagePath);
+            await uploadBytes(fileRef, file);
+        } catch (error) {
+            console.error("Error al subir el archivo:", error);
+        }
+    }
+    filesToUpload.value = [];
 };
 
 watch(
     () => [...files.value],
     (currentValue) => {
-        // uploadDocument();
+        uploadDocument();
         console.log(currentValue);
         return currentValue;
     }
@@ -224,7 +254,7 @@ watch(
                         <h5 class="card-title mb-0">TAGS</h5>
                     </BCardHeader>
                     <BCardBody>
-                        <div class="d-flex flex-wrap gap-1">
+                        <div class="d-flex flex-wrap gap-1" v-if="data?.summary?.tags?.length > 0">
                             <span
                                 v-for="(tag, index) in data?.summary?.tags"
                                 :key="index"
@@ -232,6 +262,7 @@ watch(
                                 >{{ tag }}</span
                             >
                         </div>
+                        <span v-else class="text-muted">No hay tags</span>
                     </BCardBody>
                 </BCard>
 
