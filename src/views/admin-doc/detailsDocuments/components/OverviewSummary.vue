@@ -2,11 +2,10 @@
 import OverviewSummaryElement from "./OverviewSummaryElement.vue";
 import { computed, defineProps, ref, onMounted } from "vue";
 import Multiselect from "@vueform/multiselect";
-// import ValidateLabel from "src/utils/ValidateLabel.vue";
-// import useVuelidate from "@vuelidate/core";
-// import { MESSAGE_REQUIRED } from "@/constants/messages.js";
-
+import ValidateLabel from "@/utils/ValidateLabel.vue";
+import { MESSAGE_REQUIRED } from "../../../../constants/rules.ts";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo.js";
+import { useVuelidate } from "@vuelidate/core";
 // import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
 import axios from 'axios'
 
@@ -33,14 +32,14 @@ const form = ref({
 const trds = ref([])
 const peopleList = ref([])
 
-// const rules = {
-//     area: { required: MESSAGE_REQUIRED },
-//     comments: {  },
-//     destiny: { required: MESSAGE_REQUIRED },
-//     notes: {  }
-// };
+const rules = {
+    area: { required: MESSAGE_REQUIRED },
+    comments: {  },
+    destiny: { required: MESSAGE_REQUIRED },
+    notes: {  }
+};
     
-// const v$ = useVuelidate(rules, form);
+const v$ = useVuelidate(rules, form);
 
 // obtener listado trds
 async function getTrds() {
@@ -112,8 +111,11 @@ const showTransferedModal = () => {
 }
 
 const sendDestiny = () => {
+    v$.value.$touch();
+    if (v$.value.$invalid) {
+        return;
+    }
     console.log(form)
-    console.log(getAreaId.value);
 }
 
 async function clearSelectInput() {
@@ -509,7 +511,7 @@ onMounted(async () => {
                 <p class="text-muted">Registre las acciones tomadas durante su gestión </p>
                 <textarea
                     class="form-control"
-                    v-model="form.notes"
+                    v-model="v$.notes.$model"
                     style="min-height: 120px; width: 100%;"
                 ></textarea>
             </div>
@@ -521,7 +523,7 @@ onMounted(async () => {
                         >Área</label
                     >
                     <Multiselect
-                        v-model="form.area"
+                        v-model="v$.area.$model"
                         :required="true"
                         :close-on-select="true"
                         :searchable="true"
@@ -531,10 +533,10 @@ onMounted(async () => {
                         @select="clearSelectInput"
                     />
 
-                    <!-- <ValidateLabel
+                    <ValidateLabel
                         v-bind="{ v$ }"
                         attribute="area"
-                    /> -->
+                    />
                 </BCol>
                 <BCol lg="6" class="mb-3 pr-0">
                     <label
@@ -543,7 +545,7 @@ onMounted(async () => {
                         >Seleccione el destinario</label
                     >
                     <Multiselect
-                        v-model="form.destiny"
+                        v-model="v$.destiny.$model"
                         :required="true"
                         :close-on-select="true"
                         :searchable="true"
@@ -552,10 +554,10 @@ onMounted(async () => {
                         :options="peopleList"
                     />
 
-                    <!-- <ValidateLabel
+                    <ValidateLabel
                         v-bind="{ v$ }"
-                        attribute="area"
-                    /> -->
+                        attribute="destiny"
+                    />
                 </BCol>
             </BRow>
             <div class="comments">
@@ -563,7 +565,7 @@ onMounted(async () => {
                 <p class="text-muted">Escriba una nota con las indicaciones o comentarios que desea hacer al destinario de la transferencia </p>
                 <textarea
                     class="form-control"
-                    v-model="form.comments"
+                    v-model="v$.comments.$model"
                     style="min-height: 120px"
                 ></textarea>
             </div>
