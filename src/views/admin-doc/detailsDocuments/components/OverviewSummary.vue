@@ -1,9 +1,14 @@
 <script setup>
 import OverviewSummaryElement from "./OverviewSummaryElement.vue";
-import { computed, defineProps } from "vue";
+import { computed, defineProps, ref, onMounted } from "vue";
+import Multiselect from "@vueform/multiselect";
+// import ValidateLabel from "src/utils/ValidateLabel.vue";
+// import useVuelidate from "@vuelidate/core";
+// import { MESSAGE_REQUIRED } from "@/constants/messages.js";
 
 import setVariantStateInfo from "@/helpers/setVariantStateInfo.js";
 // import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
+import axios from 'axios'
 
 const props = defineProps({
     data: Object,
@@ -16,14 +21,120 @@ const setVariantState = computed(() => {
     return setVariantStateInfo(props.data.status);
 });
 
-// const setVariantPriority = computed(() => {
-//     return setVariantPriorityInfo(data.value.status);
-// });
+const transferedModal = ref(false)
+
+const form = ref({
+    notes: '',
+    area: '',
+    destiny: '',
+    comments: ''
+})
+
+const trds = ref([])
+const peopleList = ref([])
+
+// const rules = {
+//     area: { required: MESSAGE_REQUIRED },
+//     comments: {  },
+//     destiny: { required: MESSAGE_REQUIRED },
+//     notes: {  }
+// };
+    
+// const v$ = useVuelidate(rules, form);
+
+// obtener listado trds
+async function getTrds() {
+
+    let config = {
+        method: "get",
+        maxBodyLength: Infinity,
+        url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
+        headers: {
+            company: "BAQVERDE",
+        },
+    };
+    
+    await axios
+        .request(config)
+        .then((response) => {
+            response.data.forEach((element) => {
+                trds.value.push({
+                    label: element.name,
+                    value: element.name,
+                    series: element.series,
+                    id: element.id,
+                });
+            });
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+}
+    
+// obtener listado de usuarios activos por areas
+async function getPeople() {
+    const config = {
+        method: "get",
+        maxBodyLength: Infinity,
+        url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaId.value}`,
+        headers: {
+            company: "BAQVERDE",
+        },
+    };
+    var auxPeople = [];
+    axios
+        .request(config)
+        .then((response) => {
+            response.data.forEach((element) => {
+                auxPeople.push({
+                    label: element.name,
+                    value: element.name,
+                    area: element.area,
+                    role: element.role,
+                    uid: element.uid,
+                });
+            });
+            peopleList.value = auxPeople;
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+}
+
+// Obtener el id del area seleccionada
+const getAreaId = computed(() => {
+    console.log(form.value);
+    return trds.value.find((el) => el.value === form.value.area)?.id;
+});
+    
+const showTransferedModal = () => {
+    transferedModal.value = true
+}
+
+const sendDestiny = () => {
+    console.log(form)
+    console.log(getAreaId.value);
+}
+
+async function clearSelectInput() {
+
+    if (form.value.area) {
+        form.value.destiny = "";
+    }
+
+    await getPeople();
+}
+    
+onMounted(async () => {
+    getTrds()
+})
+
 </script>
 
 <template>
     <BTab title="Resumen" active class="fw-semibold pt-2">
         <BRow>
+
             <BCol xl="9" lg="8">
                 <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" active />
                 <BCard no-body v-else>
@@ -166,135 +277,28 @@ const setVariantState = computed(() => {
                     </BCardBody>
                 </BCard>
 
-                <!-- <BCard no-body>
-              <BCardHeader class="align-items-center d-flex py-0">
-                  <BCardTitle class="mb-0 flex-grow-1">Comentarios</BCardTitle>
-                  <div class="flex-shrink-0">
-                      <BDropdown variant="link" class="card-header-dropdown"
-                          toggle-class="text-reset dropdown-btn arrow-none"
-                          menu-class="dropdown-menu-end" aria-haspopup="true">
-                          <template #button-content> <span class="text-muted">Recent<i
-                                      class="mdi mdi-chevron-down ms-1"></i></span>
-                          </template>
-<BDropdownItem>Recent</BDropdownItem>
-<BDropdownItem>Top Rated</BDropdownItem>
-<BDropdownItem>Last 7 DaysPrevious</BDropdownItem>
-</BDropdown>
-</div>
-</BCardHeader>
-
-<BCardBody>
-
-    <simplebar data-simplebar style="height: 300px;" class="px-3 mx-n3 mb-2">
-        <div class="d-flex mb-4">
-            <div class="flex-shrink-0">
-                <img src="@/assets/images/users/avatar-8.jpg" alt="" class="avatar-xs rounded-circle" />
-            </div>
-            <div class="flex-grow-1 ms-3">
-                <h5 class="fs-13">Joseph Parker <small class="text-muted ms-2">20
-                        Dec 2021 - 05:47AM</small></h5>
-                <p class="text-muted">I am getting message from customers that when
-                    they place order always get error message .</p>
-                <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i class="mdi mdi-reply"></i>
-                    Reply</BLink>
-                <div class="d-flex mt-4">
-                    <div class="flex-shrink-0">
-                        <img src="@/assets/images/users/avatar-10.jpg" alt="" class="avatar-xs rounded-circle" />
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h5 class="fs-13">Alexis Clarke <small class="text-muted ms-2">22 Dec 2021 -
-                                02:32PM</small></h5>
-                        <p class="text-muted">Please be sure to check your Spam
-                            mailbox to see if your email filters have identified the
-                            email from Dell as spam.</p>
-                        <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i
-                                class="mdi mdi-reply"></i> Reply</BLink>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="d-flex mb-4">
-            <div class="flex-shrink-0">
-                <img src="@/assets/images/users/avatar-6.jpg" alt="" class="avatar-xs rounded-circle" />
-            </div>
-            <div class="flex-grow-1 ms-3">
-                <h5 class="fs-13">Donald Palmer <small class="text-muted ms-2">24
-                        Dec 2021 - 05:20PM</small></h5>
-                <p class="text-muted">If you have further questions, please contact
-                    Customer Support from the “Action Menu” on your <BLink href="javascript:void(0);"
-                        class="text-decoration-underline">
-                        Online Order Support
-                    </BLink>.
-                </p>
-                <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i class="mdi mdi-reply"></i>
-                    Reply</BLink>
-            </div>
-        </div>
-        <div class="d-flex">
-            <div class="flex-shrink-0">
-                <img src="@/assets/images/users/avatar-10.jpg" alt="" class="avatar-xs rounded-circle" />
-            </div>
-            <div class="flex-grow-1 ms-3">
-                <h5 class="fs-13">Alexis Clarke <small class="text-muted ms-2">26
-                        min ago</small></h5>
-                <p class="text-muted">Your <BLink href="javascript:void(0)" class="text-decoration-underline">Online
-                        Order Support
-                    </BLink>
-                    provides you with the most current status of your order. To help
-                    manage your order refer to the “Action Menu” to initiate return,
-                    contact Customer Support and more.</p>
-                <BRow class="g-2 mb-3">
-                    <BCol lg="1" sm="2" cols="6">
-                        <img src="@/assets/images/small/img-4.jpg" alt="" class="img-fluid rounded">
-                    </BCol>
-                    <BCol lg="1" sm="2" cols="6">
-                        <img src="@/assets/images/small/img-5.jpg" alt="" class="img-fluid rounded">
-                    </BCol>
-                </BRow>
-                <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i class="mdi mdi-reply"></i>
-                    Reply</BLink>
-                <div class="d-flex mt-4">
-                    <div class="flex-shrink-0">
-                        <img src="@/assets/images/users/avatar-6.jpg" alt="" class="avatar-xs rounded-circle" />
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h5 class="fs-13">Donald Palmer <small class="text-muted ms-2">8
-                                sec ago</small></h5>
-                        <p class="text-muted">Other shipping methods are available
-                            at checkout if you want your purchase delivered faster.
-                        </p>
-                        <BLink href="javascript: void(0);" class="badge text-muted bg-light"><i
-                                class="mdi mdi-reply"></i> Reply</BLink>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </simplebar>
-    <form class="mt-4">
-        <BRow class="g-3">
-            <BCol cols="12">
-                <label for="exampleFormControlTextarea1" class="form-label text-body">Dejar un comentario</label>
-                <textarea class="form-control bg-light border-light" id="exampleFormControlTextarea1" rows="3"
-                    placeholder="Enter your comment..."></textarea>
-            </BCol>
-            <BCol cols="12" class="text-end">
-                <BButton type="button" variant="ghost-primary" class="btn-icon waves-effect me-1">
-                    <i class="ri-attachment-line fs-16"></i>
-                </BButton>
-                <BLink href="javascript:void(0);" class="btn btn-primary">Post
-                    Comments</BLink>
-            </BCol>
-        </BRow>
-    </form>
-</BCardBody>
-</BCard> -->
             </BCol>
 
             <BCol xl="3" lg="4">
                 <a-skeleton v-if="loading" :paragraph="{ rows: 6 }" active />
                 <BCard no-body v-else>
-                    <BCardHeader>
-                        <h5 class="card-title mb-0">Detalle de Radicación</h5>
+                    <BCardHeader style="display: flex; align-items: center; justify-content: space-between; flex-direction: row">
+                        <div>
+                            <h5 class="card-title mb-0">Detalle de Radicación</h5>
+                        </div>
+                        <div >
+                            <BButton
+                            
+                                variant="success"
+                                class="w-sm"
+                                @click="showTransferedModal"
+                            >
+                                <div class="button-content">
+                                    <span class="iconify" data-icon="feather:file-plus"></span>
+                                    <span>Transferir</span>
+                                </div>
+                            </BButton>
+                        </div>
                     </BCardHeader>
                     <BCardBody>
                         <div class="table-responsive table-card">
@@ -488,5 +492,125 @@ const setVariantState = computed(() => {
                 </BCard>
             </BCol>
         </BRow>
+       
     </BTab>
+
+    <!-- Modal -->
+    <BModal v-model="transferedModal" size="lg" id="showModal" title-class="exampleModalLabel" hide-header hide-footer class="v-modal-custom"
+      centered no-close-on-backdrop>
+
+        <div class="header-modal">
+            <i class="ri-close-line close-icon" @click="() => transferedModal = false" style="font-size: 23px;"></i>
+        </div>
+       
+        <div class="body-modal px-2">
+            <div class="notes">
+                <label><strong>Anotaciones</strong></label>
+                <p class="text-muted">Registre las acciones tomadas durante su gestión </p>
+                <textarea
+                    class="form-control"
+                    v-model="form.notes"
+                    style="min-height: 120px; width: 100%;"
+                ></textarea>
+            </div>
+            <BRow class="p-0" style="width: 100%;">
+                <BCol lg="6" class="mb-3 pl-0">
+                    <label
+                        for="choices-privacy-status-input"
+                        class="form-label fw-bold"
+                        >Área</label
+                    >
+                    <Multiselect
+                        v-model="form.area"
+                        :required="true"
+                        :close-on-select="true"
+                        :searchable="true"
+                        :create-option="true"
+                        placeholder="Seleccione"
+                        :options="trds"
+                        @select="clearSelectInput"
+                    />
+
+                    <!-- <ValidateLabel
+                        v-bind="{ v$ }"
+                        attribute="area"
+                    /> -->
+                </BCol>
+                <BCol lg="6" class="mb-3 pr-0">
+                    <label
+                        for="choices-privacy-status-input"
+                        class="form-label fw-bold"
+                        >Seleccione el destinario</label
+                    >
+                    <Multiselect
+                        v-model="form.destiny"
+                        :required="true"
+                        :close-on-select="true"
+                        :searchable="true"
+                        :create-option="true"
+                        placeholder="Seleccione"
+                        :options="peopleList"
+                    />
+
+                    <!-- <ValidateLabel
+                        v-bind="{ v$ }"
+                        attribute="area"
+                    /> -->
+                </BCol>
+            </BRow>
+            <div class="comments">
+                <label> <strong>Comentarios de transferencia</strong> </label>
+                <p class="text-muted">Escriba una nota con las indicaciones o comentarios que desea hacer al destinario de la transferencia </p>
+                <textarea
+                    class="form-control"
+                    v-model="form.comments"
+                    style="min-height: 120px"
+                ></textarea>
+            </div>
+        </div>
+        <div class="footer-modal p-2 mt-5">
+            <button type="button" class="btn btn-secondary" @click="() => transferedModal = false">Cerrar</button>
+            <button type="button" class="btn btn-primary" @click="sendDestiny">Entregar</button>
+        </div>
+    </BModal>
 </template>
+
+<style scoped>
+
+.close-icon:hover {
+    cursor: pointer;
+}
+
+.header-modal {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-direction: row;
+    width: 100%;
+}
+
+.body-modal {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-direction: column;
+    width: 100%;
+    gap: 25px;
+}
+
+.notes {
+    width: 100%;
+}
+
+.comments {
+    width: 100%;
+}
+
+.footer-modal {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+</style>
