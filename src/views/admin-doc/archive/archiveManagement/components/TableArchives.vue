@@ -1,7 +1,8 @@
 <script setup>
 import { SearchOutlined, EyeOutlined } from "@ant-design/icons-vue";
 // import CalendarFilter from "./CalendarFilter.vue";
-import { ref, reactive, computed } from "vue";
+import { ref, reactive, computed, onMounted } from "vue";
+import { getProcessedFolderDocuments } from "../../../../../services/docservice/doc.service";
 // import axios from "axios";
 // import { transformDate } from "@/helpers/transformDate";
 // import setState from "@/helpers/setState";
@@ -15,8 +16,6 @@ const searchInput = ref();
 const filteredInfo = ref(null);
 const sortedInfo = ref(null);
 const loading = ref(false);
-
-
 
 const handleTableChange = (pag, filters, sorter) => {
     filteredInfo.value = filters;
@@ -33,13 +32,13 @@ const columns = computed(() => {
             className: "text-center",
         },
         {
-            title: "Nombre del archivo",
-            dataIndex: "numberClaim",
-            key: "numberClaim",
-            width: "90%",
+            title: "Id del Expediente",
+            dataIndex: "id",
+            key: "id",
+            width: "20%",
             customFilterDropdown: true,
             onFilter: (value, record) =>
-                record.numberClaim
+                record.id
                     .toString()
                     .toLowerCase()
                     .includes(value.toLowerCase()),
@@ -50,6 +49,26 @@ const columns = computed(() => {
                     }, 100);
                 }
             },
+        },
+        {
+            title: "Nombre del expediente",
+            dataIndex: "name",
+            key: "name",
+            width: "20%",
+            className: "text-center",
+        },
+        {
+            title: "Creado por",
+            dataIndex: "createdBy",
+            key: "createdBy",
+            width: "20%",
+            className: "text-center",
+        },{
+            title: "Fecha de creación",
+            dataIndex: "dateCreated",
+            key: "dateCreated",
+            width: "20%",
+            className: "text-center",
         },
     ];
 });
@@ -63,12 +82,14 @@ const columns = computed(() => {
 
 //Filtro de búsqueda
 
-const dataSource = ref([{
-    id: 1,
-    key: 1,
-    numberClaim: "1",
-    action: "1",
-}]);
+const dataSource = ref(null);
+
+onMounted(async () => {
+    loading.value = true;
+    const data = await getProcessedFolderDocuments();
+    dataSource.value = data;
+    loading.value = false;
+});
 
 const handleChange = (selectedKeys, dataIndex) => {
     state.searchText = selectedKeys[0];
@@ -164,9 +185,9 @@ const handleReset = (clearFilters) => {
 
                 <span
                     v-if="
-                        (state.searchText &&
-                            state.searchedColumn === column.dataIndex &&
-                            column.dataIndex === 'numberClaim')
+                        state.searchText &&
+                        state.searchedColumn === column.dataIndex &&
+                        column.dataIndex === 'id'
                     "
                 >
                     <template
@@ -247,9 +268,7 @@ const handleReset = (clearFilters) => {
                 </template>
 
                 <template
-                    v-if="
-                        column.dataIndex == 'numberClaim' && !state.searchText
-                    "
+                    v-if="column.dataIndex == 'id' && !state.searchText"
                 >
                     <a
                         class="fw-medium link-primary"

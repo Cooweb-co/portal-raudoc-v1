@@ -387,7 +387,7 @@ onMounted(() => {
             </div>
           </form> -->
                 </div>
-                <picture
+                <!-- <picture
                     class="d-flex justify-content-center align-items-center mx-auto w-full"
                 >
                     <img
@@ -395,7 +395,7 @@ onMounted(() => {
                         alt="BAQVERDE"
                         class="company-logo"
                     />
-                </picture>
+                </picture> -->
                 <div class="d-flex align-items-center">
                     <!-- <BDropdown
                         class="dropdown d-md-none topbar-head-dropdown header-item"

@@ -349,3 +349,35 @@ export const getArchivesFilesUploads = async (claimId) => {
         console.error("Error al obtener los documentos:", error);
     }
 };
+
+export const getProcessedFolderDocuments = async () => {
+    try {
+        // Definir la ruta de la colección
+        const collectionRef = collection(
+            firestore,
+            "processedFolders",
+            "Companies",
+            "DEMO",
+            "2024",
+            "Archives"
+        );
+
+        // Obtener los documentos de la colección
+        const docsSnap = await getDocs(collectionRef);
+
+        // Verificar si la colección no está vacía
+        if (!docsSnap.empty) {
+            let documents = [];
+            docsSnap.forEach((doc) => {
+                documents.push(doc.data());
+            });
+            return documents;
+        } else {
+            console.error("No existen documentos en la colección!");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error al obtener los documentos:", error);
+        return null;
+    }
+};
