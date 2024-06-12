@@ -17,6 +17,8 @@ import {
     // Share2Icon,
     // SearchIcon,
     SettingsIcon,
+    ArchiveIcon,
+    SearchIcon,
     // ListIcon,
     // HelpCircleIcon,
     // ListIcon
@@ -46,6 +48,8 @@ export default {
         // GitMergeIcon
         // ListIcon,
         FilePlusIcon,
+        ArchiveIcon,
+        SearchIcon,
     },
     data() {
         return {
@@ -242,7 +246,7 @@ export default {
             }
         },
         closeMenu() {
-          document.body.classList.remove("vertical-sidebar-enable");
+            document.body.classList.remove("vertical-sidebar-enable");
         },
 
         updateMenu(e, event) {
@@ -506,6 +510,36 @@ export default {
                             <SettingsIcon width="24" height="24" />
                             <span data-key="t-dashboard"
                                 >Tipos de Documentos</span
+                            >
+                        </router-link>
+                    </li>
+
+                    <li class="menu-title">
+                        <i class="ri-more-fill"></i>
+                        <span data-key="t-components">Archivo</span>
+                    </li>
+
+                    <li class="nav-item">
+                        <router-link
+                            class="nav-link menu-link"
+                            to="/gestion-expedientes"
+                            @click.prevent="closeMenu()"
+                        >
+                            <ArchiveIcon width="24" height="24" />
+                            <span data-key="t-dashboard"
+                                >Gestión de Expedientes</span
+                            >
+                        </router-link>
+                    </li>
+                    <li class="nav-item">
+                        <router-link
+                            class="nav-link menu-link"
+                            to="/radicacion/radicar-documento"
+                            @click.prevent="closeMenu()"
+                        >
+                            <SearchIcon width="24" height="24" />
+                            <span data-key="t-dashboard"
+                                >Indexar Expediente</span
                             >
                         </router-link>
                     </li>

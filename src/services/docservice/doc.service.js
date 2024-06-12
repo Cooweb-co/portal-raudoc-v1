@@ -58,7 +58,6 @@ export const onListenClaimData = async (claimId, companyId, callback) => {
 export const saveFile = async (pathDocument, urlPDF, fileName) => {
     // eslint-disable-next-line no-useless-catch
     try {
-
         await firestore.doc(pathDocument).collection("Files").add({
             name: fileName,
             url: urlPDF,
@@ -244,7 +243,7 @@ export const updateClaimSummary = async (companyId, claimId, uniqueValue) => {
                     firestore,
                     `Companies/${companyId}/Claims/${claimId}`
                 );
-                await updateDoc(parentDocRef, { ...summary  });
+                await updateDoc(parentDocRef, { ...summary });
 
                 return true;
             } else {
@@ -287,11 +286,66 @@ export const getUserRoleByName = async (company, nameUser) => {
             });
             return idRole;
         } else {
-            console.error("No se encontró ningún usuario con el nombre especificado.");
+            console.error(
+                "No se encontró ningún usuario con el nombre especificado."
+            );
             return null;
         }
     } catch (error) {
         console.error("Error al buscar el usuario:", error);
         return null;
+    }
+};
+
+export const getProcessedFolderDocument = async (id) => {
+    try {
+        // Definir la ruta del documento usando el ID proporcionado
+        const docPath = `/processedFolders/Companies/DEMO/2024/Archives/${id}`;
+
+        // Obtener la referencia al documento
+        const docRef = doc(firestore, docPath);
+
+        // Obtener el documento
+        const docSnap = await getDoc(docRef);
+
+        // Verificar si el documento existe y retornar su contenido
+        if (docSnap.exists()) {
+            return docSnap.data();
+        } else {
+            console.error("No existe el documento!");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error al obtener el documento:", error);
+        return null;
+    }
+};
+
+export const getArchivesFilesUploads = async (claimId) => {
+    try {
+        const collectionRef = collection(
+            firestore,
+            "processedFolders",
+            "Companies",
+            "DEMO",
+            "2024",
+            "Archives",
+            claimId,
+            "Files"
+        );
+        const docsSnap = await getDocs(collectionRef);
+        console.log(docsSnap);
+        if (!docsSnap.empty) {
+            let documents = [];
+            docsSnap.forEach((doc) => {
+                documents.push(doc.data());
+            });
+            return documents;
+        } else {
+            console.error("No existen documentos en la colección!");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error al obtener los documentos:", error);
     }
 };

@@ -108,6 +108,26 @@ export default [
     meta: { title: "Resumen de proyectos", authRequired: true },
     component: () => import("../views/admin-doc/detailsDocuments/Overview"),
   },
+  {
+    path: "/expediente/:archiveID",
+    name: "projects-overview",
+    meta: { title: "Resumen de proyectos", authRequired: true },
+    component: () => import("../views/admin-doc/archive/overviewArchive/index.vue"),
+  },
+
+  {
+    path: "/creador-expedientes",
+    name: "creator-of-documents",
+    meta: { title: "Creador de expedientes", authRequired: true },
+    component: () => import("../views/admin-doc/archive/CreatorArchive/index"),
+  },
+  {
+    path: "/gestion-expedientes",
+    name: "gestion-of-archives",
+    meta: { title: "Gestión de Expedientes", authRequired: true },
+    component: () => import("../views/admin-doc/archive/archiveManagement/index"),
+  },
+
 
   {
     path: "/gestion-documental/organigrama",
