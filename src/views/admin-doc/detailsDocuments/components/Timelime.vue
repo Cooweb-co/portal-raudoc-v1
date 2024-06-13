@@ -22,6 +22,17 @@ onMounted(() => {
         {
             createdAt: timestamp,
             name: "Alanna",
+            action: "Enviado",
+            content: [
+                { name: "Destinatario", value: "Roberto Pérez" },
+                { name: "Método de envío", value: "correo electrónico" },
+                { name: "Correo", value: "roberto.perez@gmail.com" },
+                { name: "Comentario", value: "El documento está bien" },
+            ],
+        },
+        {
+            createdAt: timestamp,
+            name: "Alanna",
             action: "Respondido",
             content: [
                 { name: "Destinatario", value: "Roberto Pérez" },

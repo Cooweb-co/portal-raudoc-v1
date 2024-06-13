@@ -25,6 +25,8 @@ const actionIcon = computed(() => {
     switch (action) {
         case "respondido":
             return "ri-check-line";
+        case "enviado":
+            return "ri-mail-line";
         case "aprobado":
             return "ri-thumb-up-line";
         case "elaborado":
