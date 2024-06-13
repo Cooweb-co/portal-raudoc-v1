@@ -5,6 +5,8 @@ import { FileTextIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
 import { watch } from "vue";
 import { getFirebaseBackend } from "../../../../../authUtils.js";
 import { uploadBytes, ref as storageRef } from "firebase/storage";
+import { toast } from "vue3-toastify";
+
 const storage = getFirebaseBackend().storage;
 
 const props = defineProps({
@@ -71,6 +73,10 @@ const uploadDocument = async () => {
             const storagePath = `${folder}/${uniqueFileName}`;
             const fileRef = storageRef(storage, storagePath);
             await uploadBytes(fileRef, file);
+            toast.success(`El archivo ${uniqueFileName} ha sido subido correctamente`, {
+                            position: toast.POSITION.TOP_RIGHT,
+                            autoClose: 3000,
+                        });
         } catch (error) {
             console.error("Error al subir el archivo:", error);
         }

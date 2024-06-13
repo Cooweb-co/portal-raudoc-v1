@@ -15,10 +15,7 @@ const extension = ref(props.file?.name.split(".").pop().toUpperCase() || "-");
 
 
 const goToDocument = () => {
-    const year =
-        props.file?.startProccessAt?.toDate().getFullYear() ||
-        props.file?.createdAt?.toDate().getFullYear();
-    const path = `/Companies/BAQVERDE/${year}/Claims/${props.id}`;
+    const path = `/Companies/DEMO/2024/Archives/${props.id}`;
     openDocument(props.file.name, path);
 };
 </script>

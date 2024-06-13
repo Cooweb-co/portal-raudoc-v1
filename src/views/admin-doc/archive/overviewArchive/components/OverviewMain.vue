@@ -137,10 +137,6 @@ onMounted(async () => {
     }
 });
 
-const isClaimOut = () => {
-    return numberClaim.value.startsWith("BV-") ? true : false;
-};
-
 // const setVariantPriority = computed(() => {
 //     return setVariantPriorityInfo(data.value.status);
 // });
@@ -223,21 +219,9 @@ const isClaimOut = () => {
                         :loading="loading"
                     />
 
-                    <BTab
-                        title="Documentos"
-                        class="fw-semibold pt-2"
-                        v-if="isClaimOut()"
-                    >
+                    <BTab title="Documentos" class="fw-semibold pt-2">
                         <OverviewDocuments
-                            :data="data"
-                            :files="filesEntry"
-                            :loading="loading"
-                            :title="'Documentos de salida'"
-                        />
-                    </BTab>
-                    <BTab title="Documentos" class="fw-semibold pt-2" v-else>
-                        <OverviewDocuments
-                            :data="data"
+                            :data="dataArchive"
                             :files="filesArchive"
                             :loading="loading"
                             :title="'Archivos del expediente'"
