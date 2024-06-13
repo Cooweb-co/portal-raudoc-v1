@@ -880,7 +880,7 @@ export default {
                         "Sistema",
                         "Tramite asignado al funcionario.",
                         "Asignado",
-                        true
+                        false
                     );
                     this.submitLoading = false;
                     this.radicate = response.data;

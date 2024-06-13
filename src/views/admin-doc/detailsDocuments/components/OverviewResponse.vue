@@ -217,12 +217,22 @@ const uploadFile = async () => {
         await setTracking(
             props.data?.id,
             company,
-            user.name,
+            form.senderName,
             [
-                { name: "Area", value: props.data?.area },
+                { name: "Area", value: form.senderArea },
+                { name: "Cargo", value: form.position },
+                { name: "Comentarios", value: "Documento respondido exitosamente" },
             ],
-            "Elaborado",
+            "Respondido",
             true
+        );
+        await setTracking(
+            props.data?.id,
+            company,
+            "Sistema",
+            "Documento respondido exitosamente",
+            "Enviado",
+            false
         );
         toast("Archivo cargado con éxito", {
             type: "success",
@@ -272,12 +282,21 @@ const sendFile = async () => {
             company,
             user.name,
             [
-                { name: "Email", value: props.data?.email },
+                { name: "Destinatario", value: form.senderName },
                 { name: "Método de envío", value: "correo electrónico" },
                 { name: "Correo", value: props.data.email },
+                { name: "Comentario", value: "El documento fue enviado" },
             ],
-            "Respondido",
+            "Enviado",
             true
+        );
+        await setTracking(
+            props.data?.id,
+            company,
+            "Sistema",
+            "Documento enviado, revise su correo electrónico",
+            "Enviado",
+            false
         );
     } catch (error) {
         loadingSendFile.value = false;
