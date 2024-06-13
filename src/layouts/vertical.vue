@@ -17,6 +17,7 @@ export default {
     data() {
         return {
             isMenuCondensed: false,
+            zIndexOfMenu: 0,
         };
     },
     computed: {
@@ -44,6 +45,15 @@ export default {
                 "data-sidebar-size",
                 sidebarSize
             );
+        },
+
+        updateZIndexOfMenu() {
+            this.zIndexOfMenu = 2000;
+            if (window.screen.width < 768) {
+                this.zIndexOfMenu = 1000;
+            } else {
+                this.zIndexOfMenu = 2000;
+            }
         },
 
         initActiveMenu() {
@@ -98,6 +108,7 @@ export default {
         },
     },
     mounted() {
+        document.body.addEventListener("resize", this.updateZIndexOfMenu);
         if (localStorage.getItem("hoverd") == "true") {
             document.documentElement.setAttribute(
                 "data-sidebar-size",
@@ -111,21 +122,24 @@ export default {
         if (window.screen.width < 1025) {
             document.documentElement.setAttribute("data-sidebar-size", "sm");
         }
-
     },
     unmounted() {
         window.removeEventListener("resize", this.updateSidebarSize);
+        document.body.removeEventListener("resize", this.updateZIndexOfMenu);
     },
 };
 </script>
 
 <template>
-    <div id="layout-wrapper" style="overflow-x: hidden;">
+    <div id="layout-wrapper" style="overflow-x: hidden">
         <NavBar />
         <div>
             <!-- ========== Left Sidebar Start ========== -->
             <!-- ========== App Menu ========== -->
-            <div class="app-menu navbar-menu" style="z-index: 2000 !important;">
+            <div
+                class="app-menu navbar-menu"
+                style="z-index: zIndexOfMenu !important"
+            >
                 <!-- LOGO -->
                 <div class="navbar-brand-box">
                     <!-- Dark Logo-->
