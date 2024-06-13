@@ -75,12 +75,12 @@ const actionIcon = computed(() => {
                             :key="index"
                         >
                             <p class="col-sm-5 col-12">
-                                {{ item[0] }}
+                                {{ item?.name }}
                             </p>
                             <p
                                 class="col-sm-6 col-12 text-muted d-flex align-items-center"
                             >
-                                {{ item[1] }}
+                                {{ item?.value }}
                             </p>
                         </div>
                     </div>

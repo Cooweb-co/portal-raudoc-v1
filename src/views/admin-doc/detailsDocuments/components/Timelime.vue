@@ -15,10 +15,10 @@ onMounted(() => {
             name: "Alanna",
             action: "Respondido",
             content: [
-                ["Destinatario", "Roberto Pérez"],
-                ["Método de envío", "correo electrónico"],
-                ["Correo", "roberto.perez@gmail.com"],
-                ["Comentario", "El documento está bien"],
+                { name: "Destinatario", value: "Roberto Pérez" },
+                { name: "Método de envío", value: "correo electrónico" },
+                { name: "Correo", value: "roberto.perez@gmail.com" },
+                { name: "Comentario", value: "El documento está bien" },
             ],
         },
         {
@@ -26,8 +26,11 @@ onMounted(() => {
             name: "Fernando Alonso",
             action: "Devolución",
             content: [
-                ["Asignado a", "Luis Andrés"],
-                ["Comentarios", "Se realiza l asignación de la devolución"],
+                { name: "Asignado a", value: "Luis Andrés" },
+                {
+                    name: "Comentarios",
+                    value: "Se realiza l asignación de la devolución",
+                },
             ],
         },
         {
@@ -35,8 +38,17 @@ onMounted(() => {
             name: "Fernando Alonso",
             action: "Aprobado",
             content: [
-                ["Area", "Contaduría"],
-                ["Comentarios", "El fue elaborado"],
+                { name: "Area", value: "Administración" },
+                { name: "Comentarios", value: "El fue elaborado" },
+            ],
+        },
+        {
+            createdAt: "16 marzo 2021 - 12:00 pm",
+            name: "Fernando Alonso",
+            action: "Aprobado",
+            content: [
+                { name: "Area", value: "Administración" },
+                { name: "Comentarios", value: "El fue elaborado" },
             ],
         },
         {
@@ -44,8 +56,8 @@ onMounted(() => {
             name: "Camilo",
             action: "Elaborado",
             content: [
-                ["Area", "Administración"],
-                ["Comentarios", "El fue elaborado"],
+                { name: "Area", value: "Administración" },
+                { name: "Comentarios", value: "El fue elaborado" },
             ],
         },
         {
@@ -53,13 +65,13 @@ onMounted(() => {
             name: "Camilo",
             action: "Transferido",
             content: [
-                ["Area", "Administración"],
-                ["Asignado a", "Luis Andrés"],
-                ["Area", "Contaduría"],
-                [
-                    "Comentarios",
-                    "Se realiza el traspaso de la asignación a contaduría",
-                ],
+                { name: "Area", value: "Administración" },
+                { name: "Asignado a", value: "Luis Andrés" },
+                { name: "Area", value: "Contaduría" },
+                {
+                    name: "Comentarios",
+                    value: "Se realiza el traspaso de la asignación a contaduría",
+                },
             ],
         },
         {
@@ -67,12 +79,12 @@ onMounted(() => {
             name: "Camilo",
             action: "Asignado",
             content: [
-                ["Asignado a", "Luis Andrés"],
-                ["Area", "Contaduría"],
-                [
-                    "Comentarios",
-                    "Se realiza la asignación para la contestación",
-                ],
+                { name: "Asignado a", value: "Luis Andrés" },
+                { name: "Area", value: "Contaduría" },
+                {
+                    name: "Comentarios",
+                    value: "Se realiza la asignación para la contestación",
+                },
             ],
         },
         {
@@ -125,8 +137,13 @@ function evenOrOdd(number) {
 </script>
 <template>
     <div>
-        <div v-if="!data" class="d-flex justify-content-center align-items-center w-100 h-100">
-            <h3 class="text-center fs-3 text-muted fst-italic mt-2">Este documento no posee un historial.</h3>
+        <div
+            v-if="!data"
+            class="d-flex justify-content-center align-items-center w-100 h-100"
+        >
+            <h3 class="text-center fs-3 text-muted fst-italic mt-2">
+                Este documento no posee un historial.
+            </h3>
         </div>
         <div class="timeline">
             <TimelimeElement
