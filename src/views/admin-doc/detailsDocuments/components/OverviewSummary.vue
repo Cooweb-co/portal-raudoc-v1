@@ -6,6 +6,7 @@ import ValidateLabel from "@/utils/ValidateLabel.vue";
 import { MESSAGE_REQUIRED } from "../../../../constants/rules.ts";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo.js";
 import { useVuelidate } from "@vuelidate/core";
+import Swal from "sweetalert2";
 // import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
 import axios from 'axios'
 
@@ -31,14 +32,15 @@ const form = ref({
 
 const trds = ref([])
 const peopleList = ref([])
+const isLoading = ref(false)
 
 const rules = {
     area: { required: MESSAGE_REQUIRED },
-    comments: {  },
+    comments: {},
     destiny: { required: MESSAGE_REQUIRED },
-    notes: {  }
+    notes: {}
 };
-    
+
 const v$ = useVuelidate(rules, form);
 
 // obtener listado trds
@@ -52,7 +54,7 @@ async function getTrds() {
             company: "BAQVERDE",
         },
     };
-    
+
     await axios
         .request(config)
         .then((response) => {
@@ -69,7 +71,7 @@ async function getTrds() {
             console.error(error);
         });
 }
-    
+
 // obtener listado de usuarios activos por areas
 async function getPeople() {
     const config = {
@@ -105,17 +107,41 @@ const getAreaId = computed(() => {
     console.log(form.value);
     return trds.value.find((el) => el.value === form.value.area)?.id;
 });
-    
+
 const showTransferedModal = () => {
     transferedModal.value = true
 }
 
-const sendDestiny = () => {
+const sendDestiny = async () => {
     v$.value.$touch();
     if (v$.value.$invalid) {
         return;
     }
-    console.log(form)
+
+    try {
+        isLoading.value = true
+        const body = {
+            ...form,
+            company: "BAQVERDE",
+            claimId: props.data.id
+        }
+        await axios.post('https://us-central1-raudoc-gestion-agil-dev.cloudfunctions.net/us-central1/claim/assign-radicate', body)
+
+        Swal.fire({
+            position: "top-right",
+            icon: "success",
+            title: "Transferencia realizada exitosamente!",
+            showConfirmButton: false,
+            timer: 2000,
+        });
+
+
+    } catch (error) {
+        console.log(error);
+    } finally {
+        transferedModal.value = false
+        isLoading.value = false
+    }
 }
 
 async function clearSelectInput() {
@@ -124,11 +150,14 @@ async function clearSelectInput() {
         form.value.destiny = "";
     }
 
+    console.log(props.data.id);
+
     await getPeople();
 }
-    
+
 onMounted(async () => {
-    getTrds()
+    getTrds(),
+        console.log();
 })
 
 </script>
@@ -150,32 +179,21 @@ onMounted(async () => {
                                 Fundamentos legales:
                             </h6>
                             <ol v-if="data?.legalBasis?.length > 0">
-                                <li
-                                    v-for="item in data.legalBasis"
-                                    :key="item"
-                                    class="text-muted"
-                                >
+                                <li v-for="item in data.legalBasis" :key="item" class="text-muted">
                                     {{ item }}
                                 </li>
                             </ol>
-                            <p v-else class="text-muted"
-                                >No se encontraron fundamentos legales</p
-                            >
+                            <p v-else class="text-muted">No se encontraron fundamentos legales</p>
                             <h6 class="fw-semibold text-uppercase mb-3">
                                 Información adicional:
                             </h6>
                             <ul v-if="data?.additionalInformation?.length > 0">
-                                <li
-                                    v-for="information in data.additionalInformation"
-                                    :key="information"
-                                    class="text-muted"
-                                >
+                                <li v-for="information in data.additionalInformation" :key="information"
+                                    class="text-muted">
                                     {{ information }}
                                 </li>
                             </ul>
-                            <p v-else class="text-muted mb-3"
-                                >No hay información adicional</p
-                            >
+                            <p v-else class="text-muted mb-3">No hay información adicional</p>
 
                             <h6 class="fw-semibold text-uppercase mb-3">
                                 Información de contacto
@@ -203,9 +221,7 @@ onMounted(async () => {
                                 <BRow gy-3>
                                     <BCol lg="3" sm="6">
                                         <div>
-                                            <p
-                                                class="mb-2 text-uppercase fw-medium"
-                                            >
+                                            <p class="mb-2 text-uppercase fw-medium">
                                                 Fecha de Creación:
                                             </p>
                                             <h5 class="fs-15 mb-0">
@@ -215,9 +231,7 @@ onMounted(async () => {
                                     </BCol>
                                     <BCol lg="3" sm="6">
                                         <div>
-                                            <p
-                                                class="mb-2 text-uppercase fw-medium"
-                                            >
+                                            <p class="mb-2 text-uppercase fw-medium">
                                                 Fecha limite:
                                             </p>
                                             <h5 class="fs-15 mb-0">
@@ -241,16 +255,10 @@ onMounted(async () => {
                                     </BCol> -->
                                     <BCol lg="3" sm="6">
                                         <div>
-                                            <p
-                                                class="mb-2 text-uppercase fw-medium"
-                                            >
+                                            <p class="mb-2 text-uppercase fw-medium">
                                                 Estatus :
                                             </p>
-                                            <BBadge
-                                                tag="div"
-                                                :variant="setVariantState"
-                                                >{{ data.status }}</BBadge
-                                            >
+                                            <BBadge tag="div" :variant="setVariantState">{{ data.status }}</BBadge>
                                         </div>
                                     </BCol>
                                 </BRow>
@@ -261,17 +269,10 @@ onMounted(async () => {
                                     Adjuntos
                                 </h6>
                                 <BRow class="g-3" v-show="files">
-                                    <OverviewSummaryElement
-                                        v-for="file in files"
-                                        :key="file.name"
-                                        :id="data.id"
-                                        :file="file"
-                                    />
+                                    <OverviewSummaryElement v-for="file in files" :key="file.name" :id="data.id"
+                                        :file="file" />
                                 </BRow>
-                                <h6
-                                    class="mb-3 fw-semibold text-uppercase"
-                                    v-show="!files"
-                                >
+                                <h6 class="mb-3 fw-semibold text-uppercase" v-show="!files">
                                     No se adjuntaron archivos
                                 </h6>
                             </div>
@@ -284,17 +285,13 @@ onMounted(async () => {
             <BCol xl="3" lg="4">
                 <a-skeleton v-if="loading" :paragraph="{ rows: 6 }" active />
                 <BCard no-body v-else>
-                    <BCardHeader style="display: flex; align-items: center; justify-content: space-between; flex-direction: row">
+                    <BCardHeader
+                        style="display: flex; align-items: center; justify-content: space-between; flex-direction: row">
                         <div>
                             <h5 class="card-title mb-0">Detalle de Radicación</h5>
                         </div>
-                        <div >
-                            <BButton
-                            
-                                variant="success"
-                                class="w-sm"
-                                @click="showTransferedModal"
-                            >
+                        <div>
+                            <BButton variant="success" class="w-sm" @click="showTransferedModal">
                                 <div class="button-content">
                                     <span class="iconify" data-icon="feather:file-plus"></span>
                                     <span>Transferir</span>
@@ -304,9 +301,7 @@ onMounted(async () => {
                     </BCardHeader>
                     <BCardBody>
                         <div class="table-responsive table-card">
-                            <table
-                                class="table table-borderless align-middle mb-0"
-                            >
+                            <table class="table table-borderless align-middle mb-0">
                                 <tbody>
                                     <tr>
                                         <td class="fw-medium">
@@ -459,9 +454,7 @@ onMounted(async () => {
                 </BCard>
                 <a-skeleton v-if="loading" :paragraph="{ rows: 3 }" active />
                 <BCard no-body v-else>
-                    <BCardHeader
-                        class="align-items-center d-flex border-bottom-dashed"
-                    >
+                    <BCardHeader class="align-items-center d-flex border-bottom-dashed">
                         <BCardTitle class="mb-0 flex-grow-1">
                             <h5>Detalles del destinatario</h5>
                         </BCardTitle>
@@ -494,91 +487,60 @@ onMounted(async () => {
                 </BCard>
             </BCol>
         </BRow>
-       
+
     </BTab>
 
     <!-- Modal -->
-    <BModal v-model="transferedModal" size="lg" id="showModal" title-class="exampleModalLabel" hide-header hide-footer class="v-modal-custom"
-      centered no-close-on-backdrop>
+    <BModal v-model="transferedModal" size="lg" id="showModal" title-class="exampleModalLabel" hide-header hide-footer
+        class="v-modal-custom" centered no-close-on-backdrop>
 
         <div class="header-modal">
             <i class="ri-close-line close-icon" @click="() => transferedModal = false" style="font-size: 23px;"></i>
         </div>
-       
+
         <div class="body-modal px-2">
             <div class="notes">
                 <label><strong>Anotaciones</strong></label>
                 <p class="text-muted">Registre las acciones tomadas durante su gestión </p>
-                <textarea
-                    class="form-control"
-                    v-model="v$.notes.$model"
-                    style="min-height: 120px; width: 100%;"
-                ></textarea>
+                <textarea class="form-control" v-model="v$.notes.$model"
+                    style="min-height: 120px; width: 100%;"></textarea>
             </div>
             <BRow class="p-0" style="width: 100%;">
                 <BCol lg="6" class="mb-3 pl-0">
-                    <label
-                        for="choices-privacy-status-input"
-                        class="form-label fw-bold"
-                        >Área</label
-                    >
-                    <Multiselect
-                        v-model="v$.area.$model"
-                        :required="true"
-                        :close-on-select="true"
-                        :searchable="true"
-                        :create-option="true"
-                        placeholder="Seleccione"
-                        :options="trds"
-                        @select="clearSelectInput"
-                    />
+                    <label for="choices-privacy-status-input" class="form-label fw-bold">Área</label>
+                    <Multiselect v-model="v$.area.$model" :required="true" :close-on-select="true" :searchable="true"
+                        :create-option="true" placeholder="Seleccione" :options="trds" @select="clearSelectInput" />
 
-                    <ValidateLabel
-                        v-bind="{ v$ }"
-                        attribute="area"
-                    />
+                    <ValidateLabel v-bind="{ v$ }" attribute="area" />
                 </BCol>
                 <BCol lg="6" class="mb-3 pr-0">
-                    <label
-                        for="choices-privacy-status-input"
-                        class="form-label fw-bold"
-                        >Seleccione el destinario</label
-                    >
-                    <Multiselect
-                        v-model="v$.destiny.$model"
-                        :required="true"
-                        :close-on-select="true"
-                        :searchable="true"
-                        :create-option="true"
-                        placeholder="Seleccione"
-                        :options="peopleList"
-                    />
+                    <label for="choices-privacy-status-input" class="form-label fw-bold">Seleccione el
+                        destinario</label>
+                    <Multiselect v-model="v$.destiny.$model" :required="true" :close-on-select="true" :searchable="true"
+                        :create-option="true" placeholder="Seleccione" :options="peopleList" />
 
-                    <ValidateLabel
-                        v-bind="{ v$ }"
-                        attribute="destiny"
-                    />
+                    <ValidateLabel v-bind="{ v$ }" attribute="destiny" />
                 </BCol>
             </BRow>
             <div class="comments">
                 <label> <strong>Comentarios de transferencia</strong> </label>
-                <p class="text-muted">Escriba una nota con las indicaciones o comentarios que desea hacer al destinario de la transferencia </p>
-                <textarea
-                    class="form-control"
-                    v-model="v$.comments.$model"
-                    style="min-height: 120px"
-                ></textarea>
+                <p class="text-muted">Escriba una nota con las indicaciones o comentarios que desea hacer al destinario
+                    de la transferencia </p>
+                <textarea class="form-control" v-model="v$.comments.$model" style="min-height: 120px"></textarea>
             </div>
         </div>
         <div class="footer-modal p-2 mt-5">
             <button type="button" class="btn btn-secondary" @click="() => transferedModal = false">Cerrar</button>
-            <button type="button" class="btn btn-primary" @click="sendDestiny">Entregar</button>
+            <button v-if="isLoading" class="btn btn-primary" type="button" disabled>
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Entregando...
+            </button>
+            <button v-else type="button" class="btn btn-primary" @click="sendDestiny">Entregar</button>
         </div>
     </BModal>
 </template>
 
 <style scoped>
-
 .close-icon:hover {
     cursor: pointer;
 }
@@ -614,5 +576,4 @@ onMounted(async () => {
     justify-content: flex-end;
     gap: 10px;
 }
-
 </style>
