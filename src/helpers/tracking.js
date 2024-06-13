@@ -16,16 +16,20 @@ export const setTracking = async (
             isPrivate: isPrivate,
         });
 
-        const headers = {
-            "Content-Type": "application/json",
-            company: company,
-        };
+        const config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: `${process.env.VUE_APP_CF_BASE_URL}/tracking`,
+            headers: {
+                "Accept": "/",
+                "Content-Type": "application/json",
+                company: company,
 
-        const response = await axios.post(
-            `${process.env.VUE_APP_CF_BASE_URL}/tracking`,
-            data,
-            headers
-        );
+            },
+            data: data,
+        }
+
+        const response = await axios.request(config)
         return response.data;
     } catch (error) {
         console.error(error);

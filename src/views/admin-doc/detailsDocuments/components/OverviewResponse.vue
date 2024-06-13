@@ -13,10 +13,10 @@ import { Editor } from "@camilo__lp/custom-editor-vue3";
 import { state } from "@/state/modules/auth";
 import { getUserRoleByName } from "@/services/docservice/doc.service";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
+import { setTracking } from "@/helpers/tracking";
 import setIdRole from "@/helpers/setIdRole";
 import capitalizedText from "@/helpers/capitalizedText";
 
-import { setTracking } from "@/helpers/tracking";
 const editorSettings = {
     placeholder: "Escribe acá la respuesta para el ciudadano.",
 };
@@ -214,13 +214,23 @@ const uploadFile = async () => {
         );
         answered.value = true;
         documentNumber.value = resGenerateRadicateOut.data.idRadicate;
+        await setTracking(
+            props.data?.id,
+            company,
+            user.name,
+            [
+                { name: "Area", value: props.data?.area },
+            ],
+            "Elaborado",
+            true
+        );
         toast("Archivo cargado con éxito", {
             type: "success",
             closeButton: true,
             closeOnClick: true,
         });
         loadingFile.value = false;
-        setTimeout(() => location.reload(), 4000);
+        // setTimeout(() => location.reload(), 4000);
     } catch (error) {
         console.error("Error al subir el archivo:", error);
         toast("Problemas al cargar el archivo", {
@@ -256,24 +266,15 @@ const sendFile = async () => {
             type: "success",
             closeOnClick: true,
         });
-        await setTracking(
-            props.data?.id,
-            company,
-            "Sistema",
-            "Respuesta generada por la entidad",
-            "Respondido",
-            false
-        );
 
-        console.log(user);
         await setTracking(
             props.data?.id,
             company,
             user.name,
             [
-                ["Destinatario", props.data.fullName],
-                ["Método de envío", "correo electrónico"],
-                ["Correo", props.data.email],
+                { name: "Email", value: props.data?.email },
+                { name: "Método de envío", value: "correo electrónico" },
+                { name: "Correo", value: props.data.email },
             ],
             "Respondido",
             true
