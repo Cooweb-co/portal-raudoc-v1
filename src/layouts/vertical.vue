@@ -108,7 +108,7 @@ export default {
         },
     },
     mounted() {
-        document.body.addEventListener('resize', this.updateZIndexOfMenu);
+        document.body.addEventListener("resize", this.updateZIndexOfMenu);
         if (localStorage.getItem("hoverd") == "true") {
             document.documentElement.setAttribute(
                 "data-sidebar-size",
@@ -122,21 +122,24 @@ export default {
         if (window.screen.width < 1025) {
             document.documentElement.setAttribute("data-sidebar-size", "sm");
         }
-
     },
     unmounted() {
         window.removeEventListener("resize", this.updateSidebarSize);
+        document.body.removeEventListener("resize", this.updateZIndexOfMenu);
     },
 };
 </script>
 
 <template>
-    <div id="layout-wrapper" style="overflow-x: hidden;">
+    <div id="layout-wrapper" style="overflow-x: hidden">
         <NavBar />
         <div>
             <!-- ========== Left Sidebar Start ========== -->
             <!-- ========== App Menu ========== -->
-            <div class="app-menu navbar-menu" style="z-index: zIndexOfMenu !important;">
+            <div
+                class="app-menu navbar-menu"
+                style="z-index: zIndexOfMenu !important"
+            >
                 <!-- LOGO -->
                 <div class="navbar-brand-box">
                     <!-- Dark Logo-->
