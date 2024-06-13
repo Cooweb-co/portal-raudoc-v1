@@ -1,5 +1,6 @@
 <script setup>
 import { defineProps, computed, ref, onMounted } from "vue";
+import { transformTimeStampToDate } from "@/helpers/transformDate";
 
 const phoneScreen = ref(false);
 const props = defineProps({
@@ -42,6 +43,10 @@ const actionIcon = computed(() => {
             return "ri-stack-line";
     }
 });
+
+const date = computed(() => {
+    return transformTimeStampToDate(props.createdAt, "D MMMM YYYY - h:mm a");
+});
 </script>
 <template>
     <div :class="'timeline-item ' + position">
@@ -50,7 +55,7 @@ const actionIcon = computed(() => {
         </div>
         <div class="date">
             <b>{{ action }}</b>
-            <p>{{ createdAt }}</p>
+            <p>{{ date }}</p>
         </div>
         <div class="content shadow-none">
             <div class="d-flex">
@@ -65,7 +70,7 @@ const actionIcon = computed(() => {
                     <h5 class="fs-15 fw-bold">
                         {{ name }}
                         <small class="text-muted fs-13 fw-normal">{{
-                            createdAt ? "- " + createdAt : ""
+                            createdAt ? "- " + date : ""
                         }}</small>
                     </h5>
                     <div v-if="Array.isArray(content)">

@@ -7,11 +7,20 @@ const props = defineProps({
 });
 
 const data = ref(null);
+const dataLenght = ref(0);
+
+const seconds = Math.floor(Date.now() / 1000);
+const nanoseconds = 0;
+
+const timestamp = {
+    seconds: seconds,
+    nanoseconds: nanoseconds
+};
 
 onMounted(() => {
     const dataPrivate = [
         {
-            createdAt: "19 marzo 2021 - 12:00 pm",
+            createdAt: timestamp,
             name: "Alanna",
             action: "Respondido",
             content: [
@@ -22,7 +31,7 @@ onMounted(() => {
             ],
         },
         {
-            createdAt: "16 marzo 2021 - 12:00 pm",
+            createdAt: timestamp,
             name: "Fernando Alonso",
             action: "Devolución",
             content: [
@@ -34,7 +43,7 @@ onMounted(() => {
             ],
         },
         {
-            createdAt: "16 marzo 2021 - 12:00 pm",
+            createdAt: timestamp,
             name: "Fernando Alonso",
             action: "Aprobado",
             content: [
@@ -43,7 +52,7 @@ onMounted(() => {
             ],
         },
         {
-            createdAt: "16 marzo 2021 - 12:00 pm",
+            createdAt: timestamp,
             name: "Fernando Alonso",
             action: "Aprobado",
             content: [
@@ -52,7 +61,7 @@ onMounted(() => {
             ],
         },
         {
-            createdAt: "16 marzo 2021 - 12:00 pm",
+            createdAt: timestamp,
             name: "Camilo",
             action: "Elaborado",
             content: [
@@ -61,7 +70,7 @@ onMounted(() => {
             ],
         },
         {
-            createdAt: "15 marzo 2021 - 12:00 pm",
+            createdAt: timestamp,
             name: "Camilo",
             action: "Transferido",
             content: [
@@ -75,7 +84,7 @@ onMounted(() => {
             ],
         },
         {
-            createdAt: "14 marzo 2021 - 2:12 pm",
+            createdAt: timestamp,
             name: "Camilo",
             action: "Asignado",
             content: [
@@ -87,41 +96,30 @@ onMounted(() => {
                 },
             ],
         },
-        {
-            createdAt: "",
-            name: "Sistema",
-            action: "Iniciado",
-            content: `Ha iniciado el proceso al siguiente documento ${props.numberClaim}, en el transcurso de los días se ira actualizando el estado del documento.`,
-        },
     ];
 
     const dataPublic = [
         {
-            createdAt: "19 marzo 2021 - 12:00 pm",
+            createdAt: timestamp,
             name: "Sistema",
             action: "Respondido",
             content: "Respuesta generada por el entidad",
         },
         {
-            createdAt: "16 marzo 2021 - 12:00 pm",
+            createdAt: timestamp,
             name: "Sistema",
             action: "En gestión",
             content: "Documento en gestión por parte del funcionario",
         },
         {
-            createdAt: "14 marzo 2021 - 2:12 pm",
+            createdAt: timestamp,
             name: "Sistema",
             action: "Asignado",
             content: "Tramite asignado al funcionario",
         },
-        {
-            createdAt: "",
-            name: "Sistema",
-            action: "Iniciado",
-            content: `Ha iniciado el proceso al siguiente documento ${props.numberClaim}, en el transcurso de los días se ira actualizando el estado del documento.`,
-        },
     ];
     data.value = !props.showPrivateClaim ? dataPublic : dataPrivate;
+    dataLenght.value = data.value.length;
 });
 
 // Methods
@@ -154,6 +152,17 @@ function evenOrOdd(number) {
                 :name="item.name"
                 :action="item.action"
                 :content="item.content"
+            />
+            <TimelimeElement
+                :createdAt="''"
+                :position="evenOrOdd(dataLenght + 1)"
+                :name="'Sistema'"
+                :action="'Iniciado'"
+                :content="
+                    'Ha iniciado el proceso al siguiente documento ' +
+                    props.numberClaim +
+                    ', en el transcurso de los días se ira actualizando el estado del documento.'
+                "
             />
         </div>
     </div>
