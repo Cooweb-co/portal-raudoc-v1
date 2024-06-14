@@ -21,6 +21,7 @@ import { getFirebaseBackend } from "../../authUtils.js";
 import { uploadBytes, ref as storageRef } from "firebase/storage";
 import ValidateLabel from "../../utils/ValidateLabel.vue";
 import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
+import { setTracking } from "@/helpers/tracking";
 import Modal from "../modals/Modal.vue";
 import moment from "moment";
 import store from "@/state/store";
@@ -861,6 +862,49 @@ export default {
 
                 if (response) {
                     this.generateSticker();
+                    const textTrackingStart = `Ha iniciado el proceso al siguiente documento ${this.radicate?.idRadicate}, en el transcurso de los días se ira actualizando el estado del documento.`;
+                    await setTracking(
+                        this.documentID,
+                        this.companyID,
+                        "Sistema",
+                        textTrackingStart,
+                        "Iniciado",
+                        true
+                    );
+                    await setTracking(
+                        this.documentID,
+                        this.companyID,
+                        "Sistema",
+                        textTrackingStart,
+                        "Iniciado",
+                        false
+                    );
+                    await setTracking(
+                        this.documentID,
+                        this.companyID,
+                        this.userInfo.name,
+                        [
+                            {
+                                name: "Asignado",
+                                value: this.form.assignedTo,
+                            },
+                            { name: "Area", value: this.form.area },
+                            {
+                                name: "Comentarios",
+                                value: `Se asigna el radicado a ${this.form.assignedTo}`,
+                            },
+                        ],
+                        "Asignado",
+                        true
+                    );
+                    await setTracking(
+                        this.documentID,
+                        this.companyID,
+                        "Sistema",
+                        "Tramite asignado al funcionario.",
+                        "Asignado",
+                        false
+                    );
                     this.submitLoading = false;
                     this.radicate = response.data;
                     this.qrModal = true;
@@ -904,7 +948,7 @@ export default {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                responseType: 'arraybuffer',
+                responseType: "arraybuffer",
                 data: data,
             };
 
@@ -912,13 +956,12 @@ export default {
                 .request(config)
                 .then((response) => {
                     const res = response.data;
-                    const blob = new Blob([res], { type: 'application/pdf' });
+                    const blob = new Blob([res], { type: "application/pdf" });
                     const url = window.URL.createObjectURL(blob);
                     this.urlSticker = url;
-                    // console.log(JSON.stringify(response.data));
                 })
                 .catch((error) => {
-                    console.log(error);
+                    console.error(error);
                 });
         },
 
@@ -989,6 +1032,9 @@ export default {
     computed: {
         user() {
             return this.$store.state.auth.currentUser;
+        },
+        userInfo() {
+            return JSON.parse(this.$store.state.auth.currentUserInfo);
         },
     },
 

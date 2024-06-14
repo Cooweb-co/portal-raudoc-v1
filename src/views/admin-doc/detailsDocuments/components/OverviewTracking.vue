@@ -7,6 +7,7 @@ defineProps({
     numberClaim: String,
     showPrivateClaim: Boolean,
 });
+
 </script>
 <template>
     <BTab title="Historial" class="fw-semibold pt-2">
@@ -15,6 +16,7 @@ defineProps({
             v-else
             :numberClaim="numberClaim"
             :showPrivateClaim="showPrivateClaim"
+            :data="data"
         />
     </BTab>
 </template>

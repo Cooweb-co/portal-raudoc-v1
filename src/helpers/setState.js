@@ -1,10 +1,10 @@
 export default function setState(state) {
     let newState;
     switch (state) {
-        case "EXPIRE":
+        case "EXPIRED":
             newState = "Vencido";
             break;
-        case "ABOUT_TO_EXPIRE":
+        case "TO_EXPIRE":
             newState = "Por vencer";
             break;
         case "IN_TERM":

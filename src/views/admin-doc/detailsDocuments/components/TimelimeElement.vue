@@ -1,9 +1,10 @@
 <script setup>
 import { defineProps, computed, ref, onMounted } from "vue";
+import { transformCreatedAtToDate } from "@/helpers/transformDate";
 
 const phoneScreen = ref(false);
 const props = defineProps({
-    createdAt: String,
+    createdAt: Object,
     name: String,
     content: {
         type: [String, Array],
@@ -15,7 +16,7 @@ const props = defineProps({
 
 onMounted(() => {
     window.addEventListener("resize", () => {
-        phoneScreen.value = window.innerWidth < 375;
+        phoneScreen.value = window.innerWidth < 400;
     });
 });
 
@@ -24,6 +25,8 @@ const actionIcon = computed(() => {
     switch (action) {
         case "respondido":
             return "ri-check-line";
+        case "enviado":
+            return "ri-mail-line";
         case "aprobado":
             return "ri-thumb-up-line";
         case "elaborado":
@@ -42,6 +45,10 @@ const actionIcon = computed(() => {
             return "ri-stack-line";
     }
 });
+
+const date = computed(() => {
+    return transformCreatedAtToDate(props.createdAt, "D MMMM YYYY - h:mm a");
+});
 </script>
 <template>
     <div :class="'timeline-item ' + position">
@@ -50,7 +57,7 @@ const actionIcon = computed(() => {
         </div>
         <div class="date">
             <b>{{ action }}</b>
-            <p>{{ createdAt }}</p>
+            <p>{{ date }}</p>
         </div>
         <div class="content shadow-none">
             <div class="d-flex">
@@ -65,7 +72,7 @@ const actionIcon = computed(() => {
                     <h5 class="fs-15 fw-bold">
                         {{ name }}
                         <small class="text-muted fs-13 fw-normal">{{
-                            createdAt ? "- " + createdAt : ""
+                            createdAt ? "- " + date : ""
                         }}</small>
                     </h5>
                     <div v-if="Array.isArray(content)">
@@ -75,12 +82,12 @@ const actionIcon = computed(() => {
                             :key="index"
                         >
                             <p class="col-sm-5 col-12">
-                                {{ item[0] }}
+                                {{ item?.name }}
                             </p>
                             <p
                                 class="col-sm-6 col-12 text-muted d-flex align-items-center"
                             >
-                                {{ item[1] }}
+                                {{ item?.value }}
                             </p>
                         </div>
                     </div>
