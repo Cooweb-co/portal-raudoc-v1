@@ -1,10 +1,10 @@
 <script setup>
 import { defineProps, computed, ref, onMounted } from "vue";
-import { transformTimeStampToDate } from "@/helpers/transformDate";
+import { transformCreatedAtToDate } from "@/helpers/transformDate";
 
 const phoneScreen = ref(false);
 const props = defineProps({
-    createdAt: String,
+    createdAt: Object,
     name: String,
     content: {
         type: [String, Array],
@@ -47,7 +47,7 @@ const actionIcon = computed(() => {
 });
 
 const date = computed(() => {
-    return transformTimeStampToDate(props.createdAt, "D MMMM YYYY - h:mm a");
+    return transformCreatedAtToDate(props.createdAt, "D MMMM YYYY - h:mm a");
 });
 </script>
 <template>

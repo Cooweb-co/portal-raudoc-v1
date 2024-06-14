@@ -6,52 +6,61 @@ import ValidateLabel from "@/utils/ValidateLabel.vue";
 import { MESSAGE_REQUIRED } from "../../../../constants/rules.ts";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo.js";
 import { useVuelidate } from "@vuelidate/core";
-import Swal from "sweetalert2";
 // import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
-import axios from 'axios'
+import { toast } from "vue3-toastify";
+import { useRouter } from "vue-router";
 
+import axios from "axios";
+import { setTracking } from "@/helpers/tracking";
+import { state } from "@/state/modules/auth";
+
+const router = useRouter();
+
+const user = JSON.parse(state.currentUserInfo);
 const props = defineProps({
     data: Object,
     files: Array,
     loading: Boolean,
     numberClaim: String,
+    showPrivateClaim: Boolean,
 });
 
 const setVariantState = computed(() => {
     return setVariantStateInfo(props.data.status);
 });
 
-const transferedModal = ref(false)
+const transferedModal = ref(false);
+
+const company = ref("BAQVERDE");
 
 const form = ref({
-    notes: '',
-    area: '',
-    destiny: '',
-    comments: ''
-})
+    // notes: '',
+    area: "",
+    destiny: "",
+    comments: "",
+});
 
-const trds = ref([])
-const peopleList = ref([])
-const isLoading = ref(false)
+const trds = ref([]);
+const peopleList = ref([]);
+const isLoading = ref(false);
 
 const rules = {
     area: { required: MESSAGE_REQUIRED },
     comments: {},
     destiny: { required: MESSAGE_REQUIRED },
-    notes: {}
+    // notes: {}
 };
 
 const v$ = useVuelidate(rules, form);
 
 // obtener listado trds
 async function getTrds() {
-
     let config = {
         method: "get",
         maxBodyLength: Infinity,
         url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
         headers: {
-            company: "BAQVERDE",
+            company: company.value,
         },
     };
 
@@ -79,7 +88,7 @@ async function getPeople() {
         maxBodyLength: Infinity,
         url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaId.value}`,
         headers: {
-            company: "BAQVERDE",
+            company: company.value,
         },
     };
     var auxPeople = [];
@@ -89,7 +98,7 @@ async function getPeople() {
             response.data.forEach((element) => {
                 auxPeople.push({
                     label: element.name,
-                    value: element.name,
+                    value: element.uid,
                     area: element.area,
                     role: element.role,
                     uid: element.uid,
@@ -102,15 +111,18 @@ async function getPeople() {
         });
 }
 
+function fiiterPeopleForId(uid) {
+    return peopleList.value.filter((elemento) => elemento.uid === uid);
+}
+
 // Obtener el id del area seleccionada
 const getAreaId = computed(() => {
-    console.log(form.value);
     return trds.value.find((el) => el.value === form.value.area)?.id;
 });
 
 const showTransferedModal = () => {
-    transferedModal.value = true
-}
+    transferedModal.value = true;
+};
 
 const sendDestiny = async () => {
     v$.value.$touch();
@@ -119,53 +131,66 @@ const sendDestiny = async () => {
     }
 
     try {
-        isLoading.value = true
+        isLoading.value = true;
         const body = {
-            ...form,
-            company: "BAQVERDE",
-            claimId: props.data.id
-        }
-        await axios.post('https://us-central1-raudoc-gestion-agil-dev.cloudfunctions.net/us-central1/claim/assign-radicate', body)
-
-        Swal.fire({
-            position: "top-right",
-            icon: "success",
-            title: "Transferencia realizada exitosamente!",
-            showConfirmButton: false,
-            timer: 2000,
+            ...form.value,
+            notes: form.value.comments,
+            destiny: form.value.destiny,
+            company: company.value,
+            claimId: props.data.id,
+        };
+        await axios.post(
+            `${process.env.VUE_APP_CF_BASE_URL}/claim/assign-radicate`,
+            body
+        );
+        await setTracking(
+            props.data?.id,
+            company.value,
+            user.name,
+            [
+                { name: "Area antigua", value: props.data?.area },
+                {
+                    name: "Asignado a",
+                    value: fiiterPeopleForId(form.value.destiny)[0]?.label,
+                },
+                { name: "Nueva area", value: form.value.area },
+                { name: "Comentarios", value: form.value.comments },
+            ],
+            "Transferido",
+            true
+        );
+        toast("Transferencia realizada exitosamente!", {
+            type: "success",
+            autoClose: 3000,
+            closeButton: true,
+            closeOnClick: true,
         });
 
-
+        setTimeout(() => router.push({ name: "list-claim" }), 4000);
     } catch (error) {
-        console.log(error);
+        console.error(error);
     } finally {
-        transferedModal.value = false
-        isLoading.value = false
+        transferedModal.value = false;
+        isLoading.value = false;
     }
-}
+};
 
 async function clearSelectInput() {
-
     if (form.value.area) {
         form.value.destiny = "";
     }
-
-    console.log(props.data.id);
 
     await getPeople();
 }
 
 onMounted(async () => {
-    getTrds(),
-        console.log();
-})
-
+    getTrds(), console.log();
+});
 </script>
 
 <template>
     <BTab title="Resumen" active class="fw-semibold pt-2">
         <BRow>
-
             <BCol xl="9" lg="8">
                 <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" active />
                 <BCard no-body v-else>
@@ -179,21 +204,32 @@ onMounted(async () => {
                                 Fundamentos legales:
                             </h6>
                             <ol v-if="data?.legalBasis?.length > 0">
-                                <li v-for="item in data.legalBasis" :key="item" class="text-muted">
+                                <li
+                                    v-for="item in data.legalBasis"
+                                    :key="item"
+                                    class="text-muted"
+                                >
                                     {{ item }}
                                 </li>
                             </ol>
-                            <p v-else class="text-muted">No se encontraron fundamentos legales</p>
+                            <p v-else class="text-muted">
+                                No se encontraron fundamentos legales
+                            </p>
                             <h6 class="fw-semibold text-uppercase mb-3">
                                 Información adicional:
                             </h6>
                             <ul v-if="data?.additionalInformation?.length > 0">
-                                <li v-for="information in data.additionalInformation" :key="information"
-                                    class="text-muted">
+                                <li
+                                    v-for="information in data.additionalInformation"
+                                    :key="information"
+                                    class="text-muted"
+                                >
                                     {{ information }}
                                 </li>
                             </ul>
-                            <p v-else class="text-muted mb-3">No hay información adicional</p>
+                            <p v-else class="text-muted mb-3">
+                                No hay información adicional
+                            </p>
 
                             <h6 class="fw-semibold text-uppercase mb-3">
                                 Información de contacto
@@ -221,7 +257,9 @@ onMounted(async () => {
                                 <BRow gy-3>
                                     <BCol lg="3" sm="6">
                                         <div>
-                                            <p class="mb-2 text-uppercase fw-medium">
+                                            <p
+                                                class="mb-2 text-uppercase fw-medium"
+                                            >
                                                 Fecha de Creación:
                                             </p>
                                             <h5 class="fs-15 mb-0">
@@ -231,7 +269,9 @@ onMounted(async () => {
                                     </BCol>
                                     <BCol lg="3" sm="6">
                                         <div>
-                                            <p class="mb-2 text-uppercase fw-medium">
+                                            <p
+                                                class="mb-2 text-uppercase fw-medium"
+                                            >
                                                 Fecha limite:
                                             </p>
                                             <h5 class="fs-15 mb-0">
@@ -255,10 +295,16 @@ onMounted(async () => {
                                     </BCol> -->
                                     <BCol lg="3" sm="6">
                                         <div>
-                                            <p class="mb-2 text-uppercase fw-medium">
+                                            <p
+                                                class="mb-2 text-uppercase fw-medium"
+                                            >
                                                 Estatus :
                                             </p>
-                                            <BBadge tag="div" :variant="setVariantState">{{ data.status }}</BBadge>
+                                            <BBadge
+                                                tag="div"
+                                                :variant="setVariantState"
+                                                >{{ data.status }}</BBadge
+                                            >
                                         </div>
                                     </BCol>
                                 </BRow>
@@ -269,74 +315,104 @@ onMounted(async () => {
                                     Adjuntos
                                 </h6>
                                 <BRow class="g-3" v-show="files">
-                                    <OverviewSummaryElement v-for="file in files" :key="file.name" :id="data.id"
-                                        :file="file" />
+                                    <OverviewSummaryElement
+                                        v-for="file in files"
+                                        :key="file.name"
+                                        :id="data.id"
+                                        :file="file"
+                                    />
                                 </BRow>
-                                <h6 class="mb-3 fw-semibold text-uppercase" v-show="!files">
+                                <h6
+                                    class="mb-3 fw-semibold text-uppercase"
+                                    v-show="!files"
+                                >
                                     No se adjuntaron archivos
                                 </h6>
                             </div>
                         </div>
                     </BCardBody>
                 </BCard>
-
             </BCol>
 
             <BCol xl="3" lg="4">
-                <a-skeleton v-if="loading" :paragraph="{ rows: 6 }" active />
-                <BCard no-body v-else>
-                    <BCardHeader
-                        style="display: flex; align-items: center; justify-content: space-between; flex-direction: row">
-                        <div>
-                            <h5 class="card-title mb-0">Detalle de Radicación</h5>
-                        </div>
-                        <div>
-                            <BButton variant="success" class="w-sm" @click="showTransferedModal">
-                                <div class="button-content">
-                                    <span class="iconify" data-icon="feather:file-plus"></span>
-                                    <span>Transferir</span>
-                                </div>
-                            </BButton>
-                        </div>
-                    </BCardHeader>
-                    <BCardBody>
-                        <div class="table-responsive table-card">
-                            <table class="table table-borderless align-middle mb-0">
-                                <tbody>
-                                    <tr>
-                                        <td class="fw-medium">
-                                            Número de Radicación
-                                        </td>
-                                        <td>{{ numberClaim }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">Area</td>
-                                        <td>{{ data.area }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">
-                                            Método de entrada
-                                        </td>
-                                        <td>{{ data.inputMethod }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">Serie</td>
-                                        <td>{{ data.serie }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">Subserie</td>
-                                        <td>{{ data.subSerie }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">
-                                            Radicado Externo
-                                        </td>
-                                        <td>{{ data.externalRadicate }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">Asignado a:</td>
-                                        <td>
-                                            <!-- <div class="avatar-group">
+                <div v-if="showPrivateClaim">
+                    <a-skeleton
+                        v-if="loading"
+                        :paragraph="{ rows: 6 }"
+                        active
+                    />
+                    <BCard no-body v-else>
+                        <BCardHeader
+                            style="
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                flex-direction: row;
+                            "
+                        >
+                            <div>
+                                <h5 class="card-title mb-0">
+                                    Detalle de Radicación
+                                </h5>
+                            </div>
+                            <div>
+                                <BButton
+                                    variant="success"
+                                    class="w-sm"
+                                    @click="showTransferedModal"
+                                >
+                                    <div class="button-content">
+                                        <span
+                                            class="iconify"
+                                            data-icon="feather:file-plus"
+                                        ></span>
+                                        <span>Transferir</span>
+                                    </div>
+                                </BButton>
+                            </div>
+                        </BCardHeader>
+                        <BCardBody>
+                            <div class="table-responsive table-card">
+                                <table
+                                    class="table table-borderless align-middle mb-0"
+                                >
+                                    <tbody>
+                                        <tr>
+                                            <td class="fw-medium">
+                                                Número de Radicación
+                                            </td>
+                                            <td>{{ numberClaim }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">Area</td>
+                                            <td>{{ data.area }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">
+                                                Método de entrada
+                                            </td>
+                                            <td>{{ data.inputMethod }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">Serie</td>
+                                            <td>{{ data.serie }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">Subserie</td>
+                                            <td>{{ data.subSerie }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">
+                                                Radicado Externo
+                                            </td>
+                                            <td>{{ data.externalRadicate }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">
+                                                Asignado a:
+                                            </td>
+                                            <td>
+                                                <!-- <div class="avatar-group">
                                                 <BLink
                                                     href="javascript:void(0);"
                                                     class="avatar-group-item"
@@ -388,11 +464,11 @@ onMounted(async () => {
                                                     </div>
                                                 </BLink>
                                             </div> -->
-                                            {{ data.assignedTo }}
-                                        </td>
-                                    </tr>
+                                                {{ data.assignedTo }}
+                                            </td>
+                                        </tr>
 
-                                    <!-- <tr>
+                                        <!-- <tr>
                                         <td class="fw-medium">Prioridad</td>
                                         <td>
                                             <BBadge
@@ -411,17 +487,19 @@ onMounted(async () => {
                                             >
                                         </td>
                                     </tr> -->
-                                    <tr>
-                                        <td class="fw-medium">
-                                            Fecha de Creación
-                                        </td>
-                                        <td>{{ data.entryDate }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">Fecha limite</td>
-                                        <td>{{ data.expirationDate }}</td>
-                                    </tr>
-                                    <!-- <tr>
+                                        <tr>
+                                            <td class="fw-medium">
+                                                Fecha de Creación
+                                            </td>
+                                            <td>{{ data.entryDate }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">
+                                                Fecha limite
+                                            </td>
+                                            <td>{{ data.expirationDate }}</td>
+                                        </tr>
+                                        <!-- <tr>
                                         <td class="fw-medium">
                                             Última actualización
                                         </td>
@@ -447,14 +525,17 @@ onMounted(async () => {
                                             >
                                         </td>
                                     </tr> -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </BCardBody>
-                </BCard>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </BCardBody>
+                    </BCard>
+                </div>
                 <a-skeleton v-if="loading" :paragraph="{ rows: 3 }" active />
                 <BCard no-body v-else>
-                    <BCardHeader class="align-items-center d-flex border-bottom-dashed">
+                    <BCardHeader
+                        class="align-items-center d-flex border-bottom-dashed"
+                    >
                         <BCardTitle class="mb-0 flex-grow-1">
                             <h5>Detalles del destinatario</h5>
                         </BCardTitle>
@@ -487,55 +568,117 @@ onMounted(async () => {
                 </BCard>
             </BCol>
         </BRow>
-
     </BTab>
 
     <!-- Modal -->
-    <BModal v-model="transferedModal" size="lg" id="showModal" title-class="exampleModalLabel" hide-header hide-footer
-        class="v-modal-custom" centered no-close-on-backdrop>
-
+    <BModal
+        v-model="transferedModal"
+        size="lg"
+        id="showModal"
+        title-class="exampleModalLabel"
+        hide-header
+        hide-footer
+        class="v-modal-custom"
+        centered
+        no-close-on-backdrop
+    >
         <div class="header-modal">
-            <i class="ri-close-line close-icon" @click="() => transferedModal = false" style="font-size: 23px;"></i>
+            <i
+                class="ri-close-line close-icon"
+                @click="() => (transferedModal = false)"
+                style="font-size: 23px"
+            ></i>
         </div>
 
         <div class="body-modal px-2">
-            <div class="notes">
+            <!-- <div class="notes">
                 <label><strong>Anotaciones</strong></label>
                 <p class="text-muted">Registre las acciones tomadas durante su gestión </p>
                 <textarea class="form-control" v-model="v$.notes.$model"
                     style="min-height: 120px; width: 100%;"></textarea>
-            </div>
-            <BRow class="p-0" style="width: 100%;">
+            </div> -->
+            <BRow class="p-0" style="width: 100%">
                 <BCol lg="6" class="mb-3 pl-0">
-                    <label for="choices-privacy-status-input" class="form-label fw-bold">Área</label>
-                    <Multiselect v-model="v$.area.$model" :required="true" :close-on-select="true" :searchable="true"
-                        :create-option="true" placeholder="Seleccione" :options="trds" @select="clearSelectInput" />
+                    <label
+                        for="choices-privacy-status-input"
+                        class="form-label fw-bold"
+                        >Área</label
+                    >
+                    <Multiselect
+                        v-model="v$.area.$model"
+                        :required="true"
+                        :close-on-select="true"
+                        :searchable="true"
+                        :create-option="true"
+                        placeholder="Seleccione"
+                        :options="trds"
+                        @select="clearSelectInput"
+                    />
 
                     <ValidateLabel v-bind="{ v$ }" attribute="area" />
                 </BCol>
                 <BCol lg="6" class="mb-3 pr-0">
-                    <label for="choices-privacy-status-input" class="form-label fw-bold">Seleccione el
-                        destinario</label>
-                    <Multiselect v-model="v$.destiny.$model" :required="true" :close-on-select="true" :searchable="true"
-                        :create-option="true" placeholder="Seleccione" :options="peopleList" />
+                    <label
+                        for="choices-privacy-status-input"
+                        class="form-label fw-bold"
+                        >Seleccione el destinario</label
+                    >
+                    <Multiselect
+                        v-model="v$.destiny.$model"
+                        :required="true"
+                        :close-on-select="true"
+                        :searchable="true"
+                        :create-option="true"
+                        placeholder="Seleccione"
+                        :options="peopleList"
+                    />
 
                     <ValidateLabel v-bind="{ v$ }" attribute="destiny" />
                 </BCol>
             </BRow>
             <div class="comments">
                 <label> <strong>Comentarios de transferencia</strong> </label>
-                <p class="text-muted">Escriba una nota con las indicaciones o comentarios que desea hacer al destinario
-                    de la transferencia </p>
-                <textarea class="form-control" v-model="v$.comments.$model" style="min-height: 120px"></textarea>
+                <p class="text-muted">
+                    Escriba las acciones realizadas durante su gestión y/o
+                    aquellos comentarios que desea realizar al destinatario de
+                    la transferencia
+                </p>
+                <textarea
+                    class="form-control"
+                    v-model="v$.comments.$model"
+                    style="min-height: 120px"
+                ></textarea>
             </div>
         </div>
         <div class="footer-modal p-2 mt-5">
-            <button type="button" class="btn btn-secondary" @click="() => transferedModal = false">Cerrar</button>
-            <button v-if="isLoading" class="btn btn-primary" type="button" disabled>
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <button
+                type="button"
+                class="btn btn-secondary"
+                @click="() => (transferedModal = false)"
+            >
+                Cerrar
+            </button>
+            <button
+                v-if="isLoading"
+                class="btn btn-primary"
+                type="button"
+                disabled
+            >
+                <span
+                    class="spinner-border spinner-border-sm"
+                    role="status"
+                    aria-hidden="true"
+                ></span>
                 Entregando...
             </button>
-            <button v-else type="button" class="btn btn-primary" @click="sendDestiny">Entregar</button>
+            <button
+                v-else
+                type="button"
+                class="btn btn-primary"
+                @click="sendDestiny"
+            >
+                Entregar
+            </button>
         </div>
     </BModal>
 </template>

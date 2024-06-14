@@ -862,14 +862,37 @@ export default {
 
                 if (response) {
                     this.generateSticker();
+                    const textTrackingStart = `Ha iniciado el proceso al siguiente documento ${this.radicate?.idRadicate}, en el transcurso de los días se ira actualizando el estado del documento.`;
+                    await setTracking(
+                        this.documentID,
+                        this.companyID,
+                        "Sistema",
+                        textTrackingStart,
+                        "Iniciado",
+                        true
+                    );
+                    await setTracking(
+                        this.documentID,
+                        this.companyID,
+                        "Sistema",
+                        textTrackingStart,
+                        "Iniciado",
+                        false
+                    );
                     await setTracking(
                         this.documentID,
                         this.companyID,
                         this.userInfo.name,
                         [
-                            { name: "Asignado", value: this.getAssignedUid[0]?.uid },
+                            {
+                                name: "Asignado",
+                                value: this.form.assignedTo,
+                            },
                             { name: "Area", value: this.form.area },
-                            { name: "Comentarios", value: `Se asigna el radicado a ${this.getAssignedUid[0]?.uid}` },
+                            {
+                                name: "Comentarios",
+                                value: `Se asigna el radicado a ${this.form.assignedTo}`,
+                            },
                         ],
                         "Asignado",
                         true
@@ -936,10 +959,9 @@ export default {
                     const blob = new Blob([res], { type: "application/pdf" });
                     const url = window.URL.createObjectURL(blob);
                     this.urlSticker = url;
-                    // console.log(JSON.stringify(response.data));
                 })
                 .catch((error) => {
-                    console.log(error);
+                    console.error(error);
                 });
         },
 

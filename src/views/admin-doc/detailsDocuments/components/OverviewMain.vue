@@ -229,7 +229,7 @@ const isClaimOut = () => {
             <BCol lg="12">
                 <BTabs variant="link" nav-class="nav-tabs-custom border-bottom-0">
                     <!-- Resumen -->
-                    <OverviewSummary :data="data" :files="filesEntry" :numberClaim="numberClaim" :loading="loading" />
+                    <OverviewSummary :data="data" :files="filesEntry" :numberClaim="numberClaim" :loading="loading" :showPrivateClaim="showPrivateClaim"/>
 
                     <BTab title="Documentos" class="fw-semibold pt-2" v-if="isClaimOut()">
                         <OverviewDocuments :data="data" :files="filesEntry" :loading="loading"

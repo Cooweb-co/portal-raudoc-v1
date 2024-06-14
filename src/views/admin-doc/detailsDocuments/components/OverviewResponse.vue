@@ -231,7 +231,7 @@ const uploadFile = async () => {
             company,
             "Sistema",
             "Documento respondido exitosamente",
-            "Enviado",
+            "Respondido",
             false
         );
         toast("Archivo cargado con éxito", {
@@ -240,7 +240,7 @@ const uploadFile = async () => {
             closeOnClick: true,
         });
         loadingFile.value = false;
-        // setTimeout(() => location.reload(), 4000);
+        setTimeout(() => location.reload(), 4000);
     } catch (error) {
         console.error("Error al subir el archivo:", error);
         toast("Problemas al cargar el archivo", {
