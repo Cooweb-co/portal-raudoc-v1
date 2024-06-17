@@ -24,7 +24,7 @@ const sendData = () => {
         searchLoading.value = true;
         axios
             .get(
-                `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_LIST_BY_ID_V1/${id.value}`,
+                `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_LIST_BY_ID_V1/${id.value}`,
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -33,7 +33,7 @@ const sendData = () => {
                 }
             )
             .then((response) => {
-                // console.log(response.data);
+                console.log(response.data);
                 searchLoading.value = false;
                 router.push(`/r/${company.value}/${response.data.claimId}`);
             })
