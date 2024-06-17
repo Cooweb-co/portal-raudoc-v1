@@ -54,7 +54,13 @@ function evenOrOdd(number) {
 <template>
     <div>
         <div
-            v-if="!data && loading"
+            v-if="loading"
+            class="d-flex justify-content-center align-items-center w-100 h-100"
+        >
+            <a-skeleton :paragraph="{ rows: 5 }" />
+        </div>
+        <div
+            v-else-if="dataLength === 0 || !data"
             class="d-flex justify-content-center align-items-center w-100 h-100"
         >
             <h3 class="text-center fs-3 text-muted fst-italic mt-2">
