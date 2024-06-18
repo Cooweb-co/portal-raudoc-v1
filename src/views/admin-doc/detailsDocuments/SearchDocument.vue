@@ -34,13 +34,13 @@ const sendData = () => {
             )
             .then((response) => {
                 searchLoading.value = false;
-                if (!response.data) {
+                if (!response.data.claimId) {
                     toast.error(`No se encontró el documento.`, {
                         position: toast.POSITION.TOP_RIGHT,
                         autoClose: 3000,
                     });
                 }
-                else router.push(`/r/${company.value}/${response.data[0].claimId}`);
+                else router.push(`/r/${company.value}/${response.data.claimId}`);
             })
             .catch((error) => {
                 console.error(error);
