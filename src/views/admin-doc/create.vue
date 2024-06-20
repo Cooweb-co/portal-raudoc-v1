@@ -263,6 +263,7 @@ export default {
                                     .phoneNumber
                                     ? data?.personInformation.phoneNumber
                                     : "";
+                                getAddress()
                             }
                         }
                     }
