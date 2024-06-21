@@ -10,15 +10,18 @@ import axios from "axios";
 import { FileTextIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
 import { Editor } from "@camilo__lp/custom-editor-vue3";
 
-// import { state } from "@/state/modules/auth";
+import { state } from "@/state/modules/auth";
 import { getUserRoleByName } from "@/services/docservice/doc.service";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
+import { setTracking } from "@/helpers/tracking";
 import setIdRole from "@/helpers/setIdRole";
 import capitalizedText from "@/helpers/capitalizedText";
+
 const editorSettings = {
     placeholder: "Escribe acá la respuesta para el ciudadano.",
 };
 
+const user = JSON.parse(state.currentUserInfo);
 const props = defineProps(["loading", "data"]);
 const files = ref([]);
 const dropzone = ref(false);
@@ -132,7 +135,9 @@ const uploadFile = async () => {
         if (pdfBlob) {
             const pdfFile = new File(
                 [pdfBlob],
-                `radicado-respuesta-${props?.data?.numberEntryClaim || new Date().toISOString()}.pdf`,
+                `radicado-respuesta-${
+                    props?.data?.numberEntryClaim || new Date().toISOString()
+                }.pdf`,
                 {
                     type: "application/pdf",
                 }
@@ -209,6 +214,26 @@ const uploadFile = async () => {
         );
         answered.value = true;
         documentNumber.value = resGenerateRadicateOut.data.idRadicate;
+        await setTracking(
+            props.data?.id,
+            company,
+            form.senderName,
+            [
+                { name: "Area", value: form.senderArea },
+                { name: "Cargo", value: form.position },
+                { name: "Comentarios", value: "Documento respondido exitosamente" },
+            ],
+            "Respondido",
+            true
+        );
+        await setTracking(
+            props.data?.id,
+            company,
+            "Sistema",
+            "Documento respondido exitosamente",
+            "Respondido",
+            false
+        );
         toast("Archivo cargado con éxito", {
             type: "success",
             closeButton: true,
@@ -251,6 +276,28 @@ const sendFile = async () => {
             type: "success",
             closeOnClick: true,
         });
+
+        await setTracking(
+            props.data?.id,
+            company,
+            user.name,
+            [
+                { name: "Destinatario", value: form.senderName },
+                { name: "Método de envío", value: "correo electrónico" },
+                { name: "Correo", value: props.data.email },
+                { name: "Comentario", value: "El documento fue enviado" },
+            ],
+            "Enviado",
+            true
+        );
+        await setTracking(
+            props.data?.id,
+            company,
+            "Sistema",
+            "Documento enviado, revise su correo electrónico",
+            "Enviado",
+            false
+        );
     } catch (error) {
         loadingSendFile.value = false;
         toast("Error al enviar el correo", {
@@ -357,7 +404,6 @@ const decomposeAddress = (address) => {
 watch(
     () => props.data,
     async (currentValue) => {
-        // const user = JSON.parse(state.currentUserInfo);
         const idRole = await getUserRoleByName(company, props.data?.assignedTo);
         form.name = currentValue.fullName || "";
         form.typeOfDocument = currentValue.identificationType || "";

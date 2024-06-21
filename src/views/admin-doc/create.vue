@@ -21,6 +21,7 @@ import { getFirebaseBackend } from "../../authUtils.js";
 import { uploadBytes, ref as storageRef } from "firebase/storage";
 import ValidateLabel from "../../utils/ValidateLabel.vue";
 import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
+import { setTracking } from "@/helpers/tracking";
 import Modal from "../modals/Modal.vue";
 import moment from "moment";
 import store from "@/state/store";
@@ -224,6 +225,46 @@ export default {
                                 : "";
                             form.subject = data.subject ? data.subject : "";
                             form.description = data.summary ? data.summary : "";
+                            if (data?.personInformation) {
+                                form.personType = data?.personInformation
+                                    .personType
+                                    ? data?.personInformation.personType
+                                    : "";
+                                form.idType = data
+                                    ?.personInformation.identificationType
+                                    ? data?.personInformation.identificationType
+                                    : "";
+                                form.idNumber = data?.personInformation.idNumber
+                                    ? data?.personInformation.idNumber
+                                    : "";
+                                form.names = data?.personInformation.name
+                                    ? data?.personInformation.name
+                                    : "";
+                                form.lastNames = data?.personInformation
+                                    .lastName
+                                    ? data?.personInformation.lastName
+                                    : "";
+                                form.email = data?.personInformation.email
+                                    ? data?.personInformation.email
+                                    : "";
+                                address_info.value[0] = data?.personInformation
+                                    .address
+                                    ? data?.personInformation.address
+                                    : "";
+                                address_info.value[1] = data?.personInformation
+                                    .department
+                                    ? data?.personInformation.department
+                                    : "";
+                                address_info.value[2] = data?.personInformation
+                                    .city
+                                    ? data?.personInformation.city
+                                    : "";
+                                form.phoneNumber = data?.personInformation
+                                    .phoneNumber
+                                    ? data?.personInformation.phoneNumber
+                                    : "";
+                                getAddress()
+                            }
                         }
                     }
                 );
@@ -861,6 +902,49 @@ export default {
 
                 if (response) {
                     this.generateSticker();
+                    const textTrackingStart = `Ha iniciado el proceso al siguiente documento ${this.radicate?.idRadicate}, en el transcurso de los días se ira actualizando el estado del documento.`;
+                    await setTracking(
+                        this.documentID,
+                        this.companyID,
+                        "Sistema",
+                        textTrackingStart,
+                        "Iniciado",
+                        true
+                    );
+                    await setTracking(
+                        this.documentID,
+                        this.companyID,
+                        "Sistema",
+                        textTrackingStart,
+                        "Iniciado",
+                        false
+                    );
+                    await setTracking(
+                        this.documentID,
+                        this.companyID,
+                        this.userInfo.name,
+                        [
+                            {
+                                name: "Asignado",
+                                value: this.form.assignedTo,
+                            },
+                            { name: "Area", value: this.form.area },
+                            {
+                                name: "Comentarios",
+                                value: `Se asigna el radicado a ${this.form.assignedTo}`,
+                            },
+                        ],
+                        "Asignado",
+                        true
+                    );
+                    await setTracking(
+                        this.documentID,
+                        this.companyID,
+                        "Sistema",
+                        "Tramite asignado al funcionario.",
+                        "Asignado",
+                        false
+                    );
                     this.submitLoading = false;
                     this.radicate = response.data;
                     this.qrModal = true;
@@ -904,7 +988,7 @@ export default {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                responseType: 'arraybuffer',
+                responseType: "arraybuffer",
                 data: data,
             };
 
@@ -912,13 +996,12 @@ export default {
                 .request(config)
                 .then((response) => {
                     const res = response.data;
-                    const blob = new Blob([res], { type: 'application/pdf' });
+                    const blob = new Blob([res], { type: "application/pdf" });
                     const url = window.URL.createObjectURL(blob);
                     this.urlSticker = url;
-                    // console.log(JSON.stringify(response.data));
                 })
                 .catch((error) => {
-                    console.log(error);
+                    console.error(error);
                 });
         },
 
@@ -989,6 +1072,9 @@ export default {
     computed: {
         user() {
             return this.$store.state.auth.currentUser;
+        },
+        userInfo() {
+            return JSON.parse(this.$store.state.auth.currentUserInfo);
         },
     },
 
@@ -1600,12 +1686,20 @@ export default {
                     </BCardBody>
                 </BCard>
                 <BCard no-body>
-                    <BCardHeader>
+                    <BCardHeader class="d-flex justify-content-start align-items-center">
                         <h5
                             class="card-title mb-0 text-muted fw-light fst-italic"
                         >
                             INFORMACIÓN DEL PETICIONARIO
                         </h5>
+                        <BSpinner
+                                v-if="loadingAI"
+                                class="float-end ms-3"
+                                small
+                                v-b-tooltip.hover.top
+                                title="Extrayendo información de peticionario con IA"
+                                type="grow"
+                            />
                     </BCardHeader>
                     <BCardBody>
                         <BRow>
@@ -1622,7 +1716,7 @@ export default {
                                     :searchable="true"
                                     :create-option="true"
                                     placeholder="Seleccione"
-                                    :disabled="radicated"
+                                    :disabled="radicated || loadingAI"
                                     :options="[
                                         { value: 'Natural', label: 'Natural' },
                                         {
@@ -1649,7 +1743,7 @@ export default {
                                     :searchable="true"
                                     :create-option="true"
                                     placeholder="Seleccione"
-                                    :disabled="radicated"
+                                    :disabled="radicated || loadingAI"
                                     :options="[
                                         { value: 'Cédula', label: 'Cédula' },
                                         {
@@ -1687,7 +1781,7 @@ export default {
                                     class="form-control"
                                     v-model="form.idNumber"
                                     id="username"
-                                    :disabled="radicated"
+                                    :disabled="radicated || loadingAI"
                                     placeholder="Ingrese numero de documento"
                                 />
 
@@ -1697,7 +1791,7 @@ export default {
                                 />
                             </BCol>
                             <BCol lg="3" class="mb-3">
-                                <label for="username" class="form-label fw-bold"
+                                <label for="phoneNumber" class="form-label fw-bold"
                                     >Tel. de contacto
                                     <span class="text-danger fw-bold"
                                         >*</span
@@ -1707,7 +1801,7 @@ export default {
                                     type="text"
                                     class="form-control"
                                     v-model="form.contactPhone"
-                                    :disabled="radicated"
+                                    :disabled="radicated || loadingAI"
                                     placeholder="Ingrese telefono de contacto"
                                     autocomplete="tel"
                                 />
@@ -1728,7 +1822,7 @@ export default {
                                     class="form-control"
                                     v-model="form.names"
                                     id="username"
-                                    :disabled="radicated"
+                                    :disabled="radicated || loadingAI"
                                     placeholder="Ingrese nombres"
                                     autocomplete="name"
                                 />
@@ -1739,7 +1833,7 @@ export default {
                                 />
                             </BCol>
                             <BCol lg="3" class="mb-3">
-                                <label for="username" class="form-label fw-bold"
+                                <label for="lastNames" class="form-label fw-bold"
                                     >Apellidos
                                     <span class="text-danger fw-bold"
                                         >*</span
@@ -1749,7 +1843,7 @@ export default {
                                     type="text"
                                     class="form-control"
                                     v-model="form.lastNames"
-                                    :disabled="radicated"
+                                    :disabled="radicated || loadingAI"
                                     placeholder="Ingrese apellidos"
                                     autocomplete="family-name"
                                 />
@@ -1760,7 +1854,7 @@ export default {
                                 />
                             </BCol>
                             <BCol lg="6" class="mb-3">
-                                <label for="username" class="form-label fw-bold"
+                                <label for="email" class="form-label fw-bold"
                                     >Correo electrónico
                                     <span class="text-danger fw-bold"
                                         >*</span
@@ -1770,8 +1864,8 @@ export default {
                                     type="text"
                                     class="form-control"
                                     v-model="form.email"
-                                    id="username"
-                                    :disabled="radicated"
+                                    id="email"
+                                    :disabled="radicated || loadingAI"
                                     placeholder="Ingrese email"
                                     autocomplete="email"
                                 />
@@ -1784,7 +1878,7 @@ export default {
                             <BCol lg="12" class="mb-3">
                                 <div class="label-checkbox">
                                     <label
-                                        for="username"
+                                        for="address"
                                         class="form-label fw-bold"
                                         >Dirección
                                         <span class="text-danger fw-bold"
@@ -1801,7 +1895,7 @@ export default {
                                             v-model="manual_address"
                                             class="form-check-input"
                                             type="checkbox"
-                                            :disabled="radicated"
+                                            :disabled="radicated || loadingAI"
                                         />
                                     </div>
                                 </div>
@@ -1824,7 +1918,7 @@ export default {
                                                 id="place"
                                                 class="form-control"
                                                 type="text"
-                                                :disabled="radicated"
+                                                :disabled="radicated || loadingAI"
                                                 placeholder="Ingrese la dirección"
                                                 @input="getAddress()"
                                             />
@@ -1835,7 +1929,7 @@ export default {
                                                 id="place"
                                                 class="form-control"
                                                 type="text"
-                                                :disabled="radicated"
+                                                :disabled="radicated || loadingAI"
                                                 placeholder="Ingrese el departamento"
                                                 autocomplete="address-level1"
                                                 @input="getAddress()"
@@ -1847,7 +1941,7 @@ export default {
                                                 id="place"
                                                 class="form-control"
                                                 type="text"
-                                                :disabled="radicated"
+                                                :disabled="radicated || loadingAI"
                                                 placeholder="Ingrese la ciudad"
                                                 autocomplete="address-level2"
                                                 @input="getAddress()"
@@ -1865,7 +1959,7 @@ export default {
                                             v-model="manual_address_info[0]"
                                             :close-on-select="true"
                                             :searchable="true"
-                                            :disabled="radicated"
+                                            :disabled="radicated || loadingAI"
                                             placeholder="Seleccione"
                                             :options="addressOptions"
                                             @input="concatAddress()"
@@ -1876,7 +1970,7 @@ export default {
                                             v-model="manual_address_info[1]"
                                             class="form-control"
                                             type="text"
-                                            :disabled="radicated"
+                                            :disabled="radicated || loadingAI"
                                             placeholder="Número"
                                             @input="concatAddress()"
                                         />
@@ -1886,7 +1980,7 @@ export default {
                                             v-model="manual_address_info[2]"
                                             class="form-control"
                                             type="text"
-                                            :disabled="radicated"
+                                            :disabled="radicated || loadingAI"
                                             placeholder="Letra"
                                             @input="concatAddress()"
                                         />
@@ -1909,7 +2003,7 @@ export default {
                                             v-model="manual_address_info[3]"
                                             class="form-control"
                                             type="text"
-                                            :disabled="radicated"
+                                            :disabled="radicated || loadingAI"
                                             placeholder="Número"
                                             @input="concatAddress()"
                                         />
@@ -1919,7 +2013,7 @@ export default {
                                             v-model="manual_address_info[4]"
                                             class="form-control"
                                             type="text"
-                                            :disabled="radicated"
+                                            :disabled="radicated || loadingAI"
                                             placeholder="Letra"
                                             @input="concatAddress()"
                                         />
@@ -1940,7 +2034,7 @@ export default {
                                         <input
                                             v-model="manual_address_info[5]"
                                             class="form-control"
-                                            :disabled="radicated"
+                                            :disabled="radicated || loadingAI"
                                             type="text"
                                             placeholder="Número"
                                             @input="concatAddress()"
@@ -1950,7 +2044,7 @@ export default {
                                         <input
                                             v-model="manual_address_info[6]"
                                             class="form-control"
-                                            :disabled="radicated"
+                                            :disabled="radicated || loadingAI"
                                             type="text"
                                             placeholder="Complemento"
                                             @input="concatAddress()"
@@ -1960,7 +2054,7 @@ export default {
                                         <input
                                             v-model="manual_address_info[7]"
                                             class="form-control"
-                                            :disabled="radicated"
+                                            :disabled="radicated || loadingAI"
                                             type="text"
                                             placeholder="Ciudad"
                                             @input="concatAddress()"
@@ -1972,7 +2066,7 @@ export default {
                                             v-model="manual_address_info[8]"
                                             class="form-control"
                                             type="text"
-                                            :disabled="radicated"
+                                            :disabled="radicated || loadingAI"
                                             placeholder="Departamento"
                                             @input="concatAddress()"
                                             autocomplete="address-level1"
