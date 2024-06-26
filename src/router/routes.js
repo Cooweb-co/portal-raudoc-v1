@@ -165,5 +165,10 @@ export default [
     name: "profile",
     meta: { title: "Profile", authRequired: true },
     component: () => import("../views/pages/profile/simple"),
+  },{
+    path: "/pages/profile-setting",
+    name: "edit-profile",
+    meta: { title: "EditProfile", authRequired: true },
+    component: () => import("../views/pages/profile/setting"),
   },
 ];
