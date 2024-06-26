@@ -2,14 +2,46 @@
 import Layout from "@/layouts/main.vue";
 import PageHeader from "@/components/page-header";
 import { onMounted, ref } from "vue";
+import axios from "axios";
 
 const trds = ref({});
 const loading = ref(true);
+const newDay = ref("")
+
 onMounted(() => {
-  let data = sessionStorage.getItem("tdrs")
-  trds.value = JSON.parse(data);
+  let config = {
+        method: "get",
+        maxBodyLength: Infinity,
+        url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
+        headers: {
+            company: "BAQVERDE",
+        },
+    };
+
+    axios
+        .request(config)
+        .then((response) => {
+          trds.value = response.data;
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+  
   loading.value = false;
 })
+
+const setNewDay = (day) => {
+  newDay.value = day
+}
+
+const updateArray = async (i, array) => {
+  try {
+    array[i].days = newDay.value
+    await axios.put(process.env.VUE_APP_CF_BASE_URL + '/tdrs/', { newTrds: trds.value, company: "BAQVERDE" })
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 </script>
 
@@ -49,9 +81,21 @@ onMounted(() => {
                                 <BBadge variant="primary">#{{ c.id }}</BBadge>
                                 </h6>
                             </template>
-                            <div v-for="d in c.docs" :key="d">
+                            <div v-for="(d, i) in c.docs" :key="d">
                                 <h5>
-                                    <BBadge>{{ d.name }} <BBadge variant="light" style="font-size: 13px;">Días: {{ d.days }}</BBadge></BBadge>
+                                    <BBadge>{{ d.name }} 
+                                      <BBadge variant="light" style="font-size: 13px;" @click="setNewDay(d.days, i, c.docs)">
+                                        <a-popover title="Días" trigger="click">
+                                          <template #content>
+                                            <a-input-group compact>
+                                              <a-input v-model:value="newDay" style="width: calc(100% - 100px)" />
+                                              <a-button type="primary" @click="updateArray(i, c.docs)">Guardar</a-button>
+                                            </a-input-group>
+                                          </template>
+                                          Días: {{ d.days }}
+                                        </a-popover>
+                                      </BBadge>
+                                    </BBadge>
                                 </h5>
                             </div>
                             </BAccordionItem>

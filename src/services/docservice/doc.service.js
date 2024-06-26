@@ -5,11 +5,19 @@ import {
     getDoc,
     getDocs,
     collection,
+    deleteDoc,
+    updateDoc,
+    query,
+    where,
 } from "firebase/firestore";
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import {
+    getStorage,
+    ref,
+    getDownloadURL,
+    deleteObject,
+} from "firebase/storage";
 
-
-import store from '@/state/store'
+import store from "@/state/store";
 
 const firestore = getFirebaseBackend().firestore;
 
@@ -38,12 +46,11 @@ export const onListenClaimData = async (claimId, companyId, callback) => {
         return onSnapshot(
             doc(firestore, "Companies", companyId, "Claims", claimId),
             (doc) => {
-                console.log("onListenClaimData::::OnSnapshot", doc.data());
                 callback(doc.data());
             }
         );
     } catch (error) {
-        console.log("error: ", error);
+        console.error("error: ", error);
     }
     // eslint-disable-next-line no-useless-catch
 };
@@ -51,7 +58,6 @@ export const onListenClaimData = async (claimId, companyId, callback) => {
 export const saveFile = async (pathDocument, urlPDF, fileName) => {
     // eslint-disable-next-line no-useless-catch
     try {
-        console.log("saveFile:::", pathDocument, urlPDF, fileName);
 
         await firestore.doc(pathDocument).collection("Files").add({
             name: fileName,
@@ -80,7 +86,7 @@ export const getDocument = async (companyId, claimId) => {
         if (docSnap.exists()) {
             return docSnap.data();
         } else {
-            console.log("No existe el document!");
+            console.error("No existe el document!");
             return null;
         }
     } catch (error) {
@@ -107,7 +113,7 @@ export const getDocumentFilesUploads = async (companyId, claimId) => {
             });
             return documents;
         } else {
-            console.log("No existen documentos en la colección!");
+            console.error("No existen documentos en la colección!");
             return null;
         }
     } catch (error) {
@@ -141,13 +147,151 @@ export async function getDocStatus(companyId, claimId) {
         onSnapshot(collectionRef, (querySnapshot) => {
             const querySnapshotUpdates = [];
             querySnapshot.forEach((doc) => {
-                const data = doc.data()
+                const data = doc.data();
                 querySnapshotUpdates.push(data);
-                store.dispatch('createDocState/STATE_DOC', { newValue: data });
+                store.dispatch("createDocState/STATE_DOC", { newValue: data });
             });
         });
-        return
+        return;
     } catch (error) {
         console.error("Error al obtener los documentos:", error);
     }
 }
+
+export const deleteDocumentByName = async (
+    companyId,
+    claimId,
+    fileId,
+    year
+) => {
+    try {
+        // Define the query to find the document with the specific name
+        const collectionPath = `Companies/${companyId}/Claims/${claimId}/Files`;
+        const q = query(
+            collection(firestore, collectionPath),
+            where("name", "==", fileId)
+        );
+
+        // Execute the query
+        const querySnapshot = await getDocs(q);
+
+        // Check if any document was found
+        if (!querySnapshot.empty) {
+            querySnapshot.forEach(async (docSnapshot) => {
+                // Get the document reference
+                const docRef = doc(firestore, collectionPath, docSnapshot.id);
+
+                // Delete the document
+                await deleteDoc(docRef);
+                await deleteFile(companyId, year, claimId, fileId);
+            });
+            return true;
+        } else {
+            console.error(
+                "No se encontró ningún documento con el nombre especificado."
+            );
+            return false;
+        }
+    } catch (error) {
+        console.error("Error al eliminar el documento:", error);
+        return false;
+    }
+};
+
+export const deleteFile = async (companyId, year, claimId, uniqueFileName) => {
+    try {
+        const storage = getStorage();
+        const storagePath = `Companies/${companyId}/${year}/Claims/${claimId}/${uniqueFileName}`;
+        const fileRef = ref(storage, storagePath);
+
+        await deleteObject(fileRef);
+        return true;
+    } catch (error) {
+        console.error("Error al eliminar el archivo:", error);
+        return false;
+    }
+};
+
+export const updateClaimSummary = async (companyId, claimId, uniqueValue) => {
+    try {
+        // Definir la ruta de la colección
+        const collectionPath = `Companies/${companyId}/Claims/${claimId}/Files`;
+
+        // Crear la consulta para encontrar el documento con el valor específico
+        const q = query(
+            collection(firestore, collectionPath),
+            where("name", "==", uniqueValue) // Cambiar "property" al nombre de la propiedad que contiene el valor único
+        );
+
+        // Ejecutar la consulta
+        const querySnapshot = await getDocs(q);
+
+        // Verificar si se encontró algún documento
+        if (!querySnapshot.empty) {
+            let summary = null;
+            // eslint-disable-next-line no-unused-vars
+            let docId = null;
+
+            querySnapshot.forEach((docSnapshot) => {
+                docId = docSnapshot.id;
+                summary = docSnapshot.data().summary;
+            });
+
+            // Verificar que se haya encontrado el summary
+            if (summary) {
+                // Actualizar el documento padre con el summary
+                const parentDocRef = doc(
+                    firestore,
+                    `Companies/${companyId}/Claims/${claimId}`
+                );
+                await updateDoc(parentDocRef, { ...summary  });
+
+                return true;
+            } else {
+                console.error(
+                    "No se encontró la propiedad 'summary' en el documento."
+                );
+                return false;
+            }
+        } else {
+            console.error(
+                "No se encontró ningún documento con el valor especificado."
+            );
+            return false;
+        }
+    } catch (error) {
+        console.error("Error al actualizar el documento:", error);
+        return false;
+    }
+};
+
+export const getUserRoleByName = async (company, nameUser) => {
+    try {
+        // Define the query to find the user with the specific name
+        const collectionPath = `Companies/${company}/Users`;
+        const q = query(
+            collection(firestore, collectionPath),
+            where("name", "==", nameUser)
+        );
+
+        // Execute the query
+        const querySnapshot = await getDocs(q);
+
+        // Check if any user was found
+        if (!querySnapshot.empty) {
+            let idRole = null;
+            querySnapshot.forEach((docSnapshot) => {
+                // Get the idRole field from the document
+                const userData = docSnapshot.data();
+                idRole = userData.idRole;
+            });
+            return idRole;
+        } else {
+            console.error("No se encontró ningún usuario con el nombre especificado.");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error al buscar el usuario:", error);
+        return null;
+    }
+};

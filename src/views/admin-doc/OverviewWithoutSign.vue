@@ -13,6 +13,6 @@ const handleShowModal = (newValue) => {
             v-if="showModal"
             @handleShowModal="handleShowModal"
         />
-        <OverviewMain :showOverviewResponse="false" v-else />
+        <OverviewMain :showPrivateClaim="false" v-else />
     </main>
 </template>

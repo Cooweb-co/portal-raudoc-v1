@@ -21,7 +21,7 @@ export default [
     },
   },
   {
-    path: "/create-user",
+    path: "/creacion-usuario",
     name: "createUser",
     component: () => import("../views/pages/create-user.vue"),
     meta: {
@@ -136,7 +136,7 @@ export default [
     component: () => import("../views/tickets/List"),
   },
   {
-    path: "/administration/users",
+    path: "/administracion/usuarios",
     name: "administration-users",
     meta: { title: "Administración de usuarios", authRequired: true },
     component: () => import("../views/apps/jobs/candidate-lists.vue"),

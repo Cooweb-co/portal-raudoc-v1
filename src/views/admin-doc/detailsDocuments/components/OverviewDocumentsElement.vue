@@ -73,8 +73,8 @@ const goToDocument = () => {
                 </div>
             </a-tooltip>
         </td>
-        <td>{{ extension }}</td>
-        <td>{{ startProccessAt }}</td>
+        <td class="col-type">{{ extension }}</td>
+        <td class="col-date">{{ startProccessAt }}</td>
         <td class="">
             <div class="d-flex justify-content-center">
                 <BButton
@@ -89,12 +89,12 @@ const goToDocument = () => {
         </td>
     </tr>
     <a-drawer
-        :width="500"
+        :width="'auto'"
         :title="file?.summary?.subject || 'No definido'"
         :placement="placement"
         :open="open"
         @close="onClose"
-        style="z-index: 100000 !important;"
+        style="z-index: 100000 !important; max-width: 500px !important;"
     >
         <h5>Resumen</h5>
         <p class="text-muted">{{ summary }}</p>
@@ -126,5 +126,11 @@ const goToDocument = () => {
     padding: 0;
     margin-right: 8px;
     margin-bottom: 8px;
+}
+
+@media (max-width: 810px) {
+    .col-type, .col-date {
+        display: none;
+    }
 }
 </style>

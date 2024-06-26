@@ -58,7 +58,6 @@ export default {
         ...layoutComputed,
         layoutType: {
             get() {
-                console.log();
                 return this.$store
                     ? this.$store.state.layout.layoutType
                     : {} || {};
@@ -68,7 +67,6 @@ export default {
             const idRole = JSON.parse(
                 this.$store.state?.auth?.currentUserInfo
             )?.idRole;
-            console.log(idRole === "ADMIN");
             return idRole === "ADMIN" ? true : false;
         },
     },
@@ -243,6 +241,9 @@ export default {
                 }
             }
         },
+        closeMenu() {
+          document.body.classList.remove("vertical-sidebar-enable");
+        },
 
         updateMenu(e, event) {
             document.body.classList.remove("twocolumn-panel");
@@ -383,6 +384,7 @@ export default {
                         <router-link
                             class="nav-link menu-link"
                             to="/dashboard/projects"
+                            @click.prevent="closeMenu()"
                         >
                             <HomeIcon width="24" height="24" />
                             <span data-key="t-dashboard">Dashboard</span>
@@ -398,6 +400,7 @@ export default {
                         <router-link
                             class="nav-link menu-link"
                             to="/radicacion/radicar-documento"
+                            @click.prevent="closeMenu()"
                         >
                             <FilePlusIcon width="24" height="24" />
                             <span data-key="t-dashboard"
@@ -410,6 +413,7 @@ export default {
                         <router-link
                             class="nav-link menu-link"
                             to="/gestion-documental/lista-radicados"
+                            @click.prevent="closeMenu()"
                         >
                             <FileTextIcon width="24" height="24" />
                             <span data-key="t-dashboard"
@@ -483,7 +487,8 @@ export default {
                     <li class="nav-item" v-if="getIdRole">
                         <router-link
                             class="nav-link menu-link"
-                            to="/administration/users"
+                            to="/administracion/usuarios"
+                            @click.prevent="closeMenu()"
                         >
                             <UsersIcon width="24" height="24" />
                             <span data-key="t-dashboard"
@@ -496,6 +501,7 @@ export default {
                         <router-link
                             class="nav-link menu-link"
                             to="/gestion-documental/document-list"
+                            @click.prevent="closeMenu()"
                         >
                             <SettingsIcon width="24" height="24" />
                             <span data-key="t-dashboard"
@@ -505,14 +511,14 @@ export default {
                     </li>
 
                     <!-- <li class="nav-item">
-              <router-link class="nav-link menu-link" to="/administration/users">
+              <router-link class="nav-link menu-link" to="/administracion/usuarios">
                 <GitMergeIcon width="24" height="24" />
                 <span data-key="t-dashboard">Flujo Documental</span>
               </router-link>
             </li>
     
             <li class="nav-item">
-              <router-link class="nav-link menu-link" to="/administration/users">
+              <router-link class="nav-link menu-link" to="/administracion/usuarios">
                 <GitMergeIcon width="24" height="24" />
                 <span data-key="t-dashboard">Plantillas</span>
               </router-link>
@@ -541,7 +547,7 @@ export default {
               </router-link>
             </li>  -->
                     <!-- <li class="nav-item">
-              <router-link class="nav-link menu-link" to="/administration/users">
+              <router-link class="nav-link menu-link" to="/administracion/usuarios">
                 <SettingsIcon width="24" height="24" />
                 <span data-key="t-dashboard">Soporte en linea</span>
               </router-link>
@@ -938,7 +944,7 @@ export default {
                           <div class="collapse menu-dropdown" id="sidebarcandidatelists">
                             <ul class="nav nav-sm flex-column">
                               <li class="nav-item">
-                                <router-link to="/administration/users" class="nav-link" data-key="t-lists">
+                                <router-link to="/administracion/usuarios" class="nav-link" data-key="t-lists">
                                   {{ $t("t-list-view") }}
                                 </router-link>
                               </li>

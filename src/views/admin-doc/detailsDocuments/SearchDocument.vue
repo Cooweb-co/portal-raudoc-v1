@@ -24,7 +24,7 @@ const sendData = () => {
         searchLoading.value = true;
         axios
             .get(
-                `https://us-central1-raudoc-gestion-agil.cloudfunctions.net/CLAIM_LIST_BY_ID_V1/${id.value}`,
+                `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_LIST_BY_ID_V1/${id.value}`,
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -33,12 +33,17 @@ const sendData = () => {
                 }
             )
             .then((response) => {
-                console.log(response.data);
                 searchLoading.value = false;
-                router.push(`/r/${company.value}/${response.data.claimId}`);
+                if (!response.data.claimId) {
+                    toast.error(`No se encontró el documento.`, {
+                        position: toast.POSITION.TOP_RIGHT,
+                        autoClose: 3000,
+                    });
+                }
+                else router.push(`/r/${company.value}/${response.data.claimId}`);
             })
             .catch((error) => {
-                console.log(error);
+                console.error(error);
             });
     } else {
         errorForm.value = true;
@@ -63,7 +68,11 @@ const handleCancelButton = () => {
         >
             <p class="text-center text-success">
                 <!-- <img :src="DocumentIcon" alt="Documento Icono"/> -->
-                <img src="/img/logo-dark.ebe2f4e5.png" alt="Logo de Raudoc" style="width: 250px; margin: 1.5em 2em;"/>
+                <img
+                    src="/img/logo-dark.ebe2f4e5.png"
+                    alt="Logo de Raudoc"
+                    style="width: 250px; margin: 1.5em 2em"
+                />
                 <!-- <DocumentIcon
                     :color="errorForm ? 'text-danger' : 'text-info'"
                 /> -->

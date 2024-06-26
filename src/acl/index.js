@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 const router = useRouter()
 const user = JSON.parse(sessionStorage.getItem('authUserInfo'))
 
-console.log(user);
+// console.log(user);
 
 const rules = () => defineAclRules((setRule) => {
   // Define a simple rule for ability with no argument

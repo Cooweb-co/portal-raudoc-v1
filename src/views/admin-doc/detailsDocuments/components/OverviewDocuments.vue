@@ -28,10 +28,10 @@ const typeDocument = props.title == 'Documentos de salida' ? 'success':'primary'
                     >
                         <thead class="table-light">
                             <tr>
-                                <th scope="col">Nombre del Archivo</th>
-                                <th scope="col">Tipo</th>
-                                <th scope="col">Fecha de Creación</th>
-                                <th scope="col" style="width: 120px">Acción</th>
+                                <th scope="col col-name">Nombre del Archivo</th>
+                                <th scope="col" class="col-type">Tipo</th>
+                                <th scope="col" class="col-date">Fecha de Creación</th>
+                                <th scope="col" class="col-action text-center" style="width: 120px">Acción</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -69,5 +69,11 @@ const typeDocument = props.title == 'Documentos de salida' ? 'success':'primary'
 <style scoped>
 .table-responsive {
     margin: 0 !important;
+}
+
+@media (max-width: 810px) {
+    .col-type, .col-date {
+        display: none;
+    }
 }
 </style>

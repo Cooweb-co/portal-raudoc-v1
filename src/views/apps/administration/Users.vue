@@ -113,7 +113,7 @@ onMounted(() => {
         })
         .catch((error) => {
             loading.value = false;
-            console.log(error);
+            console.error(error);
         });
 });
 
@@ -136,10 +136,10 @@ async function handleSubmit() {
         if (v$.$invalid) {
             return;
         } else {
-            console.log(form.names, form.email, form.rol);
+            // console.log(form.names, form.email, form.rol);
         }
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 </script>

@@ -9,7 +9,18 @@
           "portal-raudoc"
         ]
       }
+    },
+    "raudoc-gestion-agil-dev": {
+      "hosting": {
+        "dev": [
+          "raudoc-gestion-agil-dev"
+        ],
+        "prod": [
+          "raudoc-gestion-agil"
+        ]
+      }
     }
   },
-  "etags": {}
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
 }
