@@ -230,8 +230,8 @@ export default {
                                     .personType
                                     ? data?.personInformation.personType
                                     : "";
-                                form.idType = data
-                                    ?.personInformation.identificationType
+                                form.idType = data?.personInformation
+                                    .identificationType
                                     ? data?.personInformation.identificationType
                                     : "";
                                 form.idNumber = data?.personInformation.idNumber
@@ -263,7 +263,7 @@ export default {
                                     .phoneNumber
                                     ? data?.personInformation.phoneNumber
                                     : "";
-                                getAddress()
+                                getAddress();
                             }
                         }
                     }
@@ -612,6 +612,14 @@ export default {
                 series.value.forEach((i) => {
                     if (i.label == form.serie) {
                         subseries.value = [];
+                        if(i.subseries.length === 0) {
+                            subseries.value.push({
+                                label: "Esta serie no tiene subseries disponibles",
+                                value: "Esta serie no tiene subseries disponibles",
+                                documents: [{name: "Esta sub serie no tiene tipologías disponibles", day: 0}],
+                            });
+                            return;
+                        }
                         i.subseries.forEach((j) => {
                             subseries.value.push({
                                 label: j.name,
@@ -1686,20 +1694,22 @@ export default {
                     </BCardBody>
                 </BCard>
                 <BCard no-body>
-                    <BCardHeader class="d-flex justify-content-start align-items-center">
+                    <BCardHeader
+                        class="d-flex justify-content-start align-items-center"
+                    >
                         <h5
                             class="card-title mb-0 text-muted fw-light fst-italic"
                         >
                             INFORMACIÓN DEL PETICIONARIO
                         </h5>
                         <BSpinner
-                                v-if="loadingAI"
-                                class="float-end ms-3"
-                                small
-                                v-b-tooltip.hover.top
-                                title="Extrayendo información de peticionario con IA"
-                                type="grow"
-                            />
+                            v-if="loadingAI"
+                            class="float-end ms-3"
+                            small
+                            v-b-tooltip.hover.top
+                            title="Extrayendo información de peticionario con IA"
+                            type="grow"
+                        />
                     </BCardHeader>
                     <BCardBody>
                         <BRow>
@@ -1791,7 +1801,9 @@ export default {
                                 />
                             </BCol>
                             <BCol lg="3" class="mb-3">
-                                <label for="phoneNumber" class="form-label fw-bold"
+                                <label
+                                    for="phoneNumber"
+                                    class="form-label fw-bold"
                                     >Tel. de contacto
                                     <span class="text-danger fw-bold"
                                         >*</span
@@ -1833,7 +1845,9 @@ export default {
                                 />
                             </BCol>
                             <BCol lg="3" class="mb-3">
-                                <label for="lastNames" class="form-label fw-bold"
+                                <label
+                                    for="lastNames"
+                                    class="form-label fw-bold"
                                     >Apellidos
                                     <span class="text-danger fw-bold"
                                         >*</span
@@ -1918,7 +1932,9 @@ export default {
                                                 id="place"
                                                 class="form-control"
                                                 type="text"
-                                                :disabled="radicated || loadingAI"
+                                                :disabled="
+                                                    radicated || loadingAI
+                                                "
                                                 placeholder="Ingrese la dirección"
                                                 @input="getAddress()"
                                             />
@@ -1929,7 +1945,9 @@ export default {
                                                 id="place"
                                                 class="form-control"
                                                 type="text"
-                                                :disabled="radicated || loadingAI"
+                                                :disabled="
+                                                    radicated || loadingAI
+                                                "
                                                 placeholder="Ingrese el departamento"
                                                 autocomplete="address-level1"
                                                 @input="getAddress()"
@@ -1941,7 +1959,9 @@ export default {
                                                 id="place"
                                                 class="form-control"
                                                 type="text"
-                                                :disabled="radicated || loadingAI"
+                                                :disabled="
+                                                    radicated || loadingAI
+                                                "
                                                 placeholder="Ingrese la ciudad"
                                                 autocomplete="address-level2"
                                                 @input="getAddress()"
