@@ -268,6 +268,7 @@ export default {
                                     ? data?.personInformation.phoneNumber
                                     : "";
                                 getAddress();
+                                if(showNameCompanyForm.value) form.nameCompany = data?.nameCompany ? data?.nameCompany : "";
                             }
                         }
                     }
@@ -616,14 +617,15 @@ export default {
                 series.value.forEach((i) => {
                     if (i.label == form.serie) {
                         subseries.value = [];
+                        console.log(i.subseries);
                         if (i.subseries.length === 0) {
                             subseries.value.push({
                                 label: "Esta serie no tiene subseries disponibles",
                                 value: "Esta serie no tiene subseries disponibles",
                                 documents: [
                                     {
-                                        name: "Esta sub serie no tiene tipologías disponibles",
-                                        day: 0,
+                                        name: "Esta subserie no tiene tipologías disponibles",
+                                        days: 0,
                                     },
                                 ],
                             });
@@ -725,8 +727,7 @@ export default {
                 form.assignedTo = "";
             }
 
-            if (newValueForm.idType === "NIT") {
-                console.log("NIT");
+            if (newValueForm.personType === "Jurídica") {
                 showNameCompanyForm.value = true;
             } else showNameCompanyForm.value = false;
         });
@@ -1802,31 +1803,6 @@ export default {
                                     attribute="idType"
                                 />
                             </BCol>
-                            <BCol
-                                lg="6"
-                                class="mb-3"
-                                v-if="showNameCompanyForm"
-                            >
-                                <label
-                                    for="nameCompany"
-                                    class="form-label fw-bold"
-                                    >Nombre de la compañía
-                                    <span class="text-danger fw-bold"
-                                        >*</span
-                                    ></label
-                                >
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    v-model="form.nameCompany"
-                                    :disabled="radicated || loadingAI"
-                                    placeholder="Ingrese el nombre de la compañía"
-                                />
-                                <ValidateLabel
-                                    v-bind="{ v$ }"
-                                    attribute="nameCompany"
-                                />
-                            </BCol>
                             <BCol lg="3" class="mb-3">
                                 <label for="username" class="form-label fw-bold"
                                     >Nº de documento
@@ -1868,6 +1844,31 @@ export default {
                                 <ValidateLabel
                                     v-bind="{ v$ }"
                                     attribute="contactPhone"
+                                />
+                            </BCol>
+                            <BCol
+                                lg="6"
+                                class="mb-3"
+                                v-if="showNameCompanyForm"
+                            >
+                                <label
+                                    for="nameCompany"
+                                    class="form-label fw-bold"
+                                    >Nombre de la compañía
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.nameCompany"
+                                    :disabled="radicated || loadingAI"
+                                    placeholder="Ingrese el nombre de la compañía"
+                                />
+                                <ValidateLabel
+                                    v-bind="{ v$ }"
+                                    attribute="nameCompany"
                                 />
                             </BCol>
                             <BCol
