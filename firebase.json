@@ -2,6 +2,7 @@
   "hosting": [
     {
       "target": "prod",
+      "site": "portal-raudoc",
       "public": "dist",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [
