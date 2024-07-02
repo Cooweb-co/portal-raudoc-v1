@@ -3,7 +3,7 @@ import {
     ref,
     watch,
     getCurrentInstance,
-    onUnmounted,
+    // onUnmounted,
     computed,
     reactive,
     // onMounted,
@@ -221,7 +221,6 @@ export default {
                             loadingAI.value = false;
                             clearTimeout(timerAI.value);
                             timerAI.value = 0;
-                            console.log(data);
                             instance.proxy.subject = data.subject
                                 ? data.subject
                                 : "";
@@ -268,8 +267,8 @@ export default {
                                     .phoneNumber
                                     ? data?.personInformation.phoneNumber
                                     : "";
-                                form.nameCompany = data?.personInformation.nameCompany ? data?.personInformation.nameCompany : "hola";
                                 getAddress();
+                                form.nameCompany = data?.personInformation.nameCompany ? data?.personInformation.nameCompany : "";
                             }
                         }
                     }
@@ -683,11 +682,6 @@ export default {
         //   form.lastNames = totalName[1] + " " + totalName[2];
         // });
 
-        onUnmounted(() => {
-            if (unsubscribe) {
-                unsubscribe;
-            }
-        });
 
         watch(
             () => [...files.value],
@@ -839,19 +833,9 @@ export default {
                 console.error(error);
             }
         },
-
-        fillFieldWithAI() {
-            this.identificationType =
-                this.claimData.applicant.identificationType;
-            this.gender = this.claimData.applicant.gender;
-            this.countryOfResidence =
-                this.claimData.applicant.countryOfResidence;
-            this.cityOfResidence = this.claimData.applicant.cityOfResidence;
-            this.deadline = this.claimData.deadline;
-        },
-
         async handleSaveChanges() {
             try {
+                const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`
                 const config = {
                     headers: {
                         company: this.companyID,
@@ -886,11 +870,11 @@ export default {
                         address: this.form.address,
                         phoneNumber: this.form.contactPhone,
                         email: this.form.email,
-                        nameCompany: this.form.nameCompany,
+                        nameCompany: this.showNameCompanyForm,
                     },
                 };
                 const response = await axios.post(
-                    `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`,
+                    url,
                     body,
                     config
                 );
@@ -907,6 +891,7 @@ export default {
 
         async handleSubmitDocument() {
             try {
+                console.log(this.form.idType);
                 this.submitLoading = true;
                 this.handleSaveChanges();
                 const config = {
