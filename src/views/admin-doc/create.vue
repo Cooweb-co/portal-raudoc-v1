@@ -221,6 +221,7 @@ export default {
                             loadingAI.value = false;
                             clearTimeout(timerAI.value);
                             timerAI.value = 0;
+                            console.log(data);
                             instance.proxy.subject = data.subject
                                 ? data.subject
                                 : "";
@@ -267,8 +268,8 @@ export default {
                                     .phoneNumber
                                     ? data?.personInformation.phoneNumber
                                     : "";
+                                form.nameCompany = data?.personInformation.nameCompany ? data?.personInformation.nameCompany : "hola";
                                 getAddress();
-                                if(showNameCompanyForm.value) form.nameCompany = data?.nameCompany ? data?.nameCompany : "";
                             }
                         }
                     }
@@ -885,6 +886,7 @@ export default {
                         address: this.form.address,
                         phoneNumber: this.form.contactPhone,
                         email: this.form.email,
+                        nameCompany: this.form.nameCompany,
                     },
                 };
                 const response = await axios.post(
