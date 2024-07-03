@@ -298,8 +298,10 @@ export const getUserRoleByName = async (company, nameUser) => {
 
 export const getNumberOfPages = async (companyId, claimId) => {
     try {
+        let numberOfPageAllFiles = 0;
         const files = await getDocumentFilesUploads(companyId, claimId);
-        console.log(files);
+        files.forEach((file) => numberOfPageAllFiles += parseInt(file.numberOfPages));
+        return numberOfPageAllFiles || "";
     } catch (error) {
         console.error("Error al obtener los documentos:", error);
     }
