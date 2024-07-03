@@ -60,6 +60,7 @@ export default {
         const readDocument = ref(false);
         const dropzoneFile = ref("");
         const loadingBtnAI = ref(false);
+        const canUseAI = ref(true);
         const documentID = ref(null);
         const documentAI = ref(null);
         const companyID = ref("BAQVERDE");
@@ -180,7 +181,6 @@ export default {
                     closeButton: false,
                     closeOnClick: false,
                 });
-
                 unsubscribe = onListenClaimData(
                     documentAI.value.claimID,
                     companyID.value,
@@ -211,7 +211,12 @@ export default {
                                 3000
                             );
                         }
-                        if (data.summary && isListeningEnabled.value) {
+                        if (
+                            data.summary &&
+                            isListeningEnabled.value &&
+                            canUseAI.value
+                        ) {
+                            canUseAI.value = false;
                             toast.update(idProccessAI, {
                                 render: "Resumen realizado con exito!",
                                 type: toast.TYPE.SUCCESS,
@@ -268,7 +273,10 @@ export default {
                                     ? data?.personInformation.phoneNumber
                                     : "";
                                 getAddress();
-                                form.nameCompany = data?.personInformation.nameCompany ? data?.personInformation.nameCompany : "";
+                                form.nameCompany = data?.personInformation
+                                    .nameCompany
+                                    ? data?.personInformation.nameCompany
+                                    : "";
                             }
                         }
                     }
@@ -290,6 +298,7 @@ export default {
                 });
                 loadingAI.value = false;
                 isListeningEnabled.value = false;
+                canUseAI.value = true;
                 unsubscribe = null;
                 form.subject = "";
                 form.description = "";
@@ -308,6 +317,7 @@ export default {
         };
 
         const uploadDocument = async () => {
+            canUseAI.value = true;
             for (let i = 0; i < filesToUpload.value.length; i++) {
                 const file = filesToUpload.value[i];
                 try {
@@ -451,6 +461,7 @@ export default {
                     }
                     documentAI.value = file;
                     isListeningEnabled.value = true;
+                    canUseAI.value = true;
                     startListening();
                 }
                 return;
@@ -617,7 +628,6 @@ export default {
                 series.value.forEach((i) => {
                     if (i.label == form.serie) {
                         subseries.value = [];
-                        console.log(i.subseries);
                         if (i.subseries.length === 0) {
                             subseries.value.push({
                                 label: "Esta serie no tiene subseries disponibles",
@@ -681,7 +691,6 @@ export default {
         //   form.names = totalName[0];
         //   form.lastNames = totalName[1] + " " + totalName[2];
         // });
-
 
         watch(
             () => [...files.value],
@@ -796,6 +805,7 @@ export default {
             getPeople,
             concatAddress,
             getAddressManual,
+            canUseAI,
         };
     },
     data() {
@@ -834,8 +844,9 @@ export default {
             }
         },
         async handleSaveChanges() {
+            this.canUseAI = false;
             try {
-                const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`
+                const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`;
                 const config = {
                     headers: {
                         company: this.companyID,
@@ -873,11 +884,7 @@ export default {
                         nameCompany: this.showNameCompanyForm,
                     },
                 };
-                const response = await axios.post(
-                    url,
-                    body,
-                    config
-                );
+                const response = await axios.post(url, body, config);
                 if (response.data.message) {
                     this.saveLoading = false;
                     this.showRadicationButton = true;
@@ -1274,188 +1281,180 @@ export default {
                 @drop="onFileDrop"
             >
                 <!-- {{ claimData }} -->
-                    <BCard no-body>
-                        <BCardHeader>
-                            <h5
-                                class="card-title mb-0 text-muted fw-light fst-italic"
+                <BCard no-body>
+                    <BCardHeader>
+                        <h5
+                            class="card-title mb-0 text-muted fw-light fst-italic"
+                        >
+                            AGREGA ARCHIVO PARA RADICAR
+                        </h5>
+                    </BCardHeader>
+                    <BCardBody v-if="!answered">
+                        <div>
+                            <div :class="classDropZone">
+                                <p>
+                                    <FileTextIcon size="28" />
+                                </p>
+                                <span> Arrastra el archivo para subirlo</span>
+                                <input
+                                    type="file"
+                                    name="formFile"
+                                    id="formFile"
+                                    multiple
+                                    class="input-file"
+                                    @change="selectedFile"
+                                    :disabled="radicated"
+                                />
+                                <label
+                                    for="formFile"
+                                    class="link-primary label-formFile"
+                                    >o Clic acá para selecciona un
+                                    archivo</label
+                                >
+                            </div>
+                            <div
+                                class="vstack gap-2 mt-2"
+                                v-if="files.length > 0"
                             >
-                                AGREGA ARCHIVO PARA RADICAR
-                            </h5>
-                        </BCardHeader>
-                        <BCardBody v-if="!answered">
-                            <div>
-                                <div :class="classDropZone">
-                                    <p>
-                                        <FileTextIcon size="28" />
-                                    </p>
-                                    <span>
-                                        Arrastra el archivo para subirlo</span
-                                    >
-                                    <input
-                                        type="file"
-                                        name="formFile"
-                                        id="formFile"
-                                        multiple
-                                        class="input-file"
-                                        @change="selectedFile"
-                                        :disabled="radicated"
-                                    />
-                                    <label
-                                        for="formFile"
-                                        class="link-primary label-formFile"
-                                        >o Clic acá para selecciona un
-                                        archivo</label
-                                    >
-                                </div>
                                 <div
-                                    class="vstack gap-2 mt-2"
-                                    v-if="files.length > 0"
+                                    class="border rounded"
+                                    v-for="(file, index) of files"
+                                    :key="index"
                                 >
                                     <div
-                                        class="border rounded"
-                                        v-for="(file, index) of files"
-                                        :key="index"
+                                        class="d-flex align-items-center p-2"
+                                        v-if="file"
                                     >
-                                        <div
-                                            class="d-flex align-items-center p-2"
-                                            v-if="file"
-                                        >
-                                            <div class="flex-grow-1">
-                                                <div class="pt-1">
-                                                    <h5
-                                                        class="fs-14 mb-1"
-                                                        data-dz-name=""
-                                                    >
-                                                        {{ file.name }}
-                                                    </h5>
-                                                    <p
-                                                        class="fs-13 text-muted mb-0"
-                                                        data-dz-size=""
-                                                    >
-                                                        <strong>{{
-                                                            file.size / 1024
-                                                        }}</strong>
-                                                        KB
-                                                    </p>
-                                                    <strong
-                                                        class="error text-danger"
-                                                        data-dz-errormessage=""
-                                                    ></strong>
-                                                </div>
+                                        <div class="flex-grow-1">
+                                            <div class="pt-1">
+                                                <h5
+                                                    class="fs-14 mb-1"
+                                                    data-dz-name=""
+                                                >
+                                                    {{ file.name }}
+                                                </h5>
+                                                <p
+                                                    class="fs-13 text-muted mb-0"
+                                                    data-dz-size=""
+                                                >
+                                                    <strong>{{
+                                                        file.size / 1024
+                                                    }}</strong>
+                                                    KB
+                                                </p>
+                                                <strong
+                                                    class="error text-danger"
+                                                    data-dz-errormessage=""
+                                                ></strong>
                                             </div>
-                                            <div
-                                                class="flex-shrink-0 ms-3 gap-1"
-                                            >
-                                                <a-tooltip>
-                                                    <template #title
-                                                        >Aplicar
-                                                        resumen</template
-                                                    >
-                                                    <BButton
-                                                        variant="info"
-                                                        size="sm"
-                                                        class="me-1"
-                                                        data-dz-remove=""
-                                                        @click="
-                                                            changeDocumentAI(
-                                                                file.name
-                                                            )
-                                                        "
-                                                    >
-                                                        <CpuIcon />
-                                                    </BButton>
-                                                </a-tooltip>
-                                                <a-tooltip>
-                                                    <template #title
-                                                        >Borrar
-                                                        documento</template
-                                                    >
-                                                    <BButton
-                                                        variant="danger"
-                                                        size="sm"
-                                                        data-dz-remove=""
-                                                        @click="
-                                                            deleteRecord(
-                                                                file.name
-                                                            )
-                                                        "
-                                                    >
-                                                        <Trash2Icon />
-                                                    </BButton>
-                                                </a-tooltip>
-                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0 ms-3 gap-1">
+                                            <a-tooltip>
+                                                <template #title
+                                                    >Aplicar resumen</template
+                                                >
+                                                <BButton
+                                                    variant="info"
+                                                    size="sm"
+                                                    class="me-1"
+                                                    data-dz-remove=""
+                                                    @click="
+                                                        changeDocumentAI(
+                                                            file.name
+                                                        )
+                                                    "
+                                                >
+                                                    <CpuIcon />
+                                                </BButton>
+                                            </a-tooltip>
+                                            <a-tooltip>
+                                                <template #title
+                                                    >Borrar documento</template
+                                                >
+                                                <BButton
+                                                    variant="danger"
+                                                    size="sm"
+                                                    data-dz-remove=""
+                                                    @click="
+                                                        deleteRecord(file.name)
+                                                    "
+                                                >
+                                                    <Trash2Icon />
+                                                </BButton>
+                                            </a-tooltip>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </BCardBody>
-                        <BoCardBody v-else>
-                            <h3
-                                class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
+                        </div>
+                    </BCardBody>
+                    <BoCardBody v-else>
+                        <h3
+                            class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
+                        >
+                            Radicado Generado
+                        </h3>
+                    </BoCardBody>
+                </BCard>
+                <BCard no-body>
+                    <BCardBody class="h-100">
+                        <div class="mb-3">
+                            <label
+                                class="form-label fw-bold"
+                                for="project-title-input"
+                                >Asuntos</label
                             >
-                                Radicado Generado
-                            </h3>
-                        </BoCardBody>
-                    </BCard>
-                    <BCard no-body>
-                        <BCardBody class="h-100">
-                            <div class="mb-3">
-                                <label
-                                    class="form-label fw-bold"
-                                    for="project-title-input"
-                                    >Asuntos</label
-                                >
-                                <BSpinner
-                                    v-if="loadingAI"
-                                    class="float-end"
-                                    small
-                                    v-b-tooltip.hover.top
-                                    title="Extrayendo asunto con IA"
-                                    type="grow"
-                                />
+                            <BSpinner
+                                v-if="loadingAI"
+                                class="float-end"
+                                small
+                                v-b-tooltip.hover.top
+                                title="Extrayendo asunto con IA"
+                                type="grow"
+                            />
 
-                                <input
-                                    type="text"
-                                    v-model="form.subject"
-                                    class="form-control"
-                                    id="project-title-input"
-                                    placeholder="Ingrese asunto del radicado"
-                                    :disabled="loadingAI || radicated"
-                                />
-                                <ValidateLabel
-                                    v-bind="{ v$ }"
-                                    attribute="subject"
-                                />
-                            </div>
+                            <input
+                                type="text"
+                                v-model="form.subject"
+                                class="form-control"
+                                id="project-title-input"
+                                placeholder="Ingrese asunto del radicado"
+                                :disabled="loadingAI || radicated"
+                            />
+                            <ValidateLabel
+                                v-bind="{ v$ }"
+                                attribute="subject"
+                            />
+                        </div>
 
-                            <BCard no-body> </BCard>
+                        <BCard no-body> </BCard>
 
-                            <div class="mb-3">
-                                <label class="form-label fw-bold"
-                                    >Resumen de radicado</label
-                                >
-                                <BSpinner
-                                    v-if="loadingAI"
-                                    class="float-end"
-                                    small
-                                    v-b-tooltip.hover.top
-                                    title="Extrayendo resumen con IA"
-                                    type="grow"
-                                />
-                                <!-- <ckeditor v-model="editorData" :editor="editor"></ckeditor> -->
-                                <textarea
-                                    class="form-control"
-                                    v-model="form.description"
-                                    :disabled="loadingAI || radicated"
-                                    style="min-height: 255px"
-                                ></textarea>
-                                <ValidateLabel
-                                    v-bind="{ v$ }"
-                                    attribute="description"
-                                />
-                            </div>
-                        </BCardBody>
-                    </BCard>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"
+                                >Resumen de radicado</label
+                            >
+                            <BSpinner
+                                v-if="loadingAI"
+                                class="float-end"
+                                small
+                                v-b-tooltip.hover.top
+                                title="Extrayendo resumen con IA"
+                                type="grow"
+                            />
+                            <!-- <ckeditor v-model="editorData" :editor="editor"></ckeditor> -->
+                            <textarea
+                                class="form-control"
+                                v-model="form.description"
+                                :disabled="loadingAI || radicated"
+                                style="min-height: 255px"
+                            ></textarea>
+                            <ValidateLabel
+                                v-bind="{ v$ }"
+                                attribute="description"
+                            />
+                        </div>
+                    </BCardBody>
+                </BCard>
             </BCol>
 
             <!-- Form section column -->
