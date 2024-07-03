@@ -295,3 +295,12 @@ export const getUserRoleByName = async (company, nameUser) => {
         return null;
     }
 };
+
+export const getNumberOfPages = async (companyId, claimId) => {
+    try {
+        const files = await getDocumentFilesUploads(companyId, claimId);
+        console.log(files);
+    } catch (error) {
+        console.error("Error al obtener los documentos:", error);
+    }
+}

@@ -47,6 +47,7 @@ import {
     // deleteDocument,
     deleteDocumentByName,
     updateClaimSummary,
+    getNumberOfPages,
 } from "../../services/docservice/doc.service";
 import axios from "axios";
 
@@ -216,6 +217,7 @@ export default {
                             isListeningEnabled.value &&
                             canUseAI.value
                         ) {
+                            await getNumberOfPages(companyID.value, documentID.value);
                             canUseAI.value = false;
                             toast.update(idProccessAI, {
                                 render: "Resumen realizado con exito!",
