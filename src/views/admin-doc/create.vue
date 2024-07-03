@@ -76,6 +76,7 @@ export default {
         let idProccessAI;
         const isListeningEnabled = ref(true);
         const loadingAI = ref(false);
+        const loadingNumberOfPages = ref(false);
         const newDate = ref(dayjs().format("DD/MM/YYYY HH:mm"));
         const trds = ref([]);
         const series = ref([]);
@@ -217,8 +218,8 @@ export default {
                             isListeningEnabled.value &&
                             canUseAI.value
                         ) {
-                            await getNumberOfPages(companyID.value, documentID.value);
                             canUseAI.value = false;
+                            getNumberOfFolios();
                             toast.update(idProccessAI, {
                                 render: "Resumen realizado con exito!",
                                 type: toast.TYPE.SUCCESS,
@@ -374,6 +375,16 @@ export default {
                 }
             }
             filesToUpload.value = [];
+        };
+
+        const getNumberOfFolios = async () => {
+            loadingNumberOfPages.value = true;
+            const numberOfPages = await getNumberOfPages(
+                companyID.value,
+                documentID.value
+            );
+            form.folios = numberOfPages;
+            loadingNumberOfPages.value = false;
         };
 
         const classDropZone = computed(() => {
@@ -770,6 +781,7 @@ export default {
             v$,
             mode,
             radicated,
+            loadingNumberOfPages,
             saveLoading,
             submitLoading,
             addressOptions,
@@ -1638,7 +1650,15 @@ export default {
                             <BCol lg="3" class="mb-3">
                                 <label for="username" class="form-label fw-bold"
                                     >Folios
-                                    <span class="text-danger fw-bold"
+                                    <BSpinner
+                                        v-if="loadingNumberOfPages"
+                                        class="float-end ms-3"
+                                        small
+                                        v-b-tooltip.hover.top
+                                        title="Extrayendo la cantidad de folios con IA"
+                                        type="grow"
+                                    />
+                                    <span class="text-danger fw-bold" v-else
                                         >*</span
                                     ></label
                                 >
@@ -1653,7 +1673,7 @@ export default {
                                     }"
                                     id="folios"
                                     placeholder="Ingrese folios"
-                                    :disabled="radicated"
+                                    :disabled="radicated || loadingNumberOfPages"
                                 />
 
                                 <ValidateLabel
