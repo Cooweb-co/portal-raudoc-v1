@@ -95,7 +95,7 @@ export default {
             "" /* Ciudad */,
         ]);
         const finalAddress = ref("");
-        const showNameCompanyForm = ref(false);
+        const showcompanyNameForm = ref(false);
         const addressOptions = ref([
             { label: "Calle", value: "CL. " },
             { label: "Carrera", value: "CRA. " },
@@ -131,7 +131,7 @@ export default {
             idNumber: "",
             contactPhone: "",
             names: "",
-            nameCompany: "",
+            companyName: "",
             lastNames: "",
             email: "",
             address: "",
@@ -156,7 +156,7 @@ export default {
             idNumber: { required: MESSAGE_REQUIRED },
             contactPhone: { required: MESSAGE_REQUIRED },
             names: { required: MESSAGE_REQUIRED },
-            nameCompany: showNameCompanyForm.value && {
+            companyName: showcompanyNameForm.value && {
                 required: MESSAGE_REQUIRED,
             },
             lastNames: { required: MESSAGE_REQUIRED },
@@ -273,9 +273,9 @@ export default {
                                     ? data?.personInformation.phoneNumber
                                     : "";
                                 getAddress();
-                                form.nameCompany = data?.personInformation
-                                    .nameCompany
-                                    ? data?.personInformation.nameCompany
+                                form.companyName = data?.personInformation
+                                    .companyName
+                                    ? data?.personInformation.companyName
                                     : "";
                             }
                         }
@@ -732,8 +732,8 @@ export default {
             }
 
             if (newValueForm.personType === "Jurídica") {
-                showNameCompanyForm.value = true;
-            } else showNameCompanyForm.value = false;
+                showcompanyNameForm.value = true;
+            } else showcompanyNameForm.value = false;
         });
 
         function concatAddress() {
@@ -772,7 +772,7 @@ export default {
             submitLoading,
             addressOptions,
             changeDocumentAI,
-            showNameCompanyForm,
+            showcompanyNameForm,
             qrModal,
             loadingAI,
             newDate,
@@ -881,7 +881,7 @@ export default {
                         address: this.form.address,
                         phoneNumber: this.form.contactPhone,
                         email: this.form.email,
-                        nameCompany: this.showNameCompanyForm,
+                        companyName: this.form.companyName || "",
                     },
                 };
                 const response = await axios.post(url, body, config);
@@ -1835,10 +1835,10 @@ export default {
                             <BCol
                                 lg="6"
                                 class="mb-3"
-                                v-if="showNameCompanyForm"
+                                v-if="showcompanyNameForm"
                             >
                                 <label
-                                    for="nameCompany"
+                                    for="companyName"
                                     class="form-label fw-bold"
                                     >Nombre de la compañía
                                     <span class="text-danger fw-bold"
@@ -1848,17 +1848,17 @@ export default {
                                 <input
                                     type="text"
                                     class="form-control"
-                                    v-model="form.nameCompany"
+                                    v-model="form.companyName"
                                     :disabled="radicated || loadingAI"
                                     placeholder="Ingrese el nombre de la compañía"
                                 />
                                 <ValidateLabel
                                     v-bind="{ v$ }"
-                                    attribute="nameCompany"
+                                    attribute="companyName"
                                 />
                             </BCol>
                             <BCol
-                                :lg="showNameCompanyForm ? '6' : '3'"
+                                :lg="showcompanyNameForm ? '6' : '3'"
                                 class="mb-3"
                             >
                                 <label for="username" class="form-label fw-bold"
@@ -1883,7 +1883,7 @@ export default {
                                 />
                             </BCol>
                             <BCol
-                                :lg="showNameCompanyForm ? '6' : '3'"
+                                :lg="showcompanyNameForm ? '6' : '3'"
                                 class="mb-3"
                             >
                                 <label
