@@ -3,7 +3,7 @@ import {
     ref,
     watch,
     getCurrentInstance,
-    onUnmounted,
+    // onUnmounted,
     computed,
     reactive,
     // onMounted,
@@ -60,6 +60,7 @@ export default {
         const readDocument = ref(false);
         const dropzoneFile = ref("");
         const loadingBtnAI = ref(false);
+        const canUseAI = ref(true);
         const documentID = ref(null);
         const documentAI = ref(null);
         const companyID = ref("BAQVERDE");
@@ -94,7 +95,7 @@ export default {
             "" /* Ciudad */,
         ]);
         const finalAddress = ref("");
-        const showNameCompanyForm = ref(false);
+        const showcompanyNameForm = ref(false);
         const addressOptions = ref([
             { label: "Calle", value: "CL. " },
             { label: "Carrera", value: "CRA. " },
@@ -130,7 +131,7 @@ export default {
             idNumber: "",
             contactPhone: "",
             names: "",
-            nameCompany: "",
+            companyName: "",
             lastNames: "",
             email: "",
             address: "",
@@ -155,7 +156,7 @@ export default {
             idNumber: { required: MESSAGE_REQUIRED },
             contactPhone: { required: MESSAGE_REQUIRED },
             names: { required: MESSAGE_REQUIRED },
-            nameCompany: showNameCompanyForm.value && {
+            companyName: showcompanyNameForm.value && {
                 required: MESSAGE_REQUIRED,
             },
             lastNames: { required: MESSAGE_REQUIRED },
@@ -180,7 +181,6 @@ export default {
                     closeButton: false,
                     closeOnClick: false,
                 });
-
                 unsubscribe = onListenClaimData(
                     documentAI.value.claimID,
                     companyID.value,
@@ -211,7 +211,12 @@ export default {
                                 3000
                             );
                         }
-                        if (data.summary && isListeningEnabled.value) {
+                        if (
+                            data.summary &&
+                            isListeningEnabled.value &&
+                            canUseAI.value
+                        ) {
+                            canUseAI.value = false;
                             toast.update(idProccessAI, {
                                 render: "Resumen realizado con exito!",
                                 type: toast.TYPE.SUCCESS,
@@ -268,7 +273,10 @@ export default {
                                     ? data?.personInformation.phoneNumber
                                     : "";
                                 getAddress();
-                                if(showNameCompanyForm.value) form.nameCompany = data?.nameCompany ? data?.nameCompany : "";
+                                form.companyName = data?.personInformation
+                                    .companyName
+                                    ? data?.personInformation.companyName
+                                    : "";
                             }
                         }
                     }
@@ -290,6 +298,7 @@ export default {
                 });
                 loadingAI.value = false;
                 isListeningEnabled.value = false;
+                canUseAI.value = true;
                 unsubscribe = null;
                 form.subject = "";
                 form.description = "";
@@ -308,6 +317,7 @@ export default {
         };
 
         const uploadDocument = async () => {
+            canUseAI.value = true;
             for (let i = 0; i < filesToUpload.value.length; i++) {
                 const file = filesToUpload.value[i];
                 try {
@@ -451,6 +461,7 @@ export default {
                     }
                     documentAI.value = file;
                     isListeningEnabled.value = true;
+                    canUseAI.value = true;
                     startListening();
                 }
                 return;
@@ -617,7 +628,6 @@ export default {
                 series.value.forEach((i) => {
                     if (i.label == form.serie) {
                         subseries.value = [];
-                        console.log(i.subseries);
                         if (i.subseries.length === 0) {
                             subseries.value.push({
                                 label: "Esta serie no tiene subseries disponibles",
@@ -682,12 +692,6 @@ export default {
         //   form.lastNames = totalName[1] + " " + totalName[2];
         // });
 
-        onUnmounted(() => {
-            if (unsubscribe) {
-                unsubscribe;
-            }
-        });
-
         watch(
             () => [...files.value],
             (currentValue) => {
@@ -728,8 +732,8 @@ export default {
             }
 
             if (newValueForm.personType === "Jurídica") {
-                showNameCompanyForm.value = true;
-            } else showNameCompanyForm.value = false;
+                showcompanyNameForm.value = true;
+            } else showcompanyNameForm.value = false;
         });
 
         function concatAddress() {
@@ -768,7 +772,7 @@ export default {
             submitLoading,
             addressOptions,
             changeDocumentAI,
-            showNameCompanyForm,
+            showcompanyNameForm,
             qrModal,
             loadingAI,
             newDate,
@@ -801,6 +805,7 @@ export default {
             getPeople,
             concatAddress,
             getAddressManual,
+            canUseAI,
         };
     },
     data() {
@@ -838,19 +843,10 @@ export default {
                 console.error(error);
             }
         },
-
-        fillFieldWithAI() {
-            this.identificationType =
-                this.claimData.applicant.identificationType;
-            this.gender = this.claimData.applicant.gender;
-            this.countryOfResidence =
-                this.claimData.applicant.countryOfResidence;
-            this.cityOfResidence = this.claimData.applicant.cityOfResidence;
-            this.deadline = this.claimData.deadline;
-        },
-
         async handleSaveChanges() {
+            this.canUseAI = false;
             try {
+                const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`;
                 const config = {
                     headers: {
                         company: this.companyID,
@@ -885,13 +881,10 @@ export default {
                         address: this.form.address,
                         phoneNumber: this.form.contactPhone,
                         email: this.form.email,
+                        companyName: this.form.companyName || "",
                     },
                 };
-                const response = await axios.post(
-                    `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`,
-                    body,
-                    config
-                );
+                const response = await axios.post(url, body, config);
                 if (response.data.message) {
                     this.saveLoading = false;
                     this.showRadicationButton = true;
@@ -905,6 +898,7 @@ export default {
 
         async handleSubmitDocument() {
             try {
+                console.log(this.form.idType);
                 this.submitLoading = true;
                 this.handleSaveChanges();
                 const config = {
@@ -1287,188 +1281,180 @@ export default {
                 @drop="onFileDrop"
             >
                 <!-- {{ claimData }} -->
-                    <BCard no-body>
-                        <BCardHeader>
-                            <h5
-                                class="card-title mb-0 text-muted fw-light fst-italic"
+                <BCard no-body>
+                    <BCardHeader>
+                        <h5
+                            class="card-title mb-0 text-muted fw-light fst-italic"
+                        >
+                            AGREGA ARCHIVO PARA RADICAR
+                        </h5>
+                    </BCardHeader>
+                    <BCardBody v-if="!answered">
+                        <div>
+                            <div :class="classDropZone">
+                                <p>
+                                    <FileTextIcon size="28" />
+                                </p>
+                                <span> Arrastra el archivo para subirlo</span>
+                                <input
+                                    type="file"
+                                    name="formFile"
+                                    id="formFile"
+                                    multiple
+                                    class="input-file"
+                                    @change="selectedFile"
+                                    :disabled="radicated"
+                                />
+                                <label
+                                    for="formFile"
+                                    class="link-primary label-formFile"
+                                    >o Clic acá para selecciona un
+                                    archivo</label
+                                >
+                            </div>
+                            <div
+                                class="vstack gap-2 mt-2"
+                                v-if="files.length > 0"
                             >
-                                AGREGA ARCHIVO PARA RADICAR
-                            </h5>
-                        </BCardHeader>
-                        <BCardBody v-if="!answered">
-                            <div>
-                                <div :class="classDropZone">
-                                    <p>
-                                        <FileTextIcon size="28" />
-                                    </p>
-                                    <span>
-                                        Arrastra el archivo para subirlo</span
-                                    >
-                                    <input
-                                        type="file"
-                                        name="formFile"
-                                        id="formFile"
-                                        multiple
-                                        class="input-file"
-                                        @change="selectedFile"
-                                        :disabled="radicated"
-                                    />
-                                    <label
-                                        for="formFile"
-                                        class="link-primary label-formFile"
-                                        >o Clic acá para selecciona un
-                                        archivo</label
-                                    >
-                                </div>
                                 <div
-                                    class="vstack gap-2 mt-2"
-                                    v-if="files.length > 0"
+                                    class="border rounded"
+                                    v-for="(file, index) of files"
+                                    :key="index"
                                 >
                                     <div
-                                        class="border rounded"
-                                        v-for="(file, index) of files"
-                                        :key="index"
+                                        class="d-flex align-items-center p-2"
+                                        v-if="file"
                                     >
-                                        <div
-                                            class="d-flex align-items-center p-2"
-                                            v-if="file"
-                                        >
-                                            <div class="flex-grow-1">
-                                                <div class="pt-1">
-                                                    <h5
-                                                        class="fs-14 mb-1"
-                                                        data-dz-name=""
-                                                    >
-                                                        {{ file.name }}
-                                                    </h5>
-                                                    <p
-                                                        class="fs-13 text-muted mb-0"
-                                                        data-dz-size=""
-                                                    >
-                                                        <strong>{{
-                                                            file.size / 1024
-                                                        }}</strong>
-                                                        KB
-                                                    </p>
-                                                    <strong
-                                                        class="error text-danger"
-                                                        data-dz-errormessage=""
-                                                    ></strong>
-                                                </div>
+                                        <div class="flex-grow-1">
+                                            <div class="pt-1">
+                                                <h5
+                                                    class="fs-14 mb-1"
+                                                    data-dz-name=""
+                                                >
+                                                    {{ file.name }}
+                                                </h5>
+                                                <p
+                                                    class="fs-13 text-muted mb-0"
+                                                    data-dz-size=""
+                                                >
+                                                    <strong>{{
+                                                        file.size / 1024
+                                                    }}</strong>
+                                                    KB
+                                                </p>
+                                                <strong
+                                                    class="error text-danger"
+                                                    data-dz-errormessage=""
+                                                ></strong>
                                             </div>
-                                            <div
-                                                class="flex-shrink-0 ms-3 gap-1"
-                                            >
-                                                <a-tooltip>
-                                                    <template #title
-                                                        >Aplicar
-                                                        resumen</template
-                                                    >
-                                                    <BButton
-                                                        variant="info"
-                                                        size="sm"
-                                                        class="me-1"
-                                                        data-dz-remove=""
-                                                        @click="
-                                                            changeDocumentAI(
-                                                                file.name
-                                                            )
-                                                        "
-                                                    >
-                                                        <CpuIcon />
-                                                    </BButton>
-                                                </a-tooltip>
-                                                <a-tooltip>
-                                                    <template #title
-                                                        >Borrar
-                                                        documento</template
-                                                    >
-                                                    <BButton
-                                                        variant="danger"
-                                                        size="sm"
-                                                        data-dz-remove=""
-                                                        @click="
-                                                            deleteRecord(
-                                                                file.name
-                                                            )
-                                                        "
-                                                    >
-                                                        <Trash2Icon />
-                                                    </BButton>
-                                                </a-tooltip>
-                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0 ms-3 gap-1">
+                                            <a-tooltip>
+                                                <template #title
+                                                    >Aplicar resumen</template
+                                                >
+                                                <BButton
+                                                    variant="info"
+                                                    size="sm"
+                                                    class="me-1"
+                                                    data-dz-remove=""
+                                                    @click="
+                                                        changeDocumentAI(
+                                                            file.name
+                                                        )
+                                                    "
+                                                >
+                                                    <CpuIcon />
+                                                </BButton>
+                                            </a-tooltip>
+                                            <a-tooltip>
+                                                <template #title
+                                                    >Borrar documento</template
+                                                >
+                                                <BButton
+                                                    variant="danger"
+                                                    size="sm"
+                                                    data-dz-remove=""
+                                                    @click="
+                                                        deleteRecord(file.name)
+                                                    "
+                                                >
+                                                    <Trash2Icon />
+                                                </BButton>
+                                            </a-tooltip>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </BCardBody>
-                        <BoCardBody v-else>
-                            <h3
-                                class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
+                        </div>
+                    </BCardBody>
+                    <BoCardBody v-else>
+                        <h3
+                            class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
+                        >
+                            Radicado Generado
+                        </h3>
+                    </BoCardBody>
+                </BCard>
+                <BCard no-body>
+                    <BCardBody class="h-100">
+                        <div class="mb-3">
+                            <label
+                                class="form-label fw-bold"
+                                for="project-title-input"
+                                >Asuntos</label
                             >
-                                Radicado Generado
-                            </h3>
-                        </BoCardBody>
-                    </BCard>
-                    <BCard no-body>
-                        <BCardBody class="h-100">
-                            <div class="mb-3">
-                                <label
-                                    class="form-label fw-bold"
-                                    for="project-title-input"
-                                    >Asuntos</label
-                                >
-                                <BSpinner
-                                    v-if="loadingAI"
-                                    class="float-end"
-                                    small
-                                    v-b-tooltip.hover.top
-                                    title="Extrayendo asunto con IA"
-                                    type="grow"
-                                />
+                            <BSpinner
+                                v-if="loadingAI"
+                                class="float-end"
+                                small
+                                v-b-tooltip.hover.top
+                                title="Extrayendo asunto con IA"
+                                type="grow"
+                            />
 
-                                <input
-                                    type="text"
-                                    v-model="form.subject"
-                                    class="form-control"
-                                    id="project-title-input"
-                                    placeholder="Ingrese asunto del radicado"
-                                    :disabled="loadingAI || radicated"
-                                />
-                                <ValidateLabel
-                                    v-bind="{ v$ }"
-                                    attribute="subject"
-                                />
-                            </div>
+                            <input
+                                type="text"
+                                v-model="form.subject"
+                                class="form-control"
+                                id="project-title-input"
+                                placeholder="Ingrese asunto del radicado"
+                                :disabled="loadingAI || radicated"
+                            />
+                            <ValidateLabel
+                                v-bind="{ v$ }"
+                                attribute="subject"
+                            />
+                        </div>
 
-                            <BCard no-body> </BCard>
+                        <BCard no-body> </BCard>
 
-                            <div class="mb-3">
-                                <label class="form-label fw-bold"
-                                    >Resumen de radicado</label
-                                >
-                                <BSpinner
-                                    v-if="loadingAI"
-                                    class="float-end"
-                                    small
-                                    v-b-tooltip.hover.top
-                                    title="Extrayendo resumen con IA"
-                                    type="grow"
-                                />
-                                <!-- <ckeditor v-model="editorData" :editor="editor"></ckeditor> -->
-                                <textarea
-                                    class="form-control"
-                                    v-model="form.description"
-                                    :disabled="loadingAI || radicated"
-                                    style="min-height: 255px"
-                                ></textarea>
-                                <ValidateLabel
-                                    v-bind="{ v$ }"
-                                    attribute="description"
-                                />
-                            </div>
-                        </BCardBody>
-                    </BCard>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"
+                                >Resumen de radicado</label
+                            >
+                            <BSpinner
+                                v-if="loadingAI"
+                                class="float-end"
+                                small
+                                v-b-tooltip.hover.top
+                                title="Extrayendo resumen con IA"
+                                type="grow"
+                            />
+                            <!-- <ckeditor v-model="editorData" :editor="editor"></ckeditor> -->
+                            <textarea
+                                class="form-control"
+                                v-model="form.description"
+                                :disabled="loadingAI || radicated"
+                                style="min-height: 255px"
+                            ></textarea>
+                            <ValidateLabel
+                                v-bind="{ v$ }"
+                                attribute="description"
+                            />
+                        </div>
+                    </BCardBody>
+                </BCard>
             </BCol>
 
             <!-- Form section column -->
@@ -1849,10 +1835,10 @@ export default {
                             <BCol
                                 lg="6"
                                 class="mb-3"
-                                v-if="showNameCompanyForm"
+                                v-if="showcompanyNameForm"
                             >
                                 <label
-                                    for="nameCompany"
+                                    for="companyName"
                                     class="form-label fw-bold"
                                     >Nombre de la compañía
                                     <span class="text-danger fw-bold"
@@ -1862,17 +1848,17 @@ export default {
                                 <input
                                     type="text"
                                     class="form-control"
-                                    v-model="form.nameCompany"
+                                    v-model="form.companyName"
                                     :disabled="radicated || loadingAI"
                                     placeholder="Ingrese el nombre de la compañía"
                                 />
                                 <ValidateLabel
                                     v-bind="{ v$ }"
-                                    attribute="nameCompany"
+                                    attribute="companyName"
                                 />
                             </BCol>
                             <BCol
-                                :lg="showNameCompanyForm ? '6' : '3'"
+                                :lg="showcompanyNameForm ? '6' : '3'"
                                 class="mb-3"
                             >
                                 <label for="username" class="form-label fw-bold"
@@ -1897,7 +1883,7 @@ export default {
                                 />
                             </BCol>
                             <BCol
-                                :lg="showNameCompanyForm ? '6' : '3'"
+                                :lg="showcompanyNameForm ? '6' : '3'"
                                 class="mb-3"
                             >
                                 <label
