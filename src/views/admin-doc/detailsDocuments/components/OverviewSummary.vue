@@ -235,6 +235,10 @@ onMounted(async () => {
                                 Información de contacto
                             </h6>
                             <ul>
+                                <li v-if="data.personType === 'Jurídica'">
+                                    <strong>Nombre de la empresa:</strong>
+                                    {{ data.companyName }}
+                                </li>
                                 <li>
                                     <strong>Nombre del denunciante:</strong>
                                     {{ data.fullName }}
