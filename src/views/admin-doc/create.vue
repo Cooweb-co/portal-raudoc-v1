@@ -219,7 +219,7 @@ export default {
                             canUseAI.value
                         ) {
                             canUseAI.value = false;
-                            getNumberOfFolios();
+                            await getNumberOfFolios();
                             toast.update(idProccessAI, {
                                 render: "Resumen realizado con exito!",
                                 type: toast.TYPE.SUCCESS,
@@ -378,13 +378,18 @@ export default {
         };
 
         const getNumberOfFolios = async () => {
-            loadingNumberOfPages.value = true;
-            const numberOfPages = await getNumberOfPages(
-                companyID.value,
-                documentID.value
-            );
-            form.folios = numberOfPages;
-            loadingNumberOfPages.value = false;
+            try {
+                loadingNumberOfPages.value = true;
+                const numberOfPages = await getNumberOfPages(
+                    companyID.value,
+                    documentID.value
+                );
+                console.log(numberOfPages);
+                form.folios = numberOfPages;
+                loadingNumberOfPages.value = false;
+            } catch (error) {
+                console.error("Error al obtener el número de folios:", error);
+            }
         };
 
         const classDropZone = computed(() => {
@@ -715,12 +720,12 @@ export default {
 
         watch(stateDoc, (newValue) => {
             if (newValue.status == "ERROR") {
-                toast.update(idProccessAI, {
-                    render: "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
-                    type: toast.TYPE.WARNING,
-                    isLoading: false,
-                    autoClose: 7000,
-                });
+                // toast.update(idProccessAI, {
+                //     render: "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
+                //     type: toast.TYPE.WARNING,
+                //     isLoading: false,
+                //     autoClose: 7000,
+                // });
                 loadingAI.value = false;
                 clearTimeout(timerAI.value);
                 timerAI.value = 0;
@@ -1648,11 +1653,13 @@ export default {
                                 />
                             </BCol>
                             <BCol lg="3" class="mb-3">
-                                <label for="username" class="form-label fw-bold"
+                                <label
+                                    for="username"
+                                    class="form-label fw-bold d-flex align-items-center"
                                     >Folios
                                     <BSpinner
-                                        v-if="loadingNumberOfPages"
-                                        class="float-end ms-3"
+                                        v-if="loadingNumberOfPages || loadingAI"
+                                        class="float-end ms-1"
                                         small
                                         v-b-tooltip.hover.top
                                         title="Extrayendo la cantidad de folios con IA"
@@ -1673,7 +1680,9 @@ export default {
                                     }"
                                     id="folios"
                                     placeholder="Ingrese folios"
-                                    :disabled="radicated || loadingNumberOfPages"
+                                    :disabled="
+                                        radicated || loadingNumberOfPages || loadingAI
+                                    "
                                 />
 
                                 <ValidateLabel

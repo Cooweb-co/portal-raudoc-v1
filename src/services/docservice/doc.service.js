@@ -300,7 +300,11 @@ export const getNumberOfPages = async (companyId, claimId) => {
     try {
         let numberOfPageAllFiles = 0;
         const files = await getDocumentFilesUploads(companyId, claimId);
-        files.forEach((file) => numberOfPageAllFiles += parseInt(file.numberOfPages));
+        files.forEach((file) => {
+            if(file.status == "ERROR") return;
+            if(!file.numberOfPages && file.status == "DRAFT") getNumberOfPages(companyId, claimId);
+            numberOfPageAllFiles += parseInt(file.numberOfPages)
+        });
         return numberOfPageAllFiles || "";
     } catch (error) {
         console.error("Error al obtener los documentos:", error);
