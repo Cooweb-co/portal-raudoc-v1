@@ -71,6 +71,7 @@ onMounted(async () => {
             summary:
                 docData?.summary?.replace("<p>", "").replace("</p>", "") ||
                 "No definido",
+            companyName: docData?.petitionerInformation?.companyName || "No definido",
             personType:
                 docData?.petitionerInformation?.personType || "No definido",
             identificationNumber:
