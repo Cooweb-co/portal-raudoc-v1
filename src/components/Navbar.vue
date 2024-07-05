@@ -768,7 +768,7 @@ onMounted(() => {
                                 class="mdi mdi-lock-reset text-muted fs-16 align-middle me-1"
                             ></i>
                             <span class="align-middle" data-key="t-logout">
-                                Restablecer contraseña</span
+                                Cambiar contraseña</span
                             >
                         </router-link>
                         <router-link class="dropdown-item" to="/logout"
