@@ -1,24 +1,10 @@
 export default function setState(state) {
-    let newState;
-    switch (state) {
-        case "EXPIRED":
-            newState = "Vencido";
-            break;
-        case "TO_EXPIRE":
-            newState = "Por vencer";
-            break;
-        case "IN_TERM":
-            newState = "En termino";
-            break;
-        case "ANSWERED":
-            newState = "Respondido";
-            break;
-        case "NO_RESPONSE":
-            newState = "No requiere respuesta";
-            break;
-        default:
-            newState = state;
-            break;
+    const states = {
+        "EXPIRED": "Vencido",
+        "TO_EXPIRE": "Por vencer",
+        "IN_TERM": "En termino",
+        "ANSWERED": "Respondido",
+        "NO_RESPONSE": "No requiere respuesta",
     }
-    return newState;
+    return states[state] ?? state;
 }
