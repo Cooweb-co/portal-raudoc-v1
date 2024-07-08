@@ -34,6 +34,7 @@ const secondAddressee = ref(false);
 const documentNumber = ref("Número de radicado");
 const maxSize = 10000000;
 const company = "BAQVERDE";
+const pathname = window.location.pathname.split("/");
 
 const selectedFile = async () => {
     const newFiles = document.getElementById("formFile").files;
@@ -129,7 +130,7 @@ const uploadFile = async () => {
         //     return;
         // }
         loadingFile.value = true;
-        // Carga el pdf para agregar el QR
+        // Upload first file for add it QR
         const pdfBlob = await createPDF();
         if (pdfBlob) {
             const pdfFile = new File(
@@ -143,16 +144,24 @@ const uploadFile = async () => {
             );
             files.value = [pdfFile, ...files.value];
         }
-
-        // Envía el archivo a la API para colocarle el QR
+        const date = transformTimeStampToDate(
+            props?.data?.rawEntryDate,
+            "DD/MM/YYYY HH:mm:ss"
+        );
         const headersAddQR = {
             "Content-Type": "multipart/form-data",
         };
 
         const bodyFormDataAddQR = new FormData();
+        bodyFormDataAddQR.append(
+            "url",
+            `${process.env.VUE_APP_URLPAGE}/r/${company}/${
+                pathname[pathname.length - 1]
+            }`
+        );
 
-        bodyFormDataAddQR.append("uid", props?.data?.id);
-        bodyFormDataAddQR.append("company", company);
+        bodyFormDataAddQR.append("codeRadicate", props?.data?.numberEntryClaim);
+        bodyFormDataAddQR.append("dateRadicate", date);
         bodyFormDataAddQR.append(
             "file",
             files.value[0],
@@ -162,7 +171,7 @@ const uploadFile = async () => {
         let config = {
             method: "post",
             maxBodyLength: Infinity,
-            url: `${process.env.VUE_APP_CF_BASE_URL}/doc`,
+            url: `${process.env.VUE_APP_CF_BASE_URL}/ADD_QR_IN_PDF`,
             headers: headersAddQR,
             data: bodyFormDataAddQR,
             responseType: "blob",
@@ -179,7 +188,7 @@ const uploadFile = async () => {
 
         files.value[0] = file;
 
-        // Carga los archivos para respuesta
+        // Upload files for response
 
         const headersGenerateRadicateOut = {
             company: "BAQVERDE",
@@ -220,7 +229,6 @@ const uploadFile = async () => {
             "Respondido",
             true
         );
-        // Definen el tracking
         await setTracking(
             props.data?.id,
             company,
@@ -245,7 +253,7 @@ const uploadFile = async () => {
         });
     }
 };
-//Servicio para enviar el archivo al usuario
+
 const sendFile = async () => {
     try {
         loadingSendFile.value = true;
@@ -303,7 +311,7 @@ const sendFile = async () => {
         console.error(error);
     }
 };
-//Crea el pdf
+
 const createPDF = async () => {
     v$.value.$touch();
     if (v$.value.$invalid) {
