@@ -84,7 +84,7 @@ const form = reactive({
     typeOfDocument: "",
     numberOfDocument: "",
     email: "",
-    // company: "", //Opcional
+    company: "", //Opcional
     address: "",
     city: "",
     subject: "",
@@ -101,7 +101,7 @@ const rules = {
     copyName: {},
     typeOfDocument: { required },
     numberOfDocument: { required },
-    // company: {}, //Opcional
+    companyName: props?.data?.personType === "Jurídica" ? { required } : {},
     email: { required, email },
     address: { required },
     city: { required },
@@ -221,7 +221,10 @@ const uploadFile = async () => {
             [
                 { name: "Area", value: form.senderArea },
                 { name: "Cargo", value: form.position },
-                { name: "Comentarios", value: "Documento respondido exitosamente" },
+                {
+                    name: "Comentarios",
+                    value: "Documento respondido exitosamente",
+                },
             ],
             "Respondido",
             true
@@ -318,6 +321,7 @@ const createPDF = async () => {
         entryDate: form.entryDate,
         name: form.name,
         copyName: form.copyName,
+        companyName: form.companyName || null,
         typeOfDocument: form.typeOfDocument,
         numberOfDocument: form.numberOfDocument,
         email: form.email,
@@ -417,6 +421,7 @@ watch(
         form.senderArea = capitalizedText(currentValue.area) || "";
         if (currentValue.personType.toUpperCase() == "JURÍDICA")
             showInputCompany.value = true;
+        form.companyName = currentValue.companyName || "";
         if (
             currentValue.numberOutClaim ||
             currentValue.status == "No requiere respuesta"
@@ -573,6 +578,41 @@ watch(
                                 </BCol>
                             </BCol>
                             <BCol lg="4">
+                                <BCol
+                                    lg="12"
+                                    class="mb-3"
+                                    v-if="data.personType === 'Jurídica'"
+                                >
+                                    <label for="name" class="form-label fw-bold"
+                                        >Nombre de la empresa del
+                                        destinatario <span
+                                            class="text-danger fw-bold"
+                                            >*</span
+                                        >
+                                    </label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        v-model="form.companyName"
+                                        id="companyName"
+                                        :required="true"
+                                        placeholder="Ingrese el nombre de la empresa del destinatario"
+                                    />
+                                    <!-- <div v-if="data?.companyName">
+                                        <span
+                                        v-if="v$?.$invalid"
+                                        class="text-danger"
+                                    >
+                                        <span
+                                            v-if="
+                                                v$?.companyName?.required
+                                                    ?.$invalid
+                                            "
+                                            >Este campo es obligatorio</span
+                                        >
+                                    </span>
+                                    </div> -->
+                                </BCol>
                                 <BCol lg="12">
                                     <label for="name" class="form-label fw-bold"
                                         >Destinatario
