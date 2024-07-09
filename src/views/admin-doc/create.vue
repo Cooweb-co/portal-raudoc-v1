@@ -3,7 +3,7 @@ import {
     ref,
     watch,
     getCurrentInstance,
-    onUnmounted,
+    // onUnmounted,
     computed,
     reactive,
     // onMounted,
@@ -47,6 +47,7 @@ import {
     // deleteDocument,
     deleteDocumentByName,
     updateClaimSummary,
+    getNumberOfPages,
 } from "../../services/docservice/doc.service";
 import axios from "axios";
 
@@ -60,6 +61,7 @@ export default {
         const readDocument = ref(false);
         const dropzoneFile = ref("");
         const loadingBtnAI = ref(false);
+        const canUseAI = ref(true);
         const documentID = ref(null);
         const documentAI = ref(null);
         const companyID = ref("BAQVERDE");
@@ -74,6 +76,7 @@ export default {
         let idProccessAI;
         const isListeningEnabled = ref(true);
         const loadingAI = ref(false);
+        const loadingNumberOfPages = ref(false);
         const newDate = ref(dayjs().format("DD/MM/YYYY HH:mm"));
         const trds = ref([]);
         const series = ref([]);
@@ -94,7 +97,7 @@ export default {
             "" /* Ciudad */,
         ]);
         const finalAddress = ref("");
-
+        const showcompanyNameForm = ref(false);
         const addressOptions = ref([
             { label: "Calle", value: "CL. " },
             { label: "Carrera", value: "CRA. " },
@@ -130,6 +133,7 @@ export default {
             idNumber: "",
             contactPhone: "",
             names: "",
+            companyName: "",
             lastNames: "",
             email: "",
             address: "",
@@ -154,6 +158,9 @@ export default {
             idNumber: { required: MESSAGE_REQUIRED },
             contactPhone: { required: MESSAGE_REQUIRED },
             names: { required: MESSAGE_REQUIRED },
+            companyName: showcompanyNameForm.value && {
+                required: MESSAGE_REQUIRED,
+            },
             lastNames: { required: MESSAGE_REQUIRED },
             email: { required: MESSAGE_REQUIRED, MESSAGE_EMAIL },
             address: { required: MESSAGE_REQUIRED },
@@ -176,7 +183,6 @@ export default {
                     closeButton: false,
                     closeOnClick: false,
                 });
-
                 unsubscribe = onListenClaimData(
                     documentAI.value.claimID,
                     companyID.value,
@@ -207,7 +213,13 @@ export default {
                                 3000
                             );
                         }
-                        if (data.summary && isListeningEnabled.value) {
+                        if (
+                            data.summary &&
+                            isListeningEnabled.value &&
+                            canUseAI.value
+                        ) {
+                            canUseAI.value = false;
+                            await getNumberOfFolios();
                             toast.update(idProccessAI, {
                                 render: "Resumen realizado con exito!",
                                 type: toast.TYPE.SUCCESS,
@@ -230,8 +242,8 @@ export default {
                                     .personType
                                     ? data?.personInformation.personType
                                     : "";
-                                form.idType = data
-                                    ?.personInformation.identificationType
+                                form.idType = data?.personInformation
+                                    .identificationType
                                     ? data?.personInformation.identificationType
                                     : "";
                                 form.idNumber = data?.personInformation.idNumber
@@ -263,7 +275,11 @@ export default {
                                     .phoneNumber
                                     ? data?.personInformation.phoneNumber
                                     : "";
-                                getAddress()
+                                getAddress();
+                                form.companyName = data?.personInformation
+                                    .companyName
+                                    ? data?.personInformation.companyName
+                                    : "";
                             }
                         }
                     }
@@ -285,6 +301,7 @@ export default {
                 });
                 loadingAI.value = false;
                 isListeningEnabled.value = false;
+                canUseAI.value = true;
                 unsubscribe = null;
                 form.subject = "";
                 form.description = "";
@@ -303,6 +320,7 @@ export default {
         };
 
         const uploadDocument = async () => {
+            canUseAI.value = true;
             for (let i = 0; i < filesToUpload.value.length; i++) {
                 const file = filesToUpload.value[i];
                 try {
@@ -357,6 +375,21 @@ export default {
                 }
             }
             filesToUpload.value = [];
+        };
+
+        const getNumberOfFolios = async () => {
+            try {
+                loadingNumberOfPages.value = true;
+                const numberOfPages = await getNumberOfPages(
+                    companyID.value,
+                    documentID.value
+                );
+                console.log(numberOfPages);
+                form.folios = numberOfPages;
+                loadingNumberOfPages.value = false;
+            } catch (error) {
+                console.error("Error al obtener el número de folios:", error);
+            }
         };
 
         const classDropZone = computed(() => {
@@ -446,6 +479,7 @@ export default {
                     }
                     documentAI.value = file;
                     isListeningEnabled.value = true;
+                    canUseAI.value = true;
                     startListening();
                 }
                 return;
@@ -612,6 +646,19 @@ export default {
                 series.value.forEach((i) => {
                     if (i.label == form.serie) {
                         subseries.value = [];
+                        if (i.subseries.length === 0) {
+                            subseries.value.push({
+                                label: "Esta serie no tiene subseries disponibles",
+                                value: "Esta serie no tiene subseries disponibles",
+                                documents: [
+                                    {
+                                        name: "Esta subserie no tiene tipologías disponibles",
+                                        days: 0,
+                                    },
+                                ],
+                            });
+                            return;
+                        }
                         i.subseries.forEach((j) => {
                             subseries.value.push({
                                 label: j.name,
@@ -663,12 +710,6 @@ export default {
         //   form.lastNames = totalName[1] + " " + totalName[2];
         // });
 
-        onUnmounted(() => {
-            if (unsubscribe) {
-                unsubscribe;
-            }
-        });
-
         watch(
             () => [...files.value],
             (currentValue) => {
@@ -679,12 +720,12 @@ export default {
 
         watch(stateDoc, (newValue) => {
             if (newValue.status == "ERROR") {
-                toast.update(idProccessAI, {
-                    render: "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
-                    type: toast.TYPE.WARNING,
-                    isLoading: false,
-                    autoClose: 7000,
-                });
+                // toast.update(idProccessAI, {
+                //     render: "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
+                //     type: toast.TYPE.WARNING,
+                //     isLoading: false,
+                //     autoClose: 7000,
+                // });
                 loadingAI.value = false;
                 clearTimeout(timerAI.value);
                 timerAI.value = 0;
@@ -707,6 +748,10 @@ export default {
             } else if (newValueForm.documentType == null) {
                 form.assignedTo = "";
             }
+
+            if (newValueForm.personType === "Jurídica") {
+                showcompanyNameForm.value = true;
+            } else showcompanyNameForm.value = false;
         });
 
         function concatAddress() {
@@ -741,10 +786,12 @@ export default {
             v$,
             mode,
             radicated,
+            loadingNumberOfPages,
             saveLoading,
             submitLoading,
             addressOptions,
             changeDocumentAI,
+            showcompanyNameForm,
             qrModal,
             loadingAI,
             newDate,
@@ -777,6 +824,7 @@ export default {
             getPeople,
             concatAddress,
             getAddressManual,
+            canUseAI,
         };
     },
     data() {
@@ -814,19 +862,10 @@ export default {
                 console.error(error);
             }
         },
-
-        fillFieldWithAI() {
-            this.identificationType =
-                this.claimData.applicant.identificationType;
-            this.gender = this.claimData.applicant.gender;
-            this.countryOfResidence =
-                this.claimData.applicant.countryOfResidence;
-            this.cityOfResidence = this.claimData.applicant.cityOfResidence;
-            this.deadline = this.claimData.deadline;
-        },
-
         async handleSaveChanges() {
+            this.canUseAI = false;
             try {
+                const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`;
                 const config = {
                     headers: {
                         company: this.companyID,
@@ -861,13 +900,10 @@ export default {
                         address: this.form.address,
                         phoneNumber: this.form.contactPhone,
                         email: this.form.email,
+                        companyName: this.form.companyName || "",
                     },
                 };
-                const response = await axios.post(
-                    `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`,
-                    body,
-                    config
-                );
+                const response = await axios.post(url, body, config);
                 if (response.data.message) {
                     this.saveLoading = false;
                     this.showRadicationButton = true;
@@ -881,6 +917,7 @@ export default {
 
         async handleSubmitDocument() {
             try {
+                console.log(this.form.idType);
                 this.submitLoading = true;
                 this.handleSaveChanges();
                 const config = {
@@ -1379,7 +1416,7 @@ export default {
                     </BoCardBody>
                 </BCard>
                 <BCard no-body>
-                    <BCardBody>
+                    <BCardBody class="h-100">
                         <div class="mb-3">
                             <label
                                 class="form-label fw-bold"
@@ -1616,9 +1653,19 @@ export default {
                                 />
                             </BCol>
                             <BCol lg="3" class="mb-3">
-                                <label for="username" class="form-label fw-bold"
+                                <label
+                                    for="username"
+                                    class="form-label fw-bold d-flex align-items-center"
                                     >Folios
-                                    <span class="text-danger fw-bold"
+                                    <BSpinner
+                                        v-if="loadingNumberOfPages || loadingAI"
+                                        class="float-end ms-1"
+                                        small
+                                        v-b-tooltip.hover.top
+                                        title="Extrayendo la cantidad de folios con IA"
+                                        type="grow"
+                                    />
+                                    <span class="text-danger fw-bold" v-else
                                         >*</span
                                     ></label
                                 >
@@ -1633,7 +1680,9 @@ export default {
                                     }"
                                     id="folios"
                                     placeholder="Ingrese folios"
-                                    :disabled="radicated"
+                                    :disabled="
+                                        radicated || loadingNumberOfPages || loadingAI
+                                    "
                                 />
 
                                 <ValidateLabel
@@ -1686,20 +1735,22 @@ export default {
                     </BCardBody>
                 </BCard>
                 <BCard no-body>
-                    <BCardHeader class="d-flex justify-content-start align-items-center">
+                    <BCardHeader
+                        class="d-flex justify-content-start align-items-center"
+                    >
                         <h5
                             class="card-title mb-0 text-muted fw-light fst-italic"
                         >
                             INFORMACIÓN DEL PETICIONARIO
                         </h5>
                         <BSpinner
-                                v-if="loadingAI"
-                                class="float-end ms-3"
-                                small
-                                v-b-tooltip.hover.top
-                                title="Extrayendo información de peticionario con IA"
-                                type="grow"
-                            />
+                            v-if="loadingAI"
+                            class="float-end ms-3"
+                            small
+                            v-b-tooltip.hover.top
+                            title="Extrayendo información de peticionario con IA"
+                            type="grow"
+                        />
                     </BCardHeader>
                     <BCardBody>
                         <BRow>
@@ -1791,7 +1842,9 @@ export default {
                                 />
                             </BCol>
                             <BCol lg="3" class="mb-3">
-                                <label for="phoneNumber" class="form-label fw-bold"
+                                <label
+                                    for="phoneNumber"
+                                    class="form-label fw-bold"
                                     >Tel. de contacto
                                     <span class="text-danger fw-bold"
                                         >*</span
@@ -1810,7 +1863,35 @@ export default {
                                     attribute="contactPhone"
                                 />
                             </BCol>
-                            <BCol lg="3" class="mb-3">
+                            <BCol
+                                lg="6"
+                                class="mb-3"
+                                v-if="showcompanyNameForm"
+                            >
+                                <label
+                                    for="companyName"
+                                    class="form-label fw-bold"
+                                    >Nombre de la compañía
+                                    <span class="text-danger fw-bold"
+                                        >*</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="form.companyName"
+                                    :disabled="radicated || loadingAI"
+                                    placeholder="Ingrese el nombre de la compañía"
+                                />
+                                <ValidateLabel
+                                    v-bind="{ v$ }"
+                                    attribute="companyName"
+                                />
+                            </BCol>
+                            <BCol
+                                :lg="showcompanyNameForm ? '6' : '3'"
+                                class="mb-3"
+                            >
                                 <label for="username" class="form-label fw-bold"
                                     >Nombres
                                     <span class="text-danger fw-bold"
@@ -1832,8 +1913,13 @@ export default {
                                     attribute="names"
                                 />
                             </BCol>
-                            <BCol lg="3" class="mb-3">
-                                <label for="lastNames" class="form-label fw-bold"
+                            <BCol
+                                :lg="showcompanyNameForm ? '6' : '3'"
+                                class="mb-3"
+                            >
+                                <label
+                                    for="lastNames"
+                                    class="form-label fw-bold"
                                     >Apellidos
                                     <span class="text-danger fw-bold"
                                         >*</span
@@ -1918,7 +2004,9 @@ export default {
                                                 id="place"
                                                 class="form-control"
                                                 type="text"
-                                                :disabled="radicated || loadingAI"
+                                                :disabled="
+                                                    radicated || loadingAI
+                                                "
                                                 placeholder="Ingrese la dirección"
                                                 @input="getAddress()"
                                             />
@@ -1929,7 +2017,9 @@ export default {
                                                 id="place"
                                                 class="form-control"
                                                 type="text"
-                                                :disabled="radicated || loadingAI"
+                                                :disabled="
+                                                    radicated || loadingAI
+                                                "
                                                 placeholder="Ingrese el departamento"
                                                 autocomplete="address-level1"
                                                 @input="getAddress()"
@@ -1941,7 +2031,9 @@ export default {
                                                 id="place"
                                                 class="form-control"
                                                 type="text"
-                                                :disabled="radicated || loadingAI"
+                                                :disabled="
+                                                    radicated || loadingAI
+                                                "
                                                 placeholder="Ingrese la ciudad"
                                                 autocomplete="address-level2"
                                                 @input="getAddress()"

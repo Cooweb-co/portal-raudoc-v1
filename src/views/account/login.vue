@@ -96,6 +96,7 @@ export default {
         getErrorMessage(error) {
             const errorPattern = /\(([^)]+)\)/; // Patrón para extraer el código de error entre paréntesis
             const errorCode = errorPattern.exec(error)[1];
+            console.error(errorCode);
             if (errorCode) {
                 return (
                     errorMessagesFirebase[errorCode] ||
@@ -110,12 +111,6 @@ export default {
 
 <template>
     <div class="auth-page-wrapper pt-5">
-        <!-- <div class="auth-one-bg-position auth-one-bg" id="auth-particles">
-      <div class="bg-overlay"></div>
-
-     
-    </div> -->
-
         <div class="auth-page-content">
             <BContainer>
                 <BRow>
@@ -133,9 +128,6 @@ export default {
                                     />
                                 </router-link>
                             </div>
-                            <p class="mt-3 fs-15 fw-medium">
-                                Premium Admin & Dashboard Template
-                            </p>
                         </div>
                     </BCol>
                 </BRow>
@@ -185,14 +177,14 @@ export default {
                                         </div>
 
                                         <div class="mb-3">
-                                            <!-- <div class="float-end">
+                                            <div class="float-end">
                                                 <router-link
                                                     to="/forgot-password"
-                                                    class="text-muted"
+                                                    class="text-muted text-forgot-password"
                                                     >Olvidaste
                                                     contraseña?</router-link
                                                 >
-                                            </div> -->
+                                            </div>
                                             <label
                                                 class="form-label"
                                                 for="password-input"
@@ -309,3 +301,9 @@ export default {
         </footer>
     </div>
 </template>
+
+<style lang="css" scoped>
+.text-forgot-password:hover {
+    color: #0dcaf0 !important;
+}
+</style>
