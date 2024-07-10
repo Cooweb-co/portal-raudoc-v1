@@ -1,21 +1,21 @@
 <script setup>
+import { required, email } from "@vuelidate/validators";
+import { useVuelidate } from "@vuelidate/core";
 import Multiselect from "@vueform/multiselect";
 import "@vueform/multiselect/themes/default.css";
-import { useVuelidate } from "@vuelidate/core";
-import { required, email } from "@vuelidate/validators";
 import { toast } from "vue3-toastify";
 // import ValidateLabel from "@/utils/ValidateLabel.vue";
 import { ref, reactive, watch, defineProps, computed } from "vue";
-import axios from "axios";
 import { FileTextIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
 import { Editor } from "@camilo__lp/custom-editor-vue3";
+import axios from "axios";
 
-import { state } from "@/state/modules/auth";
 import { getUserRoleByName } from "@/services/docservice/doc.service";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
 import { setTracking } from "@/helpers/tracking";
-import setIdRole from "@/helpers/setIdRole";
 import capitalizedText from "@/helpers/capitalizedText";
+import setIdRole from "@/helpers/setIdRole";
+import { state } from "@/state/modules/auth";
 
 const editorSettings = {
     placeholder: "Escribe acá la respuesta para el ciudadano.",
@@ -122,12 +122,12 @@ const uploadFile = async () => {
             });
             return;
         }
-        // else if (files.value.length <= 0) {
-        //     toast.error("No has subido ningún archivo", {
-        //         autoClose: 1000,
-        //     });
-        //     return;
-        // }
+        else if (files.value.length <= 0) {
+            toast.error("No has subido ningún archivo", {
+                autoClose: 1000,
+            });
+            return;
+        }
         loadingFile.value = true;
         // Carga el pdf para agregar el QR
         const pdfBlob = await createPDF();
@@ -143,42 +143,6 @@ const uploadFile = async () => {
             );
             files.value = [pdfFile, ...files.value];
         }
-
-        // Envía el archivo a la API para colocarle el QR
-        const headersAddQR = {
-            "Content-Type": "multipart/form-data",
-        };
-
-        const bodyFormDataAddQR = new FormData();
-
-        bodyFormDataAddQR.append("uid", props?.data?.id);
-        bodyFormDataAddQR.append("company", company);
-        bodyFormDataAddQR.append(
-            "file",
-            files.value[0],
-            files.value[0]?.name || "pdfWithQR.pdf"
-        );
-
-        let config = {
-            method: "post",
-            maxBodyLength: Infinity,
-            url: `${process.env.VUE_APP_CF_BASE_URL}/doc`,
-            headers: headersAddQR,
-            data: bodyFormDataAddQR,
-            responseType: "blob",
-        };
-
-        const blob = (await axios.request(config))?.data;
-        const file = new File(
-            [new Blob([blob], { type: "application/pdf" })],
-            files.value[0]?.name || "pdfWithQR.pdf",
-            {
-                type: "application/pdf",
-            }
-        );
-
-        files.value[0] = file;
-
         // Carga los archivos para respuesta
 
         const headersGenerateRadicateOut = {
@@ -195,8 +159,9 @@ const uploadFile = async () => {
             bodyFormDataGenerateRadicateOut.append("files", file);
         }
 
+
         const resGenerateRadicateOut = await axios.post(
-            `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_GENERATE_RADICATE_OUT`,
+            `${process.env.VUE_APP_CF_BASE_URL}/claim/radicate-out`,
             bodyFormDataGenerateRadicateOut,
             {
                 headers: headersGenerateRadicateOut,
