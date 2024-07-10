@@ -60,16 +60,6 @@ export default [
     component: () => import("../views/account/forgot-password.vue"),
     meta: {
       title: "Forgot Password",
-      beforeResolve(routeTo, routeFrom, next) {
-        // If the user is already logged in
-        if (store.getters["auth/loggedIn"]) {
-          // Redirect to the home page instead
-          next({ name: "default" });
-        } else {
-          // Continue to the login page
-          next();
-        }
-      },
     },
   },
   {

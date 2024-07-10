@@ -765,26 +765,20 @@ onMounted(() => {
                             <span class="align-middle"> Ayuda</span>
                         </router-link>
                         <div class="dropdown-divider"></div>
-                        <!-- <router-link class="dropdown-item" to="/pages/profile"><i
-                class="mdi mdi-wallet text-muted fs-16 align-middle me-1"></i>
-              <span class="align-middle"> Balance : <b>$5971.67</b></span>
-            </router-link> -->
-                        <!-- <router-link class="dropdown-item" to="/pages/profile-setting">
-              <BBadge variant="success-subtle" class="bg-success-subtle text-success mt-1 float-end">New</BBadge>
-                <i
-                class="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i>
-              <span class="align-middle"> Configuración</span>
-            </router-link> -->
-                        <!-- <router-link class="dropdown-item" to="/auth/lockscreen-basic"><i
-                class="mdi mdi-lock text-muted fs-16 align-middle me-1"></i>
-              <span class="align-middle"> Bloquear Pantalla</span>
-            </router-link> -->
+                        <router-link class="dropdown-item" to="/forgot-password"
+                            ><i
+                                class="mdi mdi-lock-reset text-muted fs-16 align-middle me-1"
+                            ></i>
+                            <span class="align-middle" data-key="t-logout">
+                                Cambiar contraseña</span
+                            >
+                        </router-link>
                         <router-link class="dropdown-item" to="/logout"
                             ><i
                                 class="mdi mdi-logout text-muted fs-16 align-middle me-1"
                             ></i>
                             <span class="align-middle" data-key="t-logout">
-                                Cerrar Sesión</span
+                                Cerrar sesión</span
                             >
                         </router-link>
                     </BDropdown>

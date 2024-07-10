@@ -1,18 +1,16 @@
 <script setup>
+import { required, email } from "@vuelidate/validators";
+import { useVuelidate } from "@vuelidate/core";
 import Multiselect from "@vueform/multiselect";
 import "@vueform/multiselect/themes/default.css";
-import { useVuelidate } from "@vuelidate/core";
-import { required, email } from "@vuelidate/validators";
 import { toast } from "vue3-toastify";
 // import ValidateLabel from "@/utils/ValidateLabel.vue";
 import { ref, reactive, watch, defineProps, computed } from "vue";
-import axios from "axios";
 import { FileTextIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
 import { Editor } from "@camilo__lp/custom-editor-vue3";
 import { getUserRoleByName } from "@/services/docservice/doc.service";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
 import { setTracking } from "@/helpers/tracking";
-import setIdRole from "@/helpers/setIdRole";
 import capitalizedText from "@/helpers/capitalizedText";
 import { useAuth } from "../../../../store/auth";
 import { storeToRefs } from "pinia";
@@ -37,7 +35,6 @@ const secondAddressee = ref(false);
 const documentNumber = ref("Número de radicado");
 const maxSize = 10000000;
 const company = "BAQVERDE";
-const pathname = window.location.pathname.split("/");
 
 const selectedFile = async () => {
     const newFiles = document.getElementById("formFile").files;
@@ -87,7 +84,7 @@ const form = reactive({
     typeOfDocument: "",
     numberOfDocument: "",
     email: "",
-    // company: "", //Opcional
+    company: "", //Opcional
     address: "",
     city: "",
     subject: "",
@@ -104,7 +101,7 @@ const rules = {
     copyName: {},
     typeOfDocument: { required },
     numberOfDocument: { required },
-    // company: {}, //Opcional
+    companyName: props?.data?.personType === "Jurídica" ? { required } : {},
     email: { required, email },
     address: { required },
     city: { required },
@@ -126,14 +123,14 @@ const uploadFile = async () => {
             });
             return;
         }
-        // else if (files.value.length <= 0) {
-        //     toast.error("No has subido ningún archivo", {
-        //         autoClose: 1000,
-        //     });
-        //     return;
-        // }
+        else if (files.value.length <= 0) {
+            toast.error("No has subido ningún archivo", {
+                autoClose: 1000,
+            });
+            return;
+        }
         loadingFile.value = true;
-        // Upload first file for add it QR
+        // Carga el pdf para agregar el QR
         const pdfBlob = await createPDF();
         if (pdfBlob) {
             const pdfFile = new File(
@@ -147,51 +144,7 @@ const uploadFile = async () => {
             );
             files.value = [pdfFile, ...files.value];
         }
-        const date = transformTimeStampToDate(
-            props?.data?.rawEntryDate,
-            "DD/MM/YYYY HH:mm:ss"
-        );
-        const headersAddQR = {
-            "Content-Type": "multipart/form-data",
-        };
-
-        const bodyFormDataAddQR = new FormData();
-        bodyFormDataAddQR.append(
-            "url",
-            `${process.env.VUE_APP_URLPAGE}/r/${company}/${
-                pathname[pathname.length - 1]
-            }`
-        );
-
-        bodyFormDataAddQR.append("codeRadicate", props?.data?.numberEntryClaim);
-        bodyFormDataAddQR.append("dateRadicate", date);
-        bodyFormDataAddQR.append(
-            "file",
-            files.value[0],
-            files.value[0]?.name || "pdfWithQR.pdf"
-        );
-
-        let config = {
-            method: "post",
-            maxBodyLength: Infinity,
-            url: `${process.env.VUE_APP_CF_BASE_URL}/ADD_QR_IN_PDF`,
-            headers: headersAddQR,
-            data: bodyFormDataAddQR,
-            responseType: "blob",
-        };
-
-        const blob = (await axios.request(config))?.data;
-        const file = new File(
-            [new Blob([blob], { type: "application/pdf" })],
-            files.value[0]?.name || "pdfWithQR.pdf",
-            {
-                type: "application/pdf",
-            }
-        );
-
-        files.value[0] = file;
-
-        // Upload files for response
+        // Carga los archivos para respuesta
 
         const headersGenerateRadicateOut = {
             company: "BAQVERDE",
@@ -207,8 +160,9 @@ const uploadFile = async () => {
             bodyFormDataGenerateRadicateOut.append("files", file);
         }
 
+
         const resGenerateRadicateOut = await axios.post(
-            `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_GENERATE_RADICATE_OUT`,
+            `${process.env.VUE_APP_CF_BASE_URL}/claim/radicate-out`,
             bodyFormDataGenerateRadicateOut,
             {
                 headers: headersGenerateRadicateOut,
@@ -224,11 +178,15 @@ const uploadFile = async () => {
             [
                 { name: "Area", value: form.senderArea },
                 { name: "Cargo", value: form.position },
-                { name: "Comentarios", value: "Documento respondido exitosamente" },
+                {
+                    name: "Comentarios",
+                    value: "Documento respondido exitosamente",
+                },
             ],
             "Respondido",
             true
         );
+        // Definen el tracking
         await setTracking(
             props.data?.id,
             company,
@@ -253,7 +211,7 @@ const uploadFile = async () => {
         });
     }
 };
-
+//Servicio para enviar el archivo al usuario
 const sendFile = async () => {
     try {
         loadingSendFile.value = true;
@@ -311,7 +269,7 @@ const sendFile = async () => {
         console.error(error);
     }
 };
-
+//Crea el pdf
 const createPDF = async () => {
     v$.value.$touch();
     if (v$.value.$invalid) {
@@ -321,6 +279,7 @@ const createPDF = async () => {
         entryDate: form.entryDate,
         name: form.name,
         copyName: form.copyName,
+        companyName: form.companyName || null,
         typeOfDocument: form.typeOfDocument,
         numberOfDocument: form.numberOfDocument,
         email: form.email,
@@ -420,6 +379,7 @@ watch(
         form.senderArea = capitalizedText(currentValue.area) || "";
         if (currentValue.personType.toUpperCase() == "JURÍDICA")
             showInputCompany.value = true;
+        form.companyName = currentValue.companyName || "";
         if (
             currentValue.numberOutClaim ||
             currentValue.status == "No requiere respuesta"
@@ -576,6 +536,41 @@ watch(
                                 </BCol>
                             </BCol>
                             <BCol lg="4">
+                                <BCol
+                                    lg="12"
+                                    class="mb-3"
+                                    v-if="data.personType === 'Jurídica'"
+                                >
+                                    <label for="name" class="form-label fw-bold"
+                                        >Nombre de la empresa del
+                                        destinatario <span
+                                            class="text-danger fw-bold"
+                                            >*</span
+                                        >
+                                    </label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        v-model="form.companyName"
+                                        id="companyName"
+                                        :required="true"
+                                        placeholder="Ingrese el nombre de la empresa del destinatario"
+                                    />
+                                    <!-- <div v-if="data?.companyName">
+                                        <span
+                                        v-if="v$?.$invalid"
+                                        class="text-danger"
+                                    >
+                                        <span
+                                            v-if="
+                                                v$?.companyName?.required
+                                                    ?.$invalid
+                                            "
+                                            >Este campo es obligatorio</span
+                                        >
+                                    </span>
+                                    </div> -->
+                                </BCol>
                                 <BCol lg="12">
                                     <label for="name" class="form-label fw-bold"
                                         >Destinatario
