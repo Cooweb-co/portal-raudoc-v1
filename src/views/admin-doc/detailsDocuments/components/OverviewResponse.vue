@@ -8,20 +8,23 @@ import { toast } from "vue3-toastify";
 import { ref, reactive, watch, defineProps, computed } from "vue";
 import { FileTextIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
 import { Editor } from "@camilo__lp/custom-editor-vue3";
-import axios from "axios";
-
 import { getUserRoleByName } from "@/services/docservice/doc.service";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
 import { setTracking } from "@/helpers/tracking";
 import capitalizedText from "@/helpers/capitalizedText";
+import { useAuth } from "../../../../store/auth";
+import { storeToRefs } from "pinia";
+import axios from "axios";
 import setIdRole from "@/helpers/setIdRole";
-import { state } from "@/state/modules/auth";
 
 const editorSettings = {
     placeholder: "Escribe acá la respuesta para el ciudadano.",
 };
 
-const user = JSON.parse(state.currentUserInfo);
+const authStore = useAuth()
+
+const { currentUserInfo } = storeToRefs(authStore)  
+const user = currentUserInfo.value;
 const props = defineProps(["loading", "data"]);
 const files = ref([]);
 const dropzone = ref(false);

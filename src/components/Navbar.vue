@@ -1,8 +1,9 @@
 <script setup>
+import { useAuth } from '../store/auth.js'
 import { ref, computed, onMounted } from "vue";
 // import { layoutMethods } from '@/state/helpers';
-import { state } from "../state/modules/auth";
 import { BButton } from "bootstrap-vue-next";
+import { storeToRefs } from 'pinia';
 // import i18n from '../i18n';
 
 // import Notification from "@/components/NavbarNotification";
@@ -33,6 +34,9 @@ import { BButton } from "bootstrap-vue-next";
 //   // Otras entradas del array de idiomas...
 // ]);
 
+const authStore = useAuth() 
+
+const { currentUserInfo } = storeToRefs(authStore)
 // const lan = ref(i18n.locale);
 // const text = ref(null);
 const flag = ref(null);
@@ -43,9 +47,7 @@ const flag = ref(null);
 //   return cartItems.value.reduce((total, item) => total + parseFloat(item.itemPrice), 0).toFixed(2);
 // });
 
-const user = computed(() => {
-    return JSON.parse(state.currentUserInfo);
-});
+const user = computed(() => currentUserInfo.value);
 
 const name = computed(() => {
     const namesToArray = user?.value?.name?.split(" ");

@@ -6,6 +6,7 @@ import 'aos/dist/aos.css';
 import i18n from './i18n';
 import store from "./state/store";
 import Antd from 'ant-design-vue';
+import { createPinia } from 'pinia';
 
 import BootstrapVueNext from 'bootstrap-vue-next';
 import vClickOutside from "click-outside-vue3";
@@ -61,8 +62,10 @@ AOS.init({
     duration: 1000
 });
 
+const pinia = createPinia()
 const app = createApp(App)
 
+app.use(pinia)
 app.use(  Vue3Toasity,
     {
       autoClose: 3000,

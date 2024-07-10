@@ -1,17 +1,21 @@
 <script>
 import { CountTo } from "vue3-count-to";
 import { ref, onMounted } from "vue";
-import { state } from "@/state/modules/auth";
 import axios from "axios";
 
 import getChartColorsArray from "@/common/getChartColorsArray";
+import { useAuth } from "../../../store/auth";
+import { storeToRefs } from "pinia";
 
 export default {
   components: {
     CountTo
   },
   setup() {
-    const user = ref(JSON.parse(state.currentUserInfo));
+    const authStore = useAuth()
+
+    const { currentUserInfo } = storeToRefs(authStore)
+    const user = ref(currentUserInfo.value);
     const loading = ref(false)
     const projectsWidgets = ref();
 
