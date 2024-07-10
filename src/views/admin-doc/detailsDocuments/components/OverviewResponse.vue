@@ -14,6 +14,8 @@ import { setTracking } from "@/helpers/tracking";
 import capitalizedText from "@/helpers/capitalizedText";
 import { useAuth } from "../../../../store/auth";
 import { storeToRefs } from "pinia";
+import axios from "axios";
+import setIdRole from "@/helpers/setIdRole";
 
 const editorSettings = {
     placeholder: "Escribe acá la respuesta para el ciudadano.",
