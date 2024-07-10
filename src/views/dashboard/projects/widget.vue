@@ -7,10 +7,14 @@ import {
 } from "@zhuowenli/vue-feather-icons";
 import { CountTo } from "vue3-count-to";
 import { ref, onMounted } from "vue";
-import { state } from "@/state/modules/auth";
 import axios from "axios";
+import { useAuth } from "../../../store/auth";
+import { storeToRefs } from "pinia";
 
-const user = ref(JSON.parse(state.currentUserInfo));
+const authStore = useAuth()
+
+const { currentUserInfo } = storeToRefs(authStore)
+const user = ref(currentUserInfo.value);
 const loading = ref(false);
 
 const projectsWidgets = ref();

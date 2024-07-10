@@ -12,11 +12,15 @@ import { useRouter } from "vue-router";
 
 import axios from "axios";
 import { setTracking } from "@/helpers/tracking";
-import { state } from "@/state/modules/auth";
+import { useAuth } from "../../../../store/auth.js";
+import { storeToRefs } from "pinia";
 
 const router = useRouter();
+const authStore = useAuth();
 
-const user = JSON.parse(state.currentUserInfo);
+const { currentUserInfo } = storeToRefs(authStore)
+
+const user = currentUserInfo.value
 const props = defineProps({
     data: Object,
     files: Array,
