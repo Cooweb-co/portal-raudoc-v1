@@ -30,7 +30,6 @@ const setVariantState = computed(() => {
 });
 
 const transferedModal = ref(false);
-
 const company = ref("BAQVERDE");
 
 const form = ref({
@@ -80,6 +79,14 @@ async function getTrds() {
             console.error(error);
         });
 }
+
+const canTransfer = computed(() => {
+    if (
+        props.data?.numberOutClaim ||
+        props.data?.status == "No requiere respuesta"
+    ) return false;
+    return true;
+});
 
 // obtener listado de usuarios activos por areas
 async function getPeople() {
@@ -359,7 +366,7 @@ onMounted(async () => {
                                     Detalle de Radicación
                                 </h5>
                             </div>
-                            <div>
+                            <div v-if="canTransfer">
                                 <BButton
                                     variant="success"
                                     class="w-sm"
