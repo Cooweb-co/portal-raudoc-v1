@@ -9,19 +9,22 @@ import { ref, reactive, watch, defineProps, computed } from "vue";
 import axios from "axios";
 import { FileTextIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
 import { Editor } from "@camilo__lp/custom-editor-vue3";
-
-import { state } from "@/state/modules/auth";
 import { getUserRoleByName } from "@/services/docservice/doc.service";
 import { transformTimeStampToDate } from "@/helpers/transformDate";
 import { setTracking } from "@/helpers/tracking";
 import setIdRole from "@/helpers/setIdRole";
 import capitalizedText from "@/helpers/capitalizedText";
+import { useAuth } from "../../../../store/auth";
+import { storeToRefs } from "pinia";
 
 const editorSettings = {
     placeholder: "Escribe acá la respuesta para el ciudadano.",
 };
 
-const user = JSON.parse(state.currentUserInfo);
+const authStore = useAuth()
+
+const { currentUserInfo } = storeToRefs(authStore)  
+const user = currentUserInfo.value;
 const props = defineProps(["loading", "data"]);
 const files = ref([]);
 const dropzone = ref(false);
