@@ -121,12 +121,14 @@ const uploadFile = async () => {
                 autoClose: 1000,
             });
             return;
-        }
-        else if (files.value.length <= 0) {
-            toast.error("No has subido ningún archivo", {
-                autoClose: 1000,
-            });
-            return;
+        } else if (files.value.length <= 0) {
+            v$.value.$touch();
+            if (v$.value.$invalid) {
+                toast.error("No has subido ningún archivo o no ha completado el formulario", {
+                    autoClose: 1000,
+                });
+                return;
+            }
         }
         loadingFile.value = true;
         // Carga el pdf para agregar el QR
@@ -158,7 +160,6 @@ const uploadFile = async () => {
         for (const file of files.value) {
             bodyFormDataGenerateRadicateOut.append("files", file);
         }
-
 
         const resGenerateRadicateOut = await axios.post(
             `${process.env.VUE_APP_CF_BASE_URL}/claim/radicate-out`,
@@ -541,9 +542,8 @@ watch(
                                     v-if="data.personType === 'Jurídica'"
                                 >
                                     <label for="name" class="form-label fw-bold"
-                                        >Nombre de la empresa del
-                                        destinatario <span
-                                            class="text-danger fw-bold"
+                                        >Nombre de la empresa del destinatario
+                                        <span class="text-danger fw-bold"
                                             >*</span
                                         >
                                     </label>
