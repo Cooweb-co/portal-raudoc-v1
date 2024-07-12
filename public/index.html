@@ -1,17 +1,39 @@
 <!DOCTYPE html>
 <html lang="">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" href="<%= BASE_URL %>favicon.png">
-    <title><%= htmlWebpackPlugin.options.title %></title>
-  </head>
-  <body>
-    <noscript>
-      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+        <link rel="icon" href="<%= BASE_URL %>favicon.png" />
+        <meta
+            name="description"
+            content="Raudoc es un sistema de gestión documental en la web que utiliza inteligencia artificial para facilitar el manejo de documentos, radicados y solicitudes. Permite la extracción automática de datos importantes, proporciona visualización detallada y resúmenes de documentos, y facilita la respuesta y seguimiento de los mismos."
+        />
+        <!-- Open Graph Tags -->
+        <meta property="og:title" content="Raudoc - Gestión de documentos" />
+        <meta property="og:description" content="Raudoc es un sistema de gestión documental en la web que utiliza inteligencia artificial para facilitar el manejo de documentos, radicados y solicitudes. Permite la extracción automática de datos importantes, proporciona visualización detallada y resúmenes de documentos, y facilita la respuesta y seguimiento de los mismos." />
+        <meta property="og:image" content="/banner-link.png" />
+
+        <!-- Twitter Card Tags -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Raudoc - Gestión de documentos" />
+        <meta
+            name="twitter:description"
+            content="Raudoc es un sistema de gestión documental en la web que utiliza inteligencia artificial para facilitar el manejo de documentos, radicados y solicitudes. Permite la extracción automática de datos importantes, proporciona visualización detallada y resúmenes de documentos, y facilita la respuesta y seguimiento de los mismos."
+        />
+        <meta name="twitter:image" content="/banner-link.png" />
+
+        <title><%= htmlWebpackPlugin.options.title %></title>
+    </head>
+    <body>
+        <noscript>
+            <strong
+                >We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't
+                work properly without JavaScript enabled. Please enable it to
+                continue.</strong
+            >
+        </noscript>
+        <div id="app"></div>
+        <!-- built files will be auto injected -->
+    </body>
 </html>
