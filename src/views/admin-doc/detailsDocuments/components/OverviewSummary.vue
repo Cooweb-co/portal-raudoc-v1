@@ -1,18 +1,19 @@
 <script setup>
-import OverviewSummaryElement from "./OverviewSummaryElement.vue";
 import { computed, defineProps, ref, onMounted } from "vue";
+import OverviewSummaryElement from "./OverviewSummaryElement.vue";
 import Multiselect from "@vueform/multiselect";
 import ValidateLabel from "@/utils/ValidateLabel.vue";
-import { MESSAGE_REQUIRED } from "../../../../constants/rules.ts";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo.js";
+import { MESSAGE_REQUIRED } from "../../../../constants/rules.ts";
 import { useVuelidate } from "@vuelidate/core";
-// import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
-import { toast } from "vue3-toastify";
-import { useRouter } from "vue-router";
-
-import axios from "axios";
 import { setTracking } from "@/helpers/tracking";
+import { useRouter } from "vue-router";
+import { toast } from "vue3-toastify";
 import { state } from "@/state/modules/auth";
+import axios from "axios";
+import InputFile from "@/components/InputFile.vue";
+// import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
+
 
 const router = useRouter();
 
@@ -31,6 +32,7 @@ const setVariantState = computed(() => {
 
 const transferedModal = ref(false);
 const company = ref("BAQVERDE");
+const files = ref([]);
 
 const form = ref({
     // notes: '',
@@ -42,6 +44,7 @@ const form = ref({
 const trds = ref([]);
 const peopleList = ref([]);
 const isLoading = ref(false);
+
 
 const rules = {
     area: { required: MESSAGE_REQUIRED },
@@ -80,11 +83,20 @@ async function getTrds() {
         });
 }
 
+const emitFiles = (inputFiles) => {
+    files.value = [];
+    inputFiles.forEach((file) => {
+        files.value.push(file);
+    });
+    console.log(files.value);
+};
+
 const canTransfer = computed(() => {
     if (
         props.data?.numberOutClaim ||
         props.data?.status == "No requiere respuesta"
-    ) return false;
+    )
+        return false;
     return true;
 });
 
@@ -510,32 +522,6 @@ onMounted(async () => {
                                             </td>
                                             <td>{{ data.expirationDate }}</td>
                                         </tr>
-                                        <!-- <tr>
-                                        <td class="fw-medium">
-                                            Última actualización
-                                        </td>
-                                        <td>hace 14 min</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">Etiqueta</td>
-                                        <td class="hstack text-wrap gap-1">
-                                            <BBadge
-                                                variant="secondary-subtle"
-                                                class="bg-secondary-subtle text-secondary"
-                                                >Quema</BBadge
-                                            >
-                                            <BBadge
-                                                variant="secondary-subtle"
-                                                class="bg-secondary-subtle text-secondary"
-                                                >Denuencia</BBadge
-                                            >
-                                            <BBadge
-                                                variant="secondary-subtle"
-                                                class="bg-secondary-subtle text-secondary"
-                                                >Comparendo</BBadge
-                                            >
-                                        </td>
-                                    </tr> -->
                                     </tbody>
                                 </table>
                             </div>
@@ -602,12 +588,6 @@ onMounted(async () => {
         </div>
 
         <div class="body-modal px-2">
-            <!-- <div class="notes">
-                <label><strong>Anotaciones</strong></label>
-                <p class="text-muted">Registre las acciones tomadas durante su gestión </p>
-                <textarea class="form-control" v-model="v$.notes.$model"
-                    style="min-height: 120px; width: 100%;"></textarea>
-            </div> -->
             <BRow class="p-0" style="width: 100%">
                 <BCol lg="6" class="mb-3 pl-0">
                     <label
@@ -659,6 +639,7 @@ onMounted(async () => {
                     v-model="v$.comments.$model"
                     style="min-height: 120px"
                 ></textarea>
+                <InputFile @emitFiles="emitFiles" />
             </div>
         </div>
         <div class="footer-modal p-2 mt-5">
@@ -695,6 +676,21 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.drop-area {
+    height: 20vh;
+    border: 2.5px dotted;
+    border-radius: 10px;
+}
+
+.input-file {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
 .close-icon:hover {
     cursor: pointer;
 }
