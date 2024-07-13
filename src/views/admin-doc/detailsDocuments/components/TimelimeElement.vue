@@ -22,28 +22,19 @@ onMounted(() => {
 
 const actionIcon = computed(() => {
     const action = props.action.toLowerCase();
-    switch (action) {
-        case "respondido":
-            return "ri-check-line";
-        case "enviado":
-            return "ri-mail-line";
-        case "aprobado":
-            return "ri-thumb-up-line";
-        case "elaborado":
-            return "ri-attachment-2";
-        case "devolución":
-            return "ri-file-close-line";
-        case "transferido":
-            return "ri-send-plane-2-line";
-        case "asignado":
-            return "ri-user-line";
-        case "iniciado":
-            return "ri-run-line";
-        case "en gestión":
-            return "ri-time-line";
-        default:
-            return "ri-stack-line";
-    }
+    const icons = {
+        "respondido": "ri-check-line",
+        "enviado": "ri-mail-line",
+        "aprobado": "ri-thumb-up-line",
+        "elaborado": "ri-attachment-2",
+        "devolución": "ri-file-close-line",
+        "transferido": "ri-send-plane-2-line",
+        "asignado": "ri-user-line",
+        "iniciado": "ri-run-line",
+        "en gestión": "ri-time-line",
+        "default": "ri-stack-line"
+    };
+    return icons[action] || icons.default;
 });
 
 const date = computed(() => {
