@@ -88,7 +88,6 @@ const emitFiles = (inputFiles) => {
     inputFiles.forEach((file) => {
         files.value.push(file);
     });
-    console.log(files.value);
 };
 
 const canTransfer = computed(() => {
@@ -150,6 +149,7 @@ const sendDestiny = async () => {
     }
 
     try {
+        const newNameFiles = [];
         isLoading.value = true;
         const body = {
             ...form.value,
@@ -162,6 +162,27 @@ const sendDestiny = async () => {
             `${process.env.VUE_APP_CF_BASE_URL}/claim/assign-radicate`,
             body
         );
+        if(files.value.length > 0){
+            const formFileData = new FormData();
+            files.value.forEach((file) => {
+                formFileData.append("file", file);
+            });
+            const configFiles = {
+                method: "post",
+                maxBodyLength: Infinity,
+                url: `${process.env.VUE_APP_CF_BASE_URL}/claim/radicate-transfer`,
+                headers: {
+                    company: company.value,
+                    "Content-Type": "multipart/form-data",
+                },
+                params: {
+                    claimId: props.data.id,
+                },
+                data: formFileData,
+            }
+            const resFiles = await axios.request(configFiles);
+            newNameFiles.push(...resFiles.data.newNamesFile) ;
+        }
         await setTracking(
             props.data?.id,
             company.value,
@@ -174,6 +195,7 @@ const sendDestiny = async () => {
                 },
                 { name: "Nueva area", value: form.value.area },
                 { name: "Comentarios", value: form.value.comments },
+                { name: "Archivos", value: newNameFiles.length > 0 ? newNameFiles : null },
             ],
             "Transferido",
             true
