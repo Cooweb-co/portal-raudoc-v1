@@ -9,14 +9,14 @@ const maxSize = 10000000;
 const filesInput = ref([]);
 const fileInputRef = ref(null); // Referencia al input de archivos
 
-const emit = defineEmits(['emitFiles']);
+const emit = defineEmits(["emitFiles"]);
 
 const emitFiles = () => {
-  emit('emitFiles', filesInput.value);
+    emit("emitFiles", filesInput.value);
 };
 
 const saveFiles = (files) => {
-  for (let i = 0; i < files.length; i++) {
+    for (let i = 0; i < files.length; i++) {
         if (files[i].size > maxSize) {
             toast.error("El archivo supera los 10 mb", {
                 autoClose: 3000,
