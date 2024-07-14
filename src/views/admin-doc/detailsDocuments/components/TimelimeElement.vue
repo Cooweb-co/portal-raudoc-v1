@@ -95,7 +95,7 @@ const date = computed(() => {
                             :key="index"
                         >
                             <div v-if="item?.name === 'Archivos'">
-                                <div v-if="item?.value !== null">
+                                <div v-if="item.value.length > 0">
                                     <p class="col-12">
                                         {{ item?.name }}
                                     </p>
