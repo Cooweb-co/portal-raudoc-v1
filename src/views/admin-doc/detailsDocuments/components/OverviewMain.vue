@@ -4,13 +4,14 @@ import {
     getDocumentFilesUploads,
 } from "@/services/docservice/doc.service";
 import { ref, onMounted, computed, defineProps } from "vue";
-import { useRoute } from "vue-router";
-import OverviewSummary from "./OverviewSummary.vue";
 import OverviewDocuments from "./OverviewDocuments.vue";
 import OverviewResponse from "./OverviewResponse.vue";
 import OverviewTracking from "./OverviewTracking.vue";
+import OverviewSummary from "./OverviewSummary.vue";
+import { useRoute } from "vue-router";
 
 import {transformDate} from "@/helpers/transformDate";
+import filterFilesClaim from "@/helpers/filterFilesClaim";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
 // import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo";
 import setState from "@/helpers/setState";
@@ -18,8 +19,7 @@ import setState from "@/helpers/setState";
 const data = ref({});
 const id = ref("");
 const company = ref("");
-const filesEntry = ref([]);
-const filesOut = ref([]);
+const filesFiltered = ref([]);
 const entryDate = ref("");
 const expirationDate = ref("");
 const numberClaim = ref("");
@@ -98,14 +98,9 @@ onMounted(async () => {
             "No definido";
         await getDocumentFilesUploads("BAQVERDE", id.value).then((data) => {
             if (Array.isArray(data)) {
-                for (let i = 0; i < data.length; i++) {
-                    const file = data[i];
-                    if(file?.name?.includes('-out')) filesOut.value = [...filesOut.value, file]
-                    else filesEntry.value = [...filesEntry.value, file]
-                }
+                filesFiltered.value = filterFilesClaim(data, ["out", "trans"])
             } else {
-                filesOut.value = [];
-                filesEntry.value = [];
+                filesFiltered.value = [];
             }
         });
     } catch (error) {
@@ -230,17 +225,19 @@ const isClaimOut = () => {
             <BCol lg="12">
                 <BTabs variant="link" nav-class="nav-tabs-custom border-bottom-0">
                     <!-- Resumen -->
-                    <OverviewSummary :data="data" :files="filesEntry" :numberClaim="numberClaim" :loading="loading" :showPrivateClaim="showPrivateClaim"/>
+                    <OverviewSummary :data="data" :files="filesFiltered['entry']" :numberClaim="numberClaim" :loading="loading" :showPrivateClaim="showPrivateClaim"/>
 
                     <BTab title="Documentos" class="fw-semibold pt-2" v-if="isClaimOut()">
-                        <OverviewDocuments :data="data" :files="filesEntry" :loading="loading"
+                        <OverviewDocuments :data="data" :files="filesFiltered['entry']" :loading="loading"
                             :title="'Documentos de salida'" />
                     </BTab>
                     <BTab title="Documentos" class="fw-semibold pt-2" v-else>
-                        <OverviewDocuments :data="data" :files="filesEntry" :loading="loading"
+                        <OverviewDocuments :data="data" :files="filesFiltered['entry']" :loading="loading"
                             :title="'Documentos de entrada'" />
-                        <OverviewDocuments :data="data" :files="filesOut" :loading="loading"
+                        <OverviewDocuments :data="data" :files="filesFiltered['out']" :loading="loading"
                             :title="'Documentos de salida'" />
+                        <OverviewDocuments :data="data" :files="filesFiltered['trans']" :loading="loading"
+                            :title="'Documentos de transferencia'" />
 
                     </BTab>
                     <OverviewResponse :loading="loading" :data="data"

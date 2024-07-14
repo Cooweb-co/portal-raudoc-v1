@@ -32,12 +32,13 @@ const onClose = () => {
     open.value = false;
 };
 
-const goToDocument = () => {
+const goToDocument = async () => {
     const year =
         props.file?.startProccessAt?.toDate().getFullYear() ||
         props.file?.createdAt?.toDate().getFullYear();
     const path = `/Companies/BAQVERDE/${year}/Claims/${props.id}`;
-    openDocument(props.file.name, path);
+    const urlFile = await openDocument(props.file.name, path);
+    window.open(urlFile, "_blank");
 };
 </script>
 
