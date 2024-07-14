@@ -127,7 +127,7 @@ export async function openDocument(fileName, filePath) {
 
     try {
         const url = await getDownloadURL(storageRef);
-        window.open(url, "_blank");
+        return url;
     } catch (error) {
         console.error("Error al obtener URL del archivo:", error);
     }

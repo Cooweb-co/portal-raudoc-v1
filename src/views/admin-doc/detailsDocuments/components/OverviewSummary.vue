@@ -14,7 +14,6 @@ import axios from "axios";
 import InputFile from "@/components/InputFile.vue";
 // import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
 
-
 const router = useRouter();
 
 const user = JSON.parse(state.currentUserInfo);
@@ -44,7 +43,6 @@ const form = ref({
 const trds = ref([]);
 const peopleList = ref([]);
 const isLoading = ref(false);
-
 
 const rules = {
     area: { required: MESSAGE_REQUIRED },
@@ -147,9 +145,8 @@ const sendDestiny = async () => {
     if (v$.value.$invalid) {
         return;
     }
-
+    const newNameFiles = [];
     try {
-        const newNameFiles = [];
         isLoading.value = true;
         const body = {
             ...form.value,
@@ -162,7 +159,7 @@ const sendDestiny = async () => {
             `${process.env.VUE_APP_CF_BASE_URL}/claim/assign-radicate`,
             body
         );
-        if(files.value.length > 0){
+        if (files.value.length > 0) {
             const formFileData = new FormData();
             files.value.forEach((file) => {
                 formFileData.append("file", file);
@@ -176,12 +173,17 @@ const sendDestiny = async () => {
                     "Content-Type": "multipart/form-data",
                 },
                 params: {
-                    claimId: props.data.id,
+                    claimId: props?.data?.id,
                 },
                 data: formFileData,
-            }
+            };
             const resFiles = await axios.request(configFiles);
-            newNameFiles.push(...resFiles.data.newNamesFile) ;
+            const filesTracking = resFiles.data.newNamesFile;
+            await filesTracking.forEach(async (file) => {
+                newNameFiles.push({
+                    name: file.newFilename,
+                });
+            });
         }
         await setTracking(
             props.data?.id,
@@ -195,7 +197,10 @@ const sendDestiny = async () => {
                 },
                 { name: "Nueva area", value: form.value.area },
                 { name: "Comentarios", value: form.value.comments },
-                { name: "Archivos", value: newNameFiles.length > 0 ? newNameFiles : null },
+                {
+                    name: "Archivos",
+                    value: newNameFiles,
+                },
             ],
             "Transferido",
             true
