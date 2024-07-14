@@ -1,15 +1,29 @@
 export default function filterFilesClaim(files, types) {
   const filterFiles = {};
-  const matchedFiles = new Set();
+  const entryFiles = [];
 
-  // Filtrar los archivos que coinciden con los tipos especificados
+  // Inicializa los arrays para cada tipo
   types.forEach(type => {
-    filterFiles[type] = files.filter(file => file.name.includes(type)) || null;
-    filterFiles[type].forEach(file => matchedFiles.add(file));
+    filterFiles[type] = [];
   });
 
-  // Filtrar los archivos que no coinciden con ninguno de los tipos
-  filterFiles['entry'] = files.filter(file => !matchedFiles.has(file)) || null;
+  // Filtra los archivos
+  files.forEach(file => {
+    let matched = false;
+    types.forEach(type => {
+      if (file.name.includes(type)) {
+        filterFiles[type].push(file);
+        matched = true;
+      }
+    });
+    if (!matched) {
+      entryFiles.push(file);
+    }
+  });
 
+  // Agrega los archivos no coincidentes
+  filterFiles['entry'] = entryFiles;
+
+  console.log(filterFiles);
   return filterFiles;
 }
