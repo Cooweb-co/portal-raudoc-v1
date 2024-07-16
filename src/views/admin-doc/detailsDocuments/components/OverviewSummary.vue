@@ -1,17 +1,17 @@
 <script setup>
 import { computed, defineProps, ref, onMounted } from "vue";
 import OverviewSummaryElement from "./OverviewSummaryElement.vue";
-import Multiselect from "@vueform/multiselect";
-import ValidateLabel from "@/utils/ValidateLabel.vue";
-import setVariantStateInfo from "@/helpers/setVariantStateInfo.js";
 import { MESSAGE_REQUIRED } from "../../../../constants/rules.ts";
+import setVariantStateInfo from "@/helpers/setVariantStateInfo.js";
 import { useVuelidate } from "@vuelidate/core";
 import { setTracking } from "@/helpers/tracking";
 import { useRouter } from "vue-router";
+import ValidateLabel from "@/utils/ValidateLabel.vue";
+import Multiselect from "@vueform/multiselect";
+import InputFile from "@/components/InputFile.vue";
 import { toast } from "vue3-toastify";
 import { state } from "@/state/modules/auth";
 import axios from "axios";
-import InputFile from "@/components/InputFile.vue";
 // import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
 
 const router = useRouter();
@@ -91,7 +91,7 @@ const emitFiles = (inputFiles) => {
 const canTransfer = computed(() => {
     if (
         props.data?.numberOutClaim ||
-        props.data?.status == "No requiere respuesta"
+        props.data?.status == "Respondido"
     )
         return false;
     return true;
