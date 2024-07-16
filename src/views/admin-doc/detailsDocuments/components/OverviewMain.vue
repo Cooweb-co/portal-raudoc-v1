@@ -10,7 +10,7 @@ import OverviewTracking from "./OverviewTracking.vue";
 import OverviewSummary from "./OverviewSummary.vue";
 import { useRoute } from "vue-router";
 
-import {transformDate} from "@/helpers/transformDate";
+import { transformDate } from "@/helpers/transformDate";
 import filterFilesClaim from "@/helpers/filterFilesClaim";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
 // import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo";
@@ -29,9 +29,24 @@ const router = useRoute();
 const props = defineProps({
     showPrivateClaim: {
         type: Boolean,
-        required: true
-    }
-})
+        required: true,
+    },
+});
+
+const setVariantState = computed(() => {
+    return setVariantStateInfo(data.value.status);
+});
+
+const claimData = computed(() => {
+    return Object.entries(data.value).reduce((acc, [key, value]) => {
+        acc[key] = value || "No definido";
+        return acc;
+    }, {});
+});
+
+const isClaimOut = () => {
+    return numberClaim.value.startsWith("BV-") ? true : false;
+};
 
 onMounted(async () => {
     try {
@@ -40,91 +55,54 @@ onMounted(async () => {
 
         loading.value = true;
         const docData = await getDocument(company.value, id.value);
-        if (docData?.createdAt && docData?.createdAt.seconds) {
-            const formattedDate = transformDate(docData?.createdAt.seconds); // Formatear fecha
-            entryDate.value = formattedDate; // Guardar la fecha formateada
+        if (!docData) return;
+
+        if (docData.createdAt?.seconds) {
+            entryDate.value = transformDate(docData.createdAt.seconds); // Formatear fecha
         }
 
-        if (docData?.expirationDate && docData?.expirationDate.seconds) {
-            const formattedDate = transformDate(docData?.expirationDate.seconds); // Formatear fecha
-            expirationDate.value = formattedDate; // Guardar la fecha formateada
+        if (docData.expirationDate?.seconds) {
+            expirationDate.value = transformDate(
+                docData.expirationDate.seconds
+            );
         }
+
+        const { firstNames, lastNames, companyName, personType, identificationNumber, identificationType, email, phoneNumber, address } = docData?.petitionerInformation || {};
+
         data.value = {
-            id: id.value,
-            numberEntryClaim: docData?.numberEntryClaim,
-            area: docData?.area || "No definido",
-            documentaryTypologyEntry:
-                docData?.documentaryTypologyEntry || "No definido",
-            subject: docData?.subject || "No definido",
-            entryDate: entryDate.value || "No definido",
-            status: setState(docData?.status) || "No definido",
-            expirationDate: expirationDate.value || "No definido",
-            priority: docData?.priority || "No definido",
-            serie: docData?.serie || "No definido",
-            subSerie: docData?.subSerie || "No definido",
-            externalRadicate: docData?.externalRadicate || "No definido",
-            numberOutClaim: docData?.numberOutClaim,
-            assignedTo: docData?.assignedTo || "No definido",
-            folios: docData?.folios || "No definido",
-            observations: docData?.observations || "No definido",
-            inputMethod: docData?.inputMethod || "No definido",
-            summary:
-                docData?.summary?.replace("<p>", "").replace("</p>", "") ||
-                "No definido",
-            companyName: docData?.petitionerInformation?.companyName || "No definido",
-            personType:
-                docData?.petitionerInformation?.personType || "No definido",
-            identificationNumber:
-                docData?.petitionerInformation?.identificationNumber ||
-                "No definido",
-            identificationType:
-                docData?.petitionerInformation?.identificationType ||
-                "No definido",
-            fullName:
-                docData?.petitionerInformation?.firstNames +
-                " " +
-                docData?.petitionerInformation?.lastNames || "No definido",
-            email: docData?.petitionerInformation?.email || "No definido",
-            phoneNumber:
-                docData?.petitionerInformation?.phoneNumber || "No definido",
-            address: docData?.petitionerInformation?.address || "No definido",
+            ...docData,
+            entryDate: entryDate.value,
+            expirationDate: expirationDate.value,
+            summary: docData.summary?.replace("<p>", "").replace("</p>", ""),
+            status: setState(docData?.status),
             additionalInformation: docData?.additionalInformation || [],
             legalBasis: docData?.legalBasis || [],
-            rawEntryDate: docData?.createdAt
+            fullName: `${firstNames} ${lastNames}`,
+            companyName,
+            personType,
+            identificationNumber,
+            identificationType,
+            email,
+            phoneNumber,
+            address,
         };
+
         numberClaim.value =
             data.value.numberEntryClaim ||
             data.value.numberOutClaim ||
             "No definido";
-        await getDocumentFilesUploads("BAQVERDE", id.value).then((data) => {
-            if (Array.isArray(data)) {
-                filesFiltered.value = filterFilesClaim(data, ["out", "trans"])
-            } else {
-                filesFiltered.value = [];
-            }
-        });
+        const files = await getDocumentFilesUploads("BAQVERDE", id.value);
+        if (files.length > 0) {
+            filesFiltered.value = await filterFilesClaim(files, ["out", "trans"]);
+        } else {
+            filesFiltered.value = [];
+        }
     } catch (error) {
         console.error("Error viste de documentos: ", error);
     } finally {
         loading.value = false;
     }
 });
-
-const setVariantState = computed(() => {
-    return setVariantStateInfo(data.value.status);
-});
-
-const isClaimOut = () => {
-    return numberClaim.value.startsWith("BV-") ? true : false;
-};
-
-// const setVariantPriority = computed(() => {
-//     return setVariantPriorityInfo(data.value.status);
-// });
-
-// const toggleFavourite = (ele) => {
-//             ele.target.closest(".favourite-btn").classList.toggle("active");
-// }
 </script>
 
 <template>
@@ -137,82 +115,62 @@ const isClaimOut = () => {
                             <BRow class="mb-3">
                                 <BCol md>
                                     <BRow class="align-items-center g-3">
-                                        <!-- <BCol md="auto">
-                                            <div class="avatar-md">
-                                                <div class="avatar-title bg-white rounded-circle">
-                                                    <img src="@/assets/images/brands/slack.png" alt="" class="avatar-xs">
-                                                </div>
-                                            </div>
-                                        </BCol> -->
                                         <BCol md>
-                                            <a-skeleton v-if="loading" :paragraph="{ rows: 1 }" active />
+                                            <a-skeleton
+                                                v-if="loading"
+                                                :paragraph="{ rows: 1 }"
+                                                active
+                                            />
 
                                             <div v-else>
                                                 <h4 class="fw-bold">
                                                     {{ numberClaim }}
                                                     -
-                                                    {{ data.subject }}
+                                                    {{ claimData.subject }}
                                                 </h4>
-                                                <div class="hstack gap-3 flex-wrap">
+                                                <div
+                                                    class="hstack gap-3 flex-wrap"
+                                                >
                                                     <div>
-                                                        <i class="ri-building-line align-bottom me-1"></i>
-                                                        {{ data.area }}
+                                                        <i
+                                                            class="ri-building-line align-bottom me-1"
+                                                        ></i>
+                                                        {{ claimData.area }}
                                                     </div>
                                                     <div class="vr"></div>
                                                     <div>
                                                         Fecha de creación :
-                                                        <span class="fw-medium">{{
-                                                data.entryDate
-                                            }}</span>
+                                                        <span
+                                                            class="fw-medium"
+                                                            >{{
+                                                                claimData.entryDate
+                                                            }}</span
+                                                        >
                                                     </div>
                                                     <div class="vr"></div>
                                                     <div>
                                                         Fecha limite :
-                                                        <span class="fw-medium">{{
-                                                    data.expirationDate
-                                                }}</span>
+                                                        <span
+                                                            class="fw-medium"
+                                                            >{{
+                                                                claimData.expirationDate
+                                                            }}</span
+                                                        >
                                                     </div>
                                                     <div class="vr"></div>
-                                                    <BBadge pill :variant="setVariantState
-                                                ">{{
-                                                data.status
-                                            }}</BBadge>
-                                                    <!-- <BBadge
+                                                    <BBadge
                                                         pill
-                                                        :variant="setVariantPriority"
+                                                        :variant="
+                                                            setVariantState
+                                                        "
                                                         >{{
-                                                            data.priority
+                                                            claimData.status
                                                         }}</BBadge
-                                                    > -->
+                                                    >
                                                 </div>
                                             </div>
                                         </BCol>
                                     </BRow>
-                                </BCol>
-                                <BCol md="auto">
-                                    <!-- <div class="hstack gap-1 flex-wrap">
-                                        <button
-                                            type="button"
-                                            class="btn py-0 fs-16 favourite-btn active"
-                                        >
-                                            <i
-                                                class="ri-star-fill"
-                                                @click="toggleFavourite"
-                                            ></i>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn py-0 fs-16 text-body"
-                                        >
-                                            <i class="ri-share-line"></i>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn py-0 fs-16 text-body"
-                                        >
-                                            <i class="ri-flag-line"></i>
-                                        </button>
-                                    </div> -->
                                 </BCol>
                             </BRow>
                         </BCardBody>
@@ -223,26 +181,65 @@ const isClaimOut = () => {
 
         <BRow>
             <BCol lg="12">
-                <BTabs variant="link" nav-class="nav-tabs-custom border-bottom-0">
+                <BTabs
+                    variant="link"
+                    nav-class="nav-tabs-custom border-bottom-0"
+                >
                     <!-- Resumen -->
-                    <OverviewSummary :data="data" :files="filesFiltered['entry']" :numberClaim="numberClaim" :loading="loading" :showPrivateClaim="showPrivateClaim"/>
+                    <OverviewSummary
+                        :data="claimData"
+                        :filesEntry="filesFiltered['entry']"
+                        :numberClaim="numberClaim"
+                        :loading="loading"
+                        :showPrivateClaim="showPrivateClaim"
+                    />
 
-                    <BTab title="Documentos" class="fw-semibold pt-2" v-if="isClaimOut()">
-                        <OverviewDocuments :data="data" :files="filesFiltered['entry']" :loading="loading"
-                            :title="'Documentos de salida'" />
+                    <BTab
+                        title="Documentos"
+                        class="fw-semibold pt-2"
+                        v-if="isClaimOut()"
+                    >
+                        <OverviewDocuments
+                            :data="claimData"
+                            :files="filesFiltered['entry']"
+                            :loading="loading"
+                            :title="'Documentos de salida'"
+                        />
                     </BTab>
                     <BTab title="Documentos" class="fw-semibold pt-2" v-else>
-                        <OverviewDocuments :data="data" :files="filesFiltered['entry']" :loading="loading"
-                            :title="'Documentos de entrada'" />
-                        <OverviewDocuments :data="data" :files="filesFiltered['out']" :loading="loading"
-                            :title="'Documentos de salida'" />
-                        <OverviewDocuments :data="data" :files="filesFiltered['trans']" :loading="loading"
-                            :title="'Documentos de transferencia'" />
-
+                        <OverviewDocuments
+                            :data="claimData"
+                            :files="filesFiltered['entry']"
+                            :loading="loading"
+                            :title="'Documentos de entrada'"
+                        />
+                        <OverviewDocuments
+                            :data="claimData"
+                            :files="filesFiltered['out']"
+                            :loading="loading"
+                            :title="'Documentos de salida'"
+                        />
+                        <OverviewDocuments
+                            :data="claimData"
+                            :files="filesFiltered['trans']"
+                            :loading="loading"
+                            :title="'Documentos de transferencia'"
+                        />
                     </BTab>
-                    <OverviewResponse :loading="loading" :data="data"
-                        v-if="!numberClaim.startsWith('BV-') && props.showPrivateClaim" />
-                    <OverviewTracking :data="data" :loading="loading" :numberClaim="numberClaim" :showPrivateClaim="showPrivateClaim" />
+                    <OverviewResponse
+                        :loading="loading"
+                        :data="claimData"
+                        v-if="
+                            !numberClaim.startsWith('BV-') &&
+                            props.showPrivateClaim
+                        "
+                    />
+                    <OverviewTracking
+                        :data="claimData"
+                        :loading="loading"
+                        :numberClaim="numberClaim"
+                        :showPrivateClaim="showPrivateClaim"
+                    />
                 </BTabs>
             </BCol>
         </BRow>
