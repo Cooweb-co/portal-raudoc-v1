@@ -39,15 +39,11 @@ const emitFiles = (inputFiles) => {
     });
 };
 
-
 const getDate = () => {
     // Get the current date and time in seconds
     const seconds = Math.floor(new Date().getTime() / 1000);
 
-    const formatDate = transformDate(
-        seconds,
-        "DD [de] MMMM [de] YYYY"
-    );
+    const formatDate = transformDate(seconds, "DD [de] MMMM [de] YYYY");
     return formatDate;
 };
 
@@ -89,7 +85,38 @@ const rules = {
 
 const v$ = useVuelidate(rules, form);
 
-const uploadFile = async () => {
+const fileUploadService = async (files, isFileWithQR = 1) => {
+    // Carga los archivos para respuesta
+    const FilesUploadHeader = {
+        company: "BAQVERDE",
+        "Content-Type": "multipart/form-data",
+    };
+
+    const FilesUploadParams = {
+        claimId: props.data.id,
+        isFileWithQR: isFileWithQR,
+    };
+
+    const formDataUploadFiles = new FormData();
+    if (Array.isArray(files) && files.length > 0) {
+        for (let file of files) {
+            formDataUploadFiles.append("files", file);
+        }
+    } else {
+        formDataUploadFiles.append("files", files);
+    }
+    const resGenerateRadicateOut = await axios.post(
+        `${process.env.VUE_APP_CF_BASE_URL}/claim/radicate-out`,
+        formDataUploadFiles,
+        {
+            headers: FilesUploadHeader,
+            params: FilesUploadParams,
+        }
+    );
+    return resGenerateRadicateOut;
+};
+
+const fileUpload = async () => {
     try {
         if (answered.value) {
             toast.error("Ya el radicado fue generado", {
@@ -99,9 +126,12 @@ const uploadFile = async () => {
         } else if (files.value.length <= 0) {
             v$.value.$touch();
             if (v$.value.$invalid) {
-                toast.error("No has subido ningún archivo o no ha completado el formulario", {
-                    autoClose: 1000,
-                });
+                toast.error(
+                    "No has subido ningún archivo o no ha completado el formulario",
+                    {
+                        autoClose: 1000,
+                    }
+                );
                 return;
             }
         }
@@ -122,30 +152,18 @@ const uploadFile = async () => {
         }
         // Carga los archivos para respuesta
 
-        const headersGenerateRadicateOut = {
-            company: "BAQVERDE",
-            "Content-Type": "multipart/form-data",
-        };
-
-        const paramsGenerateRadicateOut = {
-            claimId: props.data.id,
-        };
-
-        const bodyFormDataGenerateRadicateOut = new FormData();
-        for (const file of files.value) {
-            bodyFormDataGenerateRadicateOut.append("files", file);
-        }
-
-        const resGenerateRadicateOut = await axios.post(
-            `${process.env.VUE_APP_CF_BASE_URL}/claim/radicate-out`,
-            bodyFormDataGenerateRadicateOut,
-            {
-                headers: headersGenerateRadicateOut,
-                params: paramsGenerateRadicateOut,
-            }
+        const resGenerateRadicateOut = await fileUploadService(
+            files.value[0],
+            1
         );
+        if (files.value[1]) {
+            const filesUpload = files.value;
+            filesUpload.shift();
+            await fileUploadService(filesUpload, 0);
+        }
         answered.value = true;
-        documentNumber.value = resGenerateRadicateOut.data.idRadicate;
+        const { idRadicate } = resGenerateRadicateOut.data.idRadicate;
+        documentNumber.value = idRadicate;
         await setTracking(
             props.data?.id,
             company,
@@ -361,7 +379,7 @@ watch(
                             :variant="answered ? 'secondary' : 'danger'"
                             :disabled="answered ? true : false || loadingFile"
                             class="w-sm"
-                            @click="uploadFile"
+                            @click="fileUpload"
                             ><div class="button-content">
                                 <span>Generar respuesta</span>
                                 <span
@@ -846,7 +864,10 @@ watch(
                 <div class="relative">
                     <BCard no-body class="mt-3">
                         <BCardBody v-if="!answered">
-                            <InputFile @emitFiles="emitFiles" title="AGREGA ARCHIVO PARA RESPONDER AL CIUDADANO" />
+                            <InputFile
+                                @emitFiles="emitFiles"
+                                title="AGREGA ARCHIVO PARA RESPONDER AL CIUDADANO"
+                            />
                         </BCardBody>
                         <BoCardBody v-else>
                             <h3
