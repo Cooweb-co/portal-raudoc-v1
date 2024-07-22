@@ -22,20 +22,20 @@ const editorSettings = {
 
 const user = JSON.parse(state.currentUserInfo);
 const props = defineProps(["loading", "data"]);
-const files = ref([]);
-const answered = ref(false);
-const loadingFile = ref(false);
-const loadingSendFile = ref(false);
-const loadingPreview = ref(false);
-const showInputCompany = ref(false);
-const secondAddressee = ref(false);
-const documentNumber = ref("Número de radicado");
+const responseFilesList = ref([]);
+const isAnswered = ref(false);
+const isLoadingFile = ref(false);
+const isLoadingSendFile = ref(false);
+const isLoadingPreview = ref(false);
+const hasShowInputCompany = ref(false);
+const hasSecondAddressee = ref(false);
+const claimNumber = ref("Número de radicado");
 const company = "BAQVERDE";
 
 const emitFiles = (inputFiles) => {
-    files.value = [];
+    responseFilesList.value = [];
     inputFiles.forEach((file) => {
-        files.value.push(file);
+        responseFilesList.value.push(file);
     });
 };
 
@@ -118,12 +118,12 @@ const fileUploadService = async (files, isFileWithQR = 1) => {
 
 const fileUpload = async () => {
     try {
-        if (answered.value) {
+        if (isAnswered.value) {
             toast.error("Ya el radicado fue generado", {
                 autoClose: 1000,
             });
             return;
-        } else if (files.value.length <= 0) {
+        } else if (responseFilesList.value.length <= 0) {
             v$.value.$touch();
             if (v$.value.$invalid) {
                 toast.error(
@@ -135,7 +135,7 @@ const fileUpload = async () => {
                 return;
             }
         }
-        loadingFile.value = true;
+        isLoadingFile.value = true;
         // Carga el pdf para agregar el QR
         const pdfBlob = await createPDF();
         if (pdfBlob) {
@@ -148,22 +148,22 @@ const fileUpload = async () => {
                     type: "application/pdf",
                 }
             );
-            files.value = [pdfFile, ...files.value];
+            responseFilesList.value = [pdfFile, ...responseFilesList.value];
         }
         // Carga los archivos para respuesta
 
         const resGenerateRadicateOut = await fileUploadService(
-            files.value[0],
+            responseFilesList.value[0],
             1
         );
-        if (files.value[1]) {
-            const filesUpload = files.value;
+        if (responseFilesList.value[1]) {
+            const filesUpload = responseFilesList.value;
             filesUpload.shift();
             await fileUploadService(filesUpload, 0);
         }
-        answered.value = true;
+        isAnswered.value = true;
         const { idRadicate } = resGenerateRadicateOut.data.idRadicate;
-        documentNumber.value = idRadicate;
+        claimNumber.value = idRadicate;
         await setTracking(
             props.data?.id,
             company,
@@ -193,10 +193,10 @@ const fileUpload = async () => {
             closeButton: true,
             closeOnClick: true,
         });
-        loadingFile.value = false;
+        isLoadingFile.value = false;
         setTimeout(() => location.reload(), 4000);
     } catch (error) {
-        loadingFile.value = false;
+        isLoadingFile.value = false;
         console.error("Error al subir el archivo:", error);
         toast("Problemas al cargar el archivo", {
             type: "error",
@@ -208,7 +208,7 @@ const fileUpload = async () => {
 //Servicio para enviar el archivo al usuario
 const sendFile = async () => {
     try {
-        loadingSendFile.value = true;
+        isLoadingSendFile.value = true;
         const data = JSON.stringify({
             email: props.data?.email,
             numberEntryClaim: props.data?.numberEntryClaim,
@@ -225,7 +225,7 @@ const sendFile = async () => {
         };
 
         axios.request(config);
-        loadingSendFile.value = false;
+        isLoadingSendFile.value = false;
         toast("Correo enviado correctamente", {
             closeButton: true,
             type: "success",
@@ -254,7 +254,7 @@ const sendFile = async () => {
             false
         );
     } catch (error) {
-        loadingSendFile.value = false;
+        isLoadingSendFile.value = false;
         toast("Error al enviar el correo", {
             closeButton: true,
             type: "error",
@@ -307,12 +307,12 @@ const createPDF = async () => {
 
 const seeResponseClaim = async () => {
     try {
-        loadingPreview.value = true;
+        isLoadingPreview.value = true;
         const response = await createPDF();
         const pdfBlob = response;
         const pdfUrl = URL.createObjectURL(pdfBlob);
         window.open(pdfUrl);
-        loadingPreview.value = false;
+        isLoadingPreview.value = false;
     } catch (error) {
         console.error(error);
     }
@@ -341,13 +341,13 @@ watch(
         form.position = setIdRole(idRole);
         form.senderArea = capitalizedText(currentValue.area) || "";
         if (currentValue.personType.toUpperCase() == "JURÍDICA")
-            showInputCompany.value = true;
+            hasShowInputCompany.value = true;
         form.companyName = currentValue.companyName || "";
         if (
             currentValue.numberOutClaim ||
             currentValue.status == "No requiere respuesta"
         )
-            return (answered.value = true);
+            return (isAnswered.value = true);
         return;
     }
 );
@@ -363,10 +363,6 @@ watch(
 
         <main
             v-else
-            @dragover.prevent="onDragOver"
-            @dragenter.prevent="onDragEnter"
-            @dragleave.prevent="onDragLeave"
-            @drop="onFileDrop"
             class="w-100 h-100"
         >
             <section>
@@ -376,14 +372,14 @@ watch(
                     <div class="grid gx-2 mt-2 mt-sm-0">
                         <BButton
                             type="submit"
-                            :variant="answered ? 'secondary' : 'danger'"
-                            :disabled="answered ? true : false || loadingFile"
+                            :variant="isAnswered ? 'secondary' : 'danger'"
+                            :disabled="isAnswered || isLoadingFile"
                             class="w-sm"
                             @click="fileUpload"
                             ><div class="button-content">
                                 <span>Generar respuesta</span>
                                 <span
-                                    v-if="loadingFile"
+                                    v-if="isLoadingFile"
                                     class="spinner-border spinner-border-sm"
                                     role="status"
                                     aria-hidden="true"
@@ -393,14 +389,14 @@ watch(
                             type="button"
                             class="w-sm mx-2"
                             variant="success"
-                            v-if="answered"
+                            v-if="isAnswered"
                             @click="sendFile"
-                            :disabled="loadingSendFile"
+                            :disabled="isLoadingSendFile"
                         >
                             <div class="button-content">
                                 <span>Enviar al peticionario</span>
                                 <span
-                                    v-if="loadingSendFile"
+                                    v-if="isLoadingSendFile"
                                     class="spinner-border spinner-border-sm"
                                     role="status"
                                     aria-hidden="true"
@@ -414,14 +410,37 @@ watch(
                         <a-tooltip>
                             <template #title>Previsualizar respuesta</template>
                             <BButton
-                                v-if="!answered"
+                                v-if="!isAnswered"
                                 type="button"
                                 variant="info"
                                 class="w-auto mx-2 d-inline-flex align-items-center justify-content-center"
                                 @click="seeResponseClaim"
                             >
                                 <span
-                                    v-if="loadingPreview"
+                                    v-if="isLoadingPreview"
+                                    class="spinner-border spinner-border-sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                ></span>
+                                <img
+                                    v-else
+                                    src="@/assets/images/svg/overviewDocuments/eye.svg"
+                                    alt="Eye"
+                                />
+                                <!-- <EyeIcon size="22" /> -->
+                            </BButton>
+                        </a-tooltip>
+                        <a-tooltip>
+                            <template #title>Guardar respuesta</template>
+                            <BButton
+                                v-if="!isAnswered"
+                                type="button"
+                                variant="info"
+                                class="w-auto mx-2 d-inline-flex align-items-center justify-content-center"
+                                @click="seeResponseClaim"
+                            >
+                                <span
+                                    v-if="isLoadingPreview"
                                     class="spinner-border spinner-border-sm"
                                     role="status"
                                     aria-hidden="true"
@@ -438,12 +457,12 @@ watch(
                     <span class="h-100 text-center"
                         >#{{
                             !props.data.numberOutClaim
-                                ? documentNumber
+                                ? claimNumber
                                 : props.data.numberOutClaim
                         }}</span
                     >
                 </div>
-                <BCard no-body class="mt-3" v-if="!answered">
+                <BCard no-body class="mt-3" v-if="!isAnswered">
                     <BCardHeader>
                         <h6>Generador de documentos</h6>
                     </BCardHeader>
@@ -563,7 +582,7 @@ watch(
                                             >Agregar otros destinatarios</label
                                         >
                                         <input
-                                            v-model="secondAddressee"
+                                            v-model="hasSecondAddressee"
                                             class="form-check-input"
                                             type="checkbox"
                                         />
@@ -573,7 +592,7 @@ watch(
                                 <BCol
                                     lg="12"
                                     class="mb-3"
-                                    v-if="secondAddressee"
+                                    v-if="hasSecondAddressee"
                                 >
                                     <label for="name" class="form-label fw-bold"
                                         >Nombres de los otros destinatarios
@@ -702,7 +721,7 @@ watch(
                                 <!-- <BCol
                                     lg="12"
                                     class="mb-3"
-                                    v-if="showInputCompany"
+                                    v-if="hasShowInputCompany"
                                 >
                                     <label
                                         for="company"
@@ -863,7 +882,7 @@ watch(
                 </BCard>
                 <div class="relative">
                     <BCard no-body class="mt-3">
-                        <BCardBody v-if="!answered">
+                        <BCardBody v-if="!isAnswered">
                             <InputFile
                                 @emitFiles="emitFiles"
                                 title="AGREGA ARCHIVO PARA RESPONDER AL CIUDADANO"
