@@ -1,9 +1,9 @@
 import moment from "moment/moment";
 moment.locale("es");
 
-export function transformDate(data) {
+export function transformDate(data, format = "DD MMMM, YYYY") {
     const date = new Date(data * 1000); // Convertir a milisegundos
-    const formattedDate = moment(date).format("DD MMMM, YYYY");
+    const formattedDate = moment(date).format(format);
     return formattedDate;
 }
 

@@ -595,7 +595,7 @@ onMounted(async () => {
                     v-model="v$.comments.$model"
                     style="min-height: 120px"
                 ></textarea>
-                <InputFile @emitFiles="emitFiles" />
+                <InputFile @emitFiles="emitFiles" title="AGREGA ARCHIVO PARA TRANSFERIR AL USUARIO (OPCIONAL)" />
             </div>
         </div>
         <div class="footer-modal p-2 mt-5">

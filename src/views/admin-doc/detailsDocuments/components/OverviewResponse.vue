@@ -4,14 +4,13 @@ import { useVuelidate } from "@vuelidate/core";
 import Multiselect from "@vueform/multiselect";
 import "@vueform/multiselect/themes/default.css";
 import { toast } from "vue3-toastify";
-// import ValidateLabel from "@/utils/ValidateLabel.vue";
-import { ref, reactive, watch, defineProps, computed } from "vue";
-import { FileTextIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
+import InputFile from "@/components/InputFile.vue";
+import { ref, reactive, watch, defineProps } from "vue";
 import { Editor } from "@camilo__lp/custom-editor-vue3";
 import axios from "axios";
 
 import { getUserRoleByName } from "@/services/docservice/doc.service";
-import { transformTimeStampToDate } from "@/helpers/transformDate";
+import { transformDate } from "@/helpers/transformDate";
 import { setTracking } from "@/helpers/tracking";
 import capitalizedText from "@/helpers/capitalizedText";
 import setIdRole from "@/helpers/setIdRole";
@@ -24,7 +23,6 @@ const editorSettings = {
 const user = JSON.parse(state.currentUserInfo);
 const props = defineProps(["loading", "data"]);
 const files = ref([]);
-const dropzone = ref(false);
 const answered = ref(false);
 const loadingFile = ref(false);
 const loadingSendFile = ref(false);
@@ -32,45 +30,22 @@ const loadingPreview = ref(false);
 const showInputCompany = ref(false);
 const secondAddressee = ref(false);
 const documentNumber = ref("Número de radicado");
-const maxSize = 10000000;
 const company = "BAQVERDE";
 
-const selectedFile = async () => {
-    const newFiles = document.getElementById("formFile").files;
-    for (let i = 0; i < newFiles.length; i++) {
-        if (newFiles[i].size > maxSize) {
-            toast.error("El archivo supera los 10 mb", {
-                autoClose: 3000,
-            });
-        } else {
-            files.value = [...files.value, newFiles[i]];
-        }
-    }
+const emitFiles = (inputFiles) => {
+    files.value = [];
+    inputFiles.forEach((file) => {
+        files.value.push(file);
+    });
 };
 
-const classDropZone = computed(() => {
-    const styles =
-        "mt-4 w-100 d-flex flex-column justify-content-center align-items-center drop-area mb-5";
-    if (!dropzone.value) return styles + " border-secondary text-secondary";
-    return styles + " border-primary text-primary";
-});
 
 const getDate = () => {
-    // Obtener la fecha y hora actual
-    // Get the current date and time
-    const currentDate = new Date();
+    // Get the current date and time in seconds
+    const seconds = Math.floor(new Date().getTime() / 1000);
 
-    // Convert the current date to milliseconds since January 1, 1970
-    const milliseconds = currentDate.getTime();
-
-    // Convert milliseconds to seconds and nanoseconds
-    const seconds = Math.floor(milliseconds / 1000); // Convert milliseconds to seconds
-    const nanoseconds = (milliseconds % 1000) * 1000000; // Convert remaining milliseconds to nanoseconds
-
-    // Create the timestamp object
-    const timestamp = { seconds: seconds, nanoseconds: nanoseconds };
-    const formatDate = transformTimeStampToDate(
-        timestamp,
+    const formatDate = transformDate(
+        seconds,
         "DD [de] MMMM [de] YYYY"
     );
     return formatDate;
@@ -80,8 +55,8 @@ const form = reactive({
     entryDate: getDate(),
     name: "",
     copyName: "",
-    typeOfDocument: "",
-    numberOfDocument: "",
+    documentType: "",
+    documentNumber: "",
     email: "",
     company: "", //Opcional
     address: "",
@@ -98,8 +73,8 @@ const rules = {
     entryDate: { required },
     name: { required },
     copyName: {},
-    typeOfDocument: { required },
-    numberOfDocument: { required },
+    documentType: { required },
+    documentNumber: { required },
     companyName: props?.data?.personType === "Jurídica" ? { required } : {},
     email: { required, email },
     address: { required },
@@ -203,6 +178,7 @@ const uploadFile = async () => {
         loadingFile.value = false;
         setTimeout(() => location.reload(), 4000);
     } catch (error) {
+        loadingFile.value = false;
         console.error("Error al subir el archivo:", error);
         toast("Problemas al cargar el archivo", {
             type: "error",
@@ -280,8 +256,8 @@ const createPDF = async () => {
         name: form.name,
         copyName: form.copyName,
         companyName: form.companyName || null,
-        typeOfDocument: form.typeOfDocument,
-        numberOfDocument: form.numberOfDocument,
+        documentType: form.documentType,
+        documentNumber: form.documentNumber,
         email: form.email,
         address: form.address,
         city: form.city,
@@ -324,37 +300,6 @@ const seeResponseClaim = async () => {
     }
 };
 
-const deleteRecord = (name) => {
-    files.value = files.value.filter((file) => name != file.name);
-};
-
-const onDragOver = () => {
-    dropzone.value = true;
-};
-
-const onDragEnter = () => {
-    dropzone.value = true;
-};
-
-const onDragLeave = () => {
-    dropzone.value = false;
-};
-
-const onFileDrop = (event) => {
-    event.preventDefault();
-    const newFiles = event.dataTransfer.files;
-    dropzone.value = false;
-    for (let i = 0; i < newFiles.length; i++) {
-        if (newFiles[i].size > maxSize) {
-            toast.error("El archivo supera los 10 mb", {
-                autoClose: 3000,
-            });
-        } else {
-            files.value = [...files.value, newFiles[i]];
-        }
-    }
-};
-
 const decomposeAddress = (address) => {
     const addressSplit = address.split(",");
     return {
@@ -368,8 +313,8 @@ watch(
     async (currentValue) => {
         const idRole = await getUserRoleByName(company, props.data?.assignedTo);
         form.name = currentValue.fullName || "";
-        form.typeOfDocument = currentValue.identificationType || "";
-        form.numberOfDocument = currentValue.identificationNumber || "";
+        form.documentType = currentValue.identificationType || "";
+        form.documentNumber = currentValue.identificationNumber || "";
         form.email = currentValue.email || "";
         form.address = decomposeAddress(currentValue.address)?.address || "";
         form.city = decomposeAddress(currentValue.address)?.city || "";
@@ -633,7 +578,7 @@ watch(
                                         ></label
                                     >
                                     <Multiselect
-                                        v-model="form.typeOfDocument"
+                                        v-model="form.documentType"
                                         :required="true"
                                         :close-on-select="true"
                                         :searchable="true"
@@ -669,7 +614,7 @@ watch(
                                     >
                                         <span
                                             v-if="
-                                                v$.typeOfDocument.required
+                                                v$.documentType.required
                                                     .$invalid
                                             "
                                             >Este campo es obligatorio</span
@@ -687,7 +632,7 @@ watch(
                                     <input
                                         type="text"
                                         class="form-control"
-                                        v-model="form.numberOfDocument"
+                                        v-model="form.documentNumber"
                                         id="name"
                                         :required="true"
                                         placeholder="Ingrese el número del documento del destinatario"
@@ -698,7 +643,7 @@ watch(
                                     >
                                         <span
                                             v-if="
-                                                v$.numberOfDocument.required
+                                                v$.documentNumber.required
                                                     .$invalid
                                             "
                                             >Este campo es obligatorio</span
@@ -900,86 +845,8 @@ watch(
                 </BCard>
                 <div class="relative">
                     <BCard no-body class="mt-3">
-                        <BCardHeader>
-                            <h5
-                                class="card-title mb-0 text-muted fw-light fst-italic"
-                            >
-                                AGREGA ARCHIVO PARA RESPONDER AL CIUDADANO
-                            </h5>
-                        </BCardHeader>
                         <BCardBody v-if="!answered">
-                            <div>
-                                <div :class="classDropZone">
-                                    <p>
-                                        <FileTextIcon size="28" />
-                                    </p>
-                                    <span>
-                                        Arrastra el archivo para subirlo</span
-                                    >
-                                    <input
-                                        type="file"
-                                        name="formFile"
-                                        id="formFile"
-                                        multiple
-                                        class="input-file"
-                                        @change="selectedFile"
-                                    />
-                                    <label
-                                        for="formFile"
-                                        class="link-primary label-formFile"
-                                        >o Clic acá para selecciona un
-                                        archivo</label
-                                    >
-                                </div>
-                                <div class="vstack gap-2">
-                                    <div
-                                        class="border rounded"
-                                        v-for="(file, index) of files"
-                                        :key="index"
-                                    >
-                                        <div
-                                            class="d-flex align-items-center p-2"
-                                            v-if="file"
-                                        >
-                                            <div class="flex-grow-1">
-                                                <div class="pt-1">
-                                                    <h5
-                                                        class="fs-14 mb-1"
-                                                        data-dz-name=""
-                                                    >
-                                                        {{ file.name }}
-                                                    </h5>
-                                                    <p
-                                                        class="fs-13 text-muted mb-0"
-                                                        data-dz-size=""
-                                                    >
-                                                        <strong>{{
-                                                            file.size / 1024
-                                                        }}</strong>
-                                                        KB
-                                                    </p>
-                                                    <strong
-                                                        class="error text-danger"
-                                                        data-dz-errormessage=""
-                                                    ></strong>
-                                                </div>
-                                            </div>
-                                            <div class="flex-shrink-0 ms-3">
-                                                <BButton
-                                                    variant="danger"
-                                                    size="sm"
-                                                    data-dz-remove=""
-                                                    @click="
-                                                        deleteRecord(file.name)
-                                                    "
-                                                >
-                                                    <Trash2Icon />
-                                                </BButton>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <InputFile @emitFiles="emitFiles" title="AGREGA ARCHIVO PARA RESPONDER AL CIUDADANO" />
                         </BCardBody>
                         <BoCardBody v-else>
                             <h3

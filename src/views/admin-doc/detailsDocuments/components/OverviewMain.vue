@@ -13,7 +13,6 @@ import { useRoute } from "vue-router";
 import { transformDate } from "@/helpers/transformDate";
 import filterFilesClaim from "@/helpers/filterFilesClaim";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
-// import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo";
 import setState from "@/helpers/setState";
 
 const data = ref({});
@@ -71,6 +70,7 @@ onMounted(async () => {
 
         data.value = {
             ...docData,
+            id: id.value,
             entryDate: entryDate.value,
             expirationDate: expirationDate.value,
             summary: docData.summary?.replace("<p>", "").replace("</p>", ""),

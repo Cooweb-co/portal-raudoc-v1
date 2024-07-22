@@ -3,7 +3,7 @@ import { defineProps, computed, ref, onMounted } from "vue";
 import { transformCreatedAtToDate } from "@/helpers/transformDate";
 import { openDocument } from "@/services/docservice/doc.service";
 
-const phoneScreen = ref(false);
+const isPhoneScreen = ref(false);
 const urlFilesTracking = ref({});
 
 const props = defineProps({
@@ -20,7 +20,7 @@ const props = defineProps({
 
 onMounted(() => {
     window.addEventListener("resize", () => {
-        phoneScreen.value = window.innerWidth < 400;
+        isPhoneScreen.value = window.innerWidth < 400;
     });
 
     if (Array.isArray(props.content)) {
@@ -74,7 +74,7 @@ const date = computed(() => {
         </div>
         <div class="content shadow-none">
             <div class="d-flex">
-                <div :class="`flex-shrink-0 ${phoneScreen ? 'd-none' : ''}`">
+                <div :class="`flex-shrink-0 ${isPhoneScreen ? 'd-none' : ''}`">
                     <img
                         src="@/assets/images/users/user-dummy-img.jpg"
                         alt=""
