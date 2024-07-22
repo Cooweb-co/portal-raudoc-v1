@@ -1,13 +1,19 @@
 <script setup>
-import { computed, ref, defineEmits } from "vue";
+import { computed, ref, defineEmits, defineProps } from "vue";
 import { FileTextIcon, Trash2Icon } from "@zhuowenli/vue-feather-icons";
 import { toast } from "vue3-toastify";
-// import setVariantPriorityInfo from "@/helpers/setVariantPriorityInfo.js";
+
+defineProps({
+    title: {
+        type: String,
+        default: "Agregar archivo",
+    },
+});
 
 const dropzone = ref(false);
-const maxSize = 10000000;
-const filesInput = ref([]);
 const fileInputRef = ref(null); // Referencia al input de archivos
+const filesInput = ref([]);
+const maxSize = 10000000;
 
 const emit = defineEmits(["emitFiles"]);
 
@@ -80,7 +86,7 @@ const nameFile = computed(() => {
     >
         <BCardHeader>
             <h5 class="card-title mb-0 text-muted fw-light fst-italic">
-                AGREGA ARCHIVO PARA TRANSFERIR AL USUARIO (OPCIONAL)
+                {{ title }}
             </h5>
         </BCardHeader>
         <BCardBody>

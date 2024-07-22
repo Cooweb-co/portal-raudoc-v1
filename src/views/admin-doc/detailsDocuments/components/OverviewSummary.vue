@@ -19,7 +19,7 @@ const router = useRouter();
 const user = JSON.parse(state.currentUserInfo);
 const props = defineProps({
     data: Object,
-    files: Array,
+    filesEntry: Array,
     loading: Boolean,
     numberClaim: String,
     showPrivateClaim: Boolean,
@@ -364,9 +364,9 @@ onMounted(async () => {
                                 <h6 class="mb-3 fw-semibold text-uppercase">
                                     Adjuntos
                                 </h6>
-                                <BRow class="g-3" v-show="files">
+                                <BRow class="g-3" v-show="filesEntry">
                                     <OverviewSummaryElement
-                                        v-for="file in files"
+                                        v-for="file in filesEntry"
                                         :key="file.name"
                                         :id="data.id"
                                         :file="file"
@@ -374,7 +374,7 @@ onMounted(async () => {
                                 </BRow>
                                 <h6
                                     class="mb-3 fw-semibold text-uppercase"
-                                    v-show="!files"
+                                    v-show="!filesEntry"
                                 >
                                     No se adjuntaron archivos
                                 </h6>
@@ -462,81 +462,10 @@ onMounted(async () => {
                                                 Asignado a:
                                             </td>
                                             <td>
-                                                <!-- <div class="avatar-group">
-                                                <BLink
-                                                    href="javascript:void(0);"
-                                                    class="avatar-group-item"
-                                                    v-b-tooltip.hover
-                                                    title="Erica Kernan"
-                                                >
-                                                    <img
-                                                        src="@/assets/images/users/avatar-4.jpg"
-                                                        alt=""
-                                                        class="rounded-circle avatar-xs"
-                                                    />
-                                                </BLink>
-                                                <BLink
-                                                    href="javascript:void(0);"
-                                                    class="avatar-group-item"
-                                                    v-b-tooltip.hover
-                                                    title="Alexis Clarke"
-                                                >
-                                                    <img
-                                                        src="@/assets/images/users/avatar-10.jpg"
-                                                        alt=""
-                                                        class="rounded-circle avatar-xs"
-                                                    />
-                                                </BLink>
-                                                <BLink
-                                                    href="javascript:void(0);"
-                                                    class="avatar-group-item"
-                                                    v-b-tooltip.hover
-                                                    title="James Price"
-                                                >
-                                                    <img
-                                                        src="@/assets/images/users/avatar-3.jpg"
-                                                        alt=""
-                                                        class="rounded-circle avatar-xs"
-                                                    />
-                                                </BLink>
-                                                <BLink
-                                                    href="javascript: void(0);"
-                                                    class="avatar-group-item"
-                                                    v-b-tooltip.hover
-                                                    title="Add Members"
-                                                >
-                                                    <div class="avatar-xs">
-                                                        <div
-                                                            class="avatar-title fs-16 rounded-circle bg-light border-dashed border text-primary"
-                                                        >
-                                                            +
-                                                        </div>
-                                                    </div>
-                                                </BLink>
-                                            </div> -->
                                                 {{ data.assignedTo }}
                                             </td>
                                         </tr>
 
-                                        <!-- <tr>
-                                        <td class="fw-medium">Prioridad</td>
-                                        <td>
-                                            <BBadge
-                                                :variant="
-                                                    data?.priority?.toLowerCase() ==
-                                                    'alta'
-                                                        ? 'danger'
-                                                        : data?.priority?.toLowerCase() ==
-                                                              'media' ||
-                                                          data?.priority?.toLowerCase() ==
-                                                              'no definido'
-                                                        ? 'warning'
-                                                        : 'info'
-                                                "
-                                                >{{ data.priority }}</BBadge
-                                            >
-                                        </td>
-                                    </tr> -->
                                         <tr>
                                             <td class="fw-medium">
                                                 Fecha de Creación
@@ -639,7 +568,7 @@ onMounted(async () => {
                     <label
                         for="choices-privacy-status-input"
                         class="form-label fw-bold"
-                        >Seleccione el destinario</label
+                        >Seleccione el destinatario</label
                     >
                     <Multiselect
                         v-model="v$.destiny.$model"
@@ -666,7 +595,7 @@ onMounted(async () => {
                     v-model="v$.comments.$model"
                     style="min-height: 120px"
                 ></textarea>
-                <InputFile @emitFiles="emitFiles" />
+                <InputFile @emitFiles="emitFiles" title="AGREGA ARCHIVO PARA TRANSFERIR AL USUARIO (OPCIONAL)" />
             </div>
         </div>
         <div class="footer-modal p-2 mt-5">
