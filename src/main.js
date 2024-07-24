@@ -49,7 +49,8 @@ const firebaseConfig = {
     databaseURL: process.env.VUE_APP_VUE_APP_DATABASEURL,
     projectId: process.env.VUE_APP_PROJECTId,
     storageBucket: process.env.VUE_APP_STORAGEBUCKET,
-    messagingSenderId: process.env.VUE_APP_MEASUREMENTID
+    messagingSenderId: process.env.VUE_APP_MEASUREMENTID,
+    appId: process.env.VUE_APP_APPId,
 };
 
 initFirebaseBackend(firebaseConfig);

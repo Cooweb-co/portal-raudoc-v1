@@ -3,7 +3,8 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
 import { getStorage } from "firebase/storage";
-import { collection, doc, getDoc } from "firebase/firestore";
+import { arrayUnion, collection, doc, getDoc, updateDoc } from "firebase/firestore";
+import { getMessaging, getToken } from 'firebase/messaging';
 
 class FirebaseAuthBackend {
     constructor(firebaseConfig) {
@@ -23,6 +24,7 @@ class FirebaseAuthBackend {
 
             this.storage = getStorage(app);
             this.firestore = firebase.firestore();
+            this.messaging = getMessaging(app)
         }
     }
 
@@ -73,10 +75,11 @@ class FirebaseAuthBackend {
                             .firestore()
                             .collection("Users")
                             .doc(user?.uid);
-                        const doc = await refUser.get();
+
+                        const docUser = await refUser.get();
 
                         user.updateProfile({
-                            displayName: doc.get("displayName"),
+                            displayName: docUser.get("displayName")
                         });
                         user = firebase.auth().currentUser;
 
@@ -84,6 +87,33 @@ class FirebaseAuthBackend {
                             "authUser",
                             JSON.stringify(user)
                         );
+
+                        try {
+                            const permission = await Notification.requestPermission();
+                            
+                            if (permission === 'granted') {
+                                const token = await getToken(this.messaging, { vapidKey: process.env.VUE_APP_vapidkey });
+
+                                user.company = 'BAQVERDE';
+
+                                const userDocRef = doc(this.firestore, `Companies/${user.company}/Users`, user.uid);
+
+                                const userDoc = await getDoc(userDocRef);
+                            
+                                if (userDoc.exists()) {
+                                    await updateDoc(userDocRef, {
+                                        notificationToken: arrayUnion(token)
+                                    });
+                                } else {
+                                    console.log('User not exist');
+                                }
+                            } else {
+                              console.log('Permiso de notificación no concedido');
+                            }
+                          } catch (error) {
+                            console.error('Error datails:', error);
+                        }
+
                         resolve(user);
                     },
                     (error) => {
