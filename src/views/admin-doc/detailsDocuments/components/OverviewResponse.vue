@@ -27,6 +27,7 @@ const isAnswered = ref(false);
 const isLoadingFile = ref(false);
 const isLoadingSendFile = ref(false);
 const isLoadingPreview = ref(false);
+const isLoadingSave = ref(false);
 const hasShowInputCompany = ref(false);
 const hasSecondAddressee = ref(false);
 const claimNumber = ref("Número de radicado");
@@ -54,7 +55,7 @@ const form = reactive({
     documentType: "",
     documentNumber: "",
     email: "",
-    company: "", //Opcional
+    companyName: "",
     address: "",
     city: "",
     subject: "",
@@ -318,6 +319,41 @@ const seeResponseClaim = async () => {
     }
 };
 
+const saveResponseForm = async () => {
+    try {
+        v$.value.$touch();
+        if (v$.value.$invalid) {
+            toast.error(
+                "Llena todos los campos del formulario para poder guardarlo",
+                {
+                    autoClose: 3000,
+                }
+            );
+            isLoadingSave.value = false;
+            return;
+        }
+        isLoadingSave.value = true;
+        const petitionSaveData = JSON.stringify(form);
+        const petitionSaveConfig = {
+            method: "patch",
+            maxBodyLength: Infinity,
+            url: `${process.env.VUE_APP_CF_BASE_URL}/claim/citizen-response/${props.data.id}`,
+            headers: {
+                company: "BAQVERDE",
+                "Content-Type": "application/json",
+            },
+            data: petitionSaveData,
+        };
+        console.log(petitionSaveConfig)
+        const saveFormResponse = await axios.request(petitionSaveConfig);
+        console.log(saveFormResponse);
+        isLoadingSave.value = false;
+    } catch (error) {
+        isLoadingSave.value = false;
+        console.error(error);
+    }
+};
+
 const decomposeAddress = (address) => {
     const addressSplit = address.split(",");
     return {
@@ -361,15 +397,12 @@ watch(
         </template>
         <a-skeleton v-if="loading" :paragraph="{ rows: 5 }" active />
 
-        <main
-            v-else
-            class="w-100 h-100"
-        >
+        <main v-else class="w-100 h-100">
             <section>
                 <div
-                    class="d-flex justify-content-between align-items-start align-items-sm-center w-100 mt-2 flex-column-reverse flex-sm-row"
+                    class="d-flex justify-content-between w-100 mt-2 flex-column-reverse flex-sm-row"
                 >
-                    <div class="grid gx-2 mt-2 mt-sm-0">
+                    <div class="grid align-items-center gx-2 mt-2 mt-sm-0">
                         <BButton
                             type="submit"
                             :variant="isAnswered ? 'secondary' : 'danger'"
@@ -387,7 +420,7 @@ watch(
                         ></BButton>
                         <BButton
                             type="button"
-                            class="w-sm mx-2"
+                            class="w-sm ma-2"
                             variant="success"
                             v-if="isAnswered"
                             @click="sendFile"
@@ -408,35 +441,33 @@ watch(
                             </div>
                         </BButton>
                         <a-tooltip>
-                            <template #title>Previsualizar respuesta</template>
-                            <BButton
-                                v-if="!isAnswered"
-                                type="button"
-                                variant="info"
-                                class="w-auto mx-2 d-inline-flex align-items-center justify-content-center"
-                                @click="seeResponseClaim"
-                            >
-                                <span
-                                    v-if="isLoadingPreview"
-                                    class="spinner-border spinner-border-sm"
-                                    role="status"
-                                    aria-hidden="true"
-                                ></span>
-                                <img
-                                    v-else
-                                    src="@/assets/images/svg/overviewDocuments/eye.svg"
-                                    alt="Eye"
-                                />
-                                <!-- <EyeIcon size="22" /> -->
-                            </BButton>
-                        </a-tooltip>
-                        <a-tooltip>
                             <template #title>Guardar respuesta</template>
                             <BButton
                                 v-if="!isAnswered"
                                 type="button"
                                 variant="info"
-                                class="w-auto mx-2 d-inline-flex align-items-center justify-content-center"
+                                size="sm"
+                                class="w-auto h-100 ms-2 d-inline-flex align-items-center justify-content-center"
+                                @click="saveResponseForm"
+                            >
+                                <span
+                                    v-if="isLoadingSave"
+                                    class="spinner-border spinner-border-sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                ></span>
+                                <i class="ri-save-2-fill fs-5" v-else></i>
+                                <!-- <EyeIcon size="22" /> -->
+                            </BButton>
+                        </a-tooltip>
+                        <a-tooltip>
+                            <template #title>Previsualizar respuesta</template>
+                            <BButton
+                                v-if="!isAnswered"
+                                type="button"
+                                variant="info"
+                                size="sm"
+                                class="w-auto h-100 mx-2 d-inline-flex align-items-center justify-content-center"
                                 @click="seeResponseClaim"
                             >
                                 <span
@@ -445,22 +476,27 @@ watch(
                                     role="status"
                                     aria-hidden="true"
                                 ></span>
-                                <img
+                                <!-- <img
                                     v-else
                                     src="@/assets/images/svg/overviewDocuments/eye.svg"
                                     alt="Eye"
-                                />
+                                /> -->
+                                <i class="ri-eye-fill fs-5" v-else></i>
                                 <!-- <EyeIcon size="22" /> -->
                             </BButton>
                         </a-tooltip>
                     </div>
-                    <span class="h-100 text-center"
-                        >#{{
-                            !props.data.numberOutClaim
-                                ? claimNumber
-                                : props.data.numberOutClaim
-                        }}</span
+                    <div
+                        class="mh-100 d-inline-flex align-items-center"
                     >
+                        <span class="text-center"
+                            >#{{
+                                !props.data.numberOutClaim
+                                    ? claimNumber
+                                    : props.data.numberOutClaim
+                            }}</span
+                        >
+                    </div>
                 </div>
                 <BCard no-body class="mt-3" v-if="!isAnswered">
                     <BCardHeader>
