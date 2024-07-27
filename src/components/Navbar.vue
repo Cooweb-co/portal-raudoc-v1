@@ -788,7 +788,7 @@ onMounted(() => {
 
 <style scoped>
 .company-logo {
-    width: 20%;
+    width: 14%;
 }
 
 @media (max-width: 425px) {
