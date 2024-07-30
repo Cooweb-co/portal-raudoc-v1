@@ -40,6 +40,15 @@ const emitFiles = (inputFiles) => {
     });
 };
 
+const showToast = (message, type) => {
+    toast(message, {
+        type: type,
+        autoClose: 3000,
+        closeButton: true,
+        closeOnClick: true,
+    });
+};
+
 const getDate = () => {
     // Get the current date and time in seconds
     const seconds = Math.floor(new Date().getTime() / 1000);
@@ -87,7 +96,7 @@ const rules = {
 const v$ = useVuelidate(rules, form);
 
 const fileUploadService = async (files, isFileWithQR = 1) => {
-    // Carga los archivos para respuesta
+    // Upload files to the service
     const FilesUploadHeader = {
         company: "BAQVERDE",
         "Content-Type": "multipart/form-data",
@@ -95,49 +104,53 @@ const fileUploadService = async (files, isFileWithQR = 1) => {
 
     const FilesUploadParams = {
         claimId: props.data.id,
-        isFileWithQR: isFileWithQR,
+        isFileWithQR,
     };
 
     const formDataUploadFiles = new FormData();
-    if (Array.isArray(files) && files.length > 0) {
-        for (let file of files) {
-            formDataUploadFiles.append("files", file);
-        }
+    if (Array.isArray(files)) {
+        files.forEach(file => formDataUploadFiles.append("files", file));
     } else {
         formDataUploadFiles.append("files", files);
     }
-    const resGenerateRadicateOut = await axios.post(
-        `${process.env.VUE_APP_CF_BASE_URL}/claim/radicate-out`,
-        formDataUploadFiles,
-        {
+
+
+    try {
+        const configGenerateRadicateOut = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: `${process.env.VUE_APP_CF_BASE_URL}/claim/radicate-out`,
             headers: FilesUploadHeader,
             params: FilesUploadParams,
+            data: formDataUploadFiles,
         }
-    );
-    return resGenerateRadicateOut;
+        const resGenerateRadicateOut = await axios.request(configGenerateRadicateOut);
+        return resGenerateRadicateOut;
+    } catch (error) {
+        console.error("Error uploading files:", error);
+        throw error;
+    }
 };
 
 const fileUpload = async () => {
     try {
         if (isAnswered.value) {
-            toast.error("Ya el radicado fue generado", {
-                autoClose: 1000,
-            });
+            showToast("Ya el radicado fue generado", "error");
             return;
         } else if (responseFilesList.value.length <= 0) {
             v$.value.$touch();
             if (v$.value.$invalid) {
-                toast.error(
-                    "No has subido ningún archivo o no ha completado el formulario",
-                    {
-                        autoClose: 1000,
-                    }
+                showToast(
+                    "No has subido ningún archivo o no has completado el formulario",
+                    "error"
                 );
                 return;
             }
         }
+
         isLoadingFile.value = true;
-        // Carga el pdf para agregar el QR
+
+        // Upload pdf to add the QR
         const pdfBlob = await createPDF();
         if (pdfBlob) {
             const pdfFile = new File(
@@ -151,36 +164,37 @@ const fileUpload = async () => {
             );
             responseFilesList.value = [pdfFile, ...responseFilesList.value];
         }
-        // Carga los archivos para respuesta
 
+        // Upload files of response
         const resGenerateRadicateOut = await fileUploadService(
             responseFilesList.value[0],
             1
         );
-        if (responseFilesList.value[1]) {
-            const filesUpload = responseFilesList.value;
-            filesUpload.shift();
+
+        if (responseFilesList.value.length > 1) {
+            const filesUpload = responseFilesList.value.slice(1);
             await fileUploadService(filesUpload, 0);
         }
+
         isAnswered.value = true;
         const { idRadicate } = resGenerateRadicateOut.data.idRadicate;
         claimNumber.value = idRadicate;
+
+        const trackingData = [
+            { name: "Area", value: form.senderArea },
+            { name: "Cargo", value: form.position },
+            { name: "Comentarios", value: "Documento respondido exitosamente" },
+        ];
+        // Set private tracking
         await setTracking(
             props.data?.id,
             company,
             form.senderName,
-            [
-                { name: "Area", value: form.senderArea },
-                { name: "Cargo", value: form.position },
-                {
-                    name: "Comentarios",
-                    value: "Documento respondido exitosamente",
-                },
-            ],
+            trackingData,
             "Respondido",
             true
         );
-        // Definen el tracking
+        // Set public tracking
         await setTracking(
             props.data?.id,
             company,
@@ -189,63 +203,55 @@ const fileUpload = async () => {
             "Respondido",
             false
         );
-        toast("Archivo cargado con éxito", {
-            type: "success",
-            closeButton: true,
-            closeOnClick: true,
-        });
-        isLoadingFile.value = false;
-        setTimeout(() => location.reload(), 4000);
+
+        showToast("Archivo cargado con éxito", "success");
+        // setTimeout(() => location.reload(), 4000);
     } catch (error) {
-        isLoadingFile.value = false;
         console.error("Error al subir el archivo:", error);
-        toast("Problemas al cargar el archivo", {
-            type: "error",
-            closeButton: true,
-            closeOnClick: true,
-        });
+        showToast("Problemas al cargar el archivo", "error");
+    } finally {
+        isLoadingFile.value = false;
     }
 };
-//Servicio para enviar el archivo al usuario
+
+//Service to send the file to the user
 const sendFile = async () => {
+    isLoadingSendFile.value = true;
     try {
-        isLoadingSendFile.value = true;
-        const data = JSON.stringify({
+        const dataSendFile = JSON.stringify({
             email: props.data?.email,
             numberEntryClaim: props.data?.numberEntryClaim,
         });
 
-        const config = {
+        const configSendFile = {
             method: "post",
             maxBodyLength: Infinity,
             url: `${process.env.VUE_APP_CF_BASE_URL}/sendEmailResponseClaim`,
             headers: {
                 "Content-Type": "application/json",
             },
-            data: data,
+            data: dataSendFile,
         };
 
-        axios.request(config);
-        isLoadingSendFile.value = false;
-        toast("Correo enviado correctamente", {
-            closeButton: true,
-            type: "success",
-            closeOnClick: true,
-        });
+        axios.request(configSendFile);
+        showToast("Correo enviado correctamente", "success");
 
+        const trackingData = [
+            { name: "Destinatario", value: form.senderName },
+            { name: "Método de envío", value: "correo electrónico" },
+            { name: "Correo", value: props.data.email },
+            { name: "Comentario", value: "El documento fue enviado" },
+        ];
+        // Set private tracking
         await setTracking(
             props.data?.id,
             company,
             user.name,
-            [
-                { name: "Destinatario", value: form.senderName },
-                { name: "Método de envío", value: "correo electrónico" },
-                { name: "Correo", value: props.data.email },
-                { name: "Comentario", value: "El documento fue enviado" },
-            ],
+            trackingData,
             "Enviado",
             true
         );
+        // Set public tracking
         await setTracking(
             props.data?.id,
             company,
@@ -255,22 +261,25 @@ const sendFile = async () => {
             false
         );
     } catch (error) {
-        isLoadingSendFile.value = false;
-        toast("Error al enviar el correo", {
-            closeButton: true,
-            type: "error",
-            closeOnClick: true,
-        });
+        showToast("Error al enviar el correo", "error");
         console.error(error);
+    } finally {
+        isLoadingSendFile.value = false;
     }
 };
-//Crea el pdf
+
+//Function to create the pdf
 const createPDF = async () => {
     v$.value.$touch();
     if (v$.value.$invalid) {
-        return;
+        showToast(
+            "Llena todos los campos del formulario para crear el PDF",
+            "error"
+        );
+        return null;
     }
-    const data = JSON.stringify({
+
+    const dataCreatePDF = JSON.stringify({
         entryDate: form.entryDate,
         name: form.name,
         copyName: form.copyName,
@@ -287,7 +296,8 @@ const createPDF = async () => {
         senderArea: form.senderArea,
         senderCompany: form.senderCompany,
     });
-    const config = {
+
+    const configCreatePDF = {
         method: "post",
         maxBodyLength: Infinity,
         url: `${process.env.VUE_APP_CF_BASE_URL}/doc/create-response`,
@@ -296,43 +306,45 @@ const createPDF = async () => {
             "Content-Type": "application/json",
         },
         responseType: "blob",
-        data: data,
+        data: dataCreatePDF,
     };
+
     try {
-        const response = await axios.request(config);
+        const response = await axios.request(configCreatePDF);
         return response.data;
     } catch (error) {
+        showToast("Hubo un error al crear el PDF", "error");
         console.error(error);
     }
 };
 
+// Function to view the created pdf
 const seeResponseClaim = async () => {
+    isLoadingPreview.value = true;
     try {
-        isLoadingPreview.value = true;
         const response = await createPDF();
         const pdfBlob = response;
         const pdfUrl = URL.createObjectURL(pdfBlob);
         window.open(pdfUrl);
-        isLoadingPreview.value = false;
     } catch (error) {
         console.error(error);
+    } finally {
+        isLoadingPreview.value = false;
     }
 };
 
+// Function to save content of form to create PDF
 const saveResponseForm = async () => {
+    isLoadingSave.value = true;
     try {
         v$.value.$touch();
         if (v$.value.$invalid) {
-            toast.error(
+            showToast(
                 "Llena todos los campos del formulario para poder guardarlo",
-                {
-                    autoClose: 3000,
-                }
+                "error"
             );
-            isLoadingSave.value = false;
             return;
         }
-        isLoadingSave.value = true;
         const petitionSaveData = JSON.stringify(form);
         const petitionSaveConfig = {
             method: "patch",
@@ -344,16 +356,18 @@ const saveResponseForm = async () => {
             },
             data: petitionSaveData,
         };
-        console.log(petitionSaveConfig)
-        const saveFormResponse = await axios.request(petitionSaveConfig);
-        console.log(saveFormResponse);
-        isLoadingSave.value = false;
+
+        await axios.request(petitionSaveConfig);
+        showToast("¡Respuesta guardada exitosamente!", "success");
     } catch (error) {
-        isLoadingSave.value = false;
+        showToast("¡Hubo un error al guardar!", "error");
         console.error(error);
+    } finally {
+        isLoadingSave.value = false;
     }
 };
 
+// Function to break down the address and the city
 const decomposeAddress = (address) => {
     const addressSplit = address.split(",");
     return {
@@ -362,29 +376,62 @@ const decomposeAddress = (address) => {
     };
 };
 
+// Function to get address and city for separately
+const getAddressAndCity = (address) => {
+    const decomposed = decomposeAddress(address);
+    return {
+        address: decomposed?.address || "",
+        city: decomposed?.city || "",
+    };
+};
+
 watch(
     () => props.data,
     async (currentValue) => {
+        const formValue = currentValue?.citizenResponse || currentValue;
         const idRole = await getUserRoleByName(company, props.data?.assignedTo);
-        form.name = currentValue.fullName || "";
-        form.documentType = currentValue.identificationType || "";
-        form.documentNumber = currentValue.identificationNumber || "";
-        form.email = currentValue.email || "";
-        form.address = decomposeAddress(currentValue.address)?.address || "";
-        form.city = decomposeAddress(currentValue.address)?.city || "";
-        form.subject = "Res - " + currentValue.subject || "Res - ";
-        form.senderName = capitalizedText(currentValue.assignedTo) || "";
-        form.position = setIdRole(idRole);
-        form.senderArea = capitalizedText(currentValue.area) || "";
-        if (currentValue.personType.toUpperCase() == "JURÍDICA")
-            hasShowInputCompany.value = true;
-        form.companyName = currentValue.companyName || "";
+
         if (
             currentValue.numberOutClaim ||
-            currentValue.status == "No requiere respuesta"
-        )
-            return (isAnswered.value = true);
-        return;
+            currentValue.status === "No requiere respuesta"
+        ) {
+            isAnswered.value = true;
+            return;
+        }
+
+        Object.assign(form, {
+            position: formValue.position || setIdRole(idRole),
+            address:
+                formValue.address ||
+                getAddressAndCity(currentValue.address).address,
+            city:
+                formValue.city || getAddressAndCity(currentValue.address).city,
+            senderName:
+                formValue.senderName ||
+                capitalizedText(currentValue.assignedTo) ||
+                "",
+            senderArea:
+                formValue.senderArea ||
+                capitalizedText(currentValue.area) ||
+                "",
+            body: formValue.body || "",
+            subject: formValue.subject
+                ? `Res - ${formValue.subject}`
+                : "Res - ",
+            documentType:
+                formValue.documentType || formValue.identificationType || "",
+            documentNumber:
+                formValue.documentNumber ||
+                formValue.identificationNumber ||
+                "",
+            name: formValue.name || formValue.fullName || "",
+            email: formValue.email || "",
+            companyName: formValue.companyName || "",
+        });
+
+        if (formValue.personType?.toUpperCase() === "JURÍDICA") {
+            hasShowInputCompany.value = true;
+        }
     }
 );
 </script>
@@ -420,7 +467,7 @@ watch(
                         ></BButton>
                         <BButton
                             type="button"
-                            class="w-sm ma-2"
+                            class="w-sm ma-2 ms-2"
                             variant="success"
                             v-if="isAnswered"
                             @click="sendFile"
@@ -435,7 +482,7 @@ watch(
                                     aria-hidden="true"
                                 ></span>
                                 <i
-                                    class="ri-send-plane-fill align-bottom ms-1 align-bottom"
+                                    class="ri-send-plane-fill align-bottom align-bottom"
                                     v-else
                                 ></i>
                             </div>
@@ -486,9 +533,7 @@ watch(
                             </BButton>
                         </a-tooltip>
                     </div>
-                    <div
-                        class="mh-100 d-inline-flex align-items-center"
-                    >
+                    <div class="mh-100 d-inline-flex align-items-center">
                         <span class="text-center"
                             >#{{
                                 !props.data.numberOutClaim
