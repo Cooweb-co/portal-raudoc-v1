@@ -272,10 +272,6 @@ const sendFile = async () => {
 const createPDF = async () => {
     v$.value.$touch();
     if (v$.value.$invalid) {
-        showToast(
-            "Llena todos los campos del formulario para crear el PDF",
-            "error"
-        );
         return null;
     }
 
