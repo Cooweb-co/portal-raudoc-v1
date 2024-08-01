@@ -99,6 +99,7 @@ const canTransfer = computed(() => {
 
 // obtener listado de usuarios activos por areas
 async function getPeople() {
+    
     const config = {
         method: "get",
         maxBodyLength: Infinity,
