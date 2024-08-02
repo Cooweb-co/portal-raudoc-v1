@@ -205,7 +205,7 @@ const fileUpload = async () => {
         );
 
         showToast("Archivo cargado con éxito", "success");
-        // setTimeout(() => location.reload(), 4000);
+        setTimeout(() => location.reload(), 4000);
     } catch (error) {
         console.error("Error al subir el archivo:", error);
         showToast("Problemas al cargar el archivo", "error");
