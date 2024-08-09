@@ -20,6 +20,7 @@ import "flatpickr/dist/flatpickr.css";
 import { getFirebaseBackend } from "../../authUtils.js";
 import { uploadBytes, ref as storageRef } from "firebase/storage";
 import ValidateLabel from "../../utils/ValidateLabel.vue";
+import ValidateOutLabels from "../../utils/ValidateOutLabels.vue";
 import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
 import { setTracking } from "@/helpers/tracking";
 import Modal from "../modals/Modal.vue";
@@ -120,8 +121,24 @@ export default {
     };
 
     // controlador de variables relacionadas a los radicados de salida
+    const addressee = ref(false);
     const outForm = reactive({
+      subject: "",
       body: "",
+      personType: "",
+      idType: "",
+      idNumber: "",
+      names: "",
+      lastNames: "",
+      address: "",
+      phone: "",
+      email: "",
+      review_area: "",
+      review_name: "",
+      review_occupation: "",
+      sender_area: "",
+      sender_name: "",
+      sender_occupation: "",
     });
 
     // controlador de variables para el formulario de radicacion
@@ -149,6 +166,7 @@ export default {
       description: "",
       observations: "",
     });
+
     // reglas de validacion
     const rules = {
       area: { required: MESSAGE_REQUIRED },
@@ -177,11 +195,32 @@ export default {
       city: {},
     };
 
+    const outRules = {
+      subject: { required: MESSAGE_REQUIRED },
+      body: { required: MESSAGE_REQUIRED },
+      personType: { required: MESSAGE_REQUIRED },
+      idType: { required: MESSAGE_REQUIRED },
+      idNumber: { required: MESSAGE_REQUIRED },
+      names: { required: MESSAGE_REQUIRED },
+      lastNames: { required: MESSAGE_REQUIRED },
+      Address: { required: MESSAGE_REQUIRED },
+      phone: { required: MESSAGE_REQUIRED },
+      email: { required: MESSAGE_REQUIRED },
+      review_area: { required: MESSAGE_REQUIRED },
+      review_name: { required: MESSAGE_REQUIRED },
+      review_occupation: { required: MESSAGE_REQUIRED },
+      sender_area: { required: MESSAGE_REQUIRED },
+      sender_name: { required: MESSAGE_REQUIRED },
+      sender_occupation: { required: MESSAGE_REQUIRED },
+    };
+
     const editorSettings = {
       placeholder: "Escribe acá la respuesta para el ciudadano.",
     };
 
     const v$ = useVuelidate(rules, form);
+
+    const v2$ = useVuelidate(outRules, outForm);
 
     const startListening = () => {
       if (!isListeningEnabled.value) {
@@ -796,9 +835,13 @@ export default {
       canUseAI,
       editorSettings,
       outForm,
+      outRules,
+      v2$,
       Editor,
+      addressee,
     };
   },
+
   data() {
     return {
       value: ["C#", "HTML", "CSS"],
@@ -823,6 +866,7 @@ export default {
       showRadicationButton: false,
     };
   },
+
   methods: {
     async handleCreateClaimID() {
       try {
@@ -969,7 +1013,22 @@ export default {
       }
     },
 
-    async handleSaveInfo() {
+    async handleSaveInfo(section) {
+      if (section == "Out") {
+        try {
+          this.v2$.$touch();
+          if (this.v2$.$invalid) {
+            return;
+          } else {
+            this.saveLoading = true;
+            await this.handleSaveChanges();
+          }
+        } catch (error) {
+          this.saveLoading = false;
+          console.error(error);
+        }
+      }
+
       try {
         this.v$.$touch();
         if (this.v$.$invalid) {
@@ -1026,6 +1085,7 @@ export default {
       window.open(this.urlSticker, "_blank");
     },
   },
+
   async mounted() {
     setTimeout(() => {
       this.isDisabledAI = false;
@@ -1078,6 +1138,7 @@ export default {
       this.form.city = place.address_components[4].long_name;
     });
   },
+
   computed: {
     user() {
       return this.$store.state.auth.currentUser;
@@ -1086,12 +1147,14 @@ export default {
       return JSON.parse(this.$store.state.auth.currentUserInfo);
     },
   },
+
   components: {
     Layout,
     PageHeader,
     Multiselect,
     flatPickr,
     ValidateLabel,
+    ValidateOutLabels,
     Modal,
     FileTextIcon,
     // AlertOctagonIcon,
@@ -1195,7 +1258,7 @@ export default {
           type="submit"
           variant="success"
           class="w-sm"
-          @click="handleSaveInfo"
+          @click="handleSaveInfo(mode)"
           :disabled="saveLoading"
         >
           <div class="button-content">
@@ -1993,7 +2056,7 @@ export default {
     <div v-else class="w-100 h-100">
       <BRow>
         <BCol lg="8" md="12" sm="12">
-          <BCard no-body class="mt-3">
+          <BCard no-body>
             <BCardHeader>
               <h6>Generador de documentos</h6>
             </BCardHeader>
@@ -2007,19 +2070,14 @@ export default {
                     type="text"
                     class="form-control"
                     :required="true"
-                    v-model="form.subject"
+                    v-model="outForm.subject"
                     id="subject"
                     placeholder="Ingrese el asunto"
                   />
-                  <!-- <span class="text-danger">
-                    <span>Este campo es obligatorio</span>
-                  </span> -->
+                  <ValidateOutLabels v-bind="{ v2$ }" attribute="subject" />
                 </BCol>
                 <BCol lg="12" class="mt-3 h-100">
                   <div class="ck-content w-full h-100">
-                    <!-- <span class="text-danger">
-                      <span>Escribe el cuerpo del documento</span>
-                    </span> -->
                     <ckeditor
                       :editor="Editor"
                       v-model="outForm.body"
@@ -2039,261 +2097,508 @@ export default {
                 title="AGREGA ARCHIVO PARA RESPONDER AL CIUDADANO"
               />
             </BCardBody>
-            <BoCardBody>
-              <h3
-                class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
-              >
-                Radicado Generado
-              </h3>
-            </BoCardBody>
           </BCard>
         </BCol>
         <BCol lg="4" md="12" sm="12">
-          <BCard no-body class="mt-3">
-            <BCardHeader>
-              <h6>Información del destintario</h6>
-            </BCardHeader>
-            <BCardBody>
-              <BCol lg="12">
-                <label for="name" class="form-label fw-bold"
-                  >Tipo de persona
-                  <span class="text-danger fw-bold">*</span></label
+          <div class="accordion" id="accordionExample">
+            <!-- Información del destinatario -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingOne">
+                <button
+                  class="accordion-button"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseOne"
+                  aria-expanded="true"
+                  aria-controls="collapseOne"
                 >
-                <Multiselect
-                  :required="true"
-                  :close-on-select="true"
-                  :searchable="true"
-                  :create-option="true"
-                  placeholder="Seleccione"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-              <BCol lg="12" class="mt-3" >
-                <label for="name" class="form-label fw-bold"
-                  >Tipo de identificación
-                  <span class="text-danger fw-bold">*</span></label
+                  INFORMACIÓN DEL DESTINATARIO
+                </button>
+              </h2>
+              <div
+                id="collapseOne"
+                class="accordion-collapse collapse show"
+                aria-labelledby="headingOne"
+                data-bs-parent="#accordionExample"
+              >
+                <div class="accordion-body">
+                  <BCol lg="12" md="12" sm="12">
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: flex-end;
+                        gap: 10px;
+                        margin-bottom: 15px;
+                      "
+                    >
+                      <div>
+                        <label
+                          class="form-check-label"
+                          for="flexSwitchCheckChecked"
+                          >Interno</label
+                        >
+                      </div>
+                      <div class="form-check form-switch mt-1">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="flexSwitchCheckChecked"
+                          v-model="addressee"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="form-check-label"
+                          for="flexSwitchCheckChecked"
+                          >Externo</label
+                        >
+                      </div>
+                    </div>
+                  </BCol>
+                  <div v-if="addressee">
+                    <BCol lg="12">
+                      <label for="name" class="form-label fw-bold"
+                        >Tipo de persona
+                        <span class="text-danger fw-bold">*</span></label
+                      >
+                      <Multiselect
+                        :required="true"
+                        v-model="outForm.personType"
+                        :close-on-select="true"
+                        :searchable="true"
+                        :create-option="true"
+                        placeholder="Seleccione"
+                        :options="[
+                          { value: 'Natural', label: 'Natural' },
+                          {
+                            value: 'Jurídica',
+                            label: 'Jurídica',
+                          },
+                        ]"
+                      />
+                      <ValidateOutLabels
+                        v-bind="{ v2$ }"
+                        attribute="personType"
+                      />
+                    </BCol>
+                    <BCol lg="12" class="mt-3">
+                      <label for="name" class="form-label fw-bold"
+                        >Tipo de identificación
+                        <span class="text-danger fw-bold">*</span></label
+                      >
+                      <Multiselect
+                        :required="true"
+                        v-model="outForm.idType"
+                        :close-on-select="true"
+                        :searchable="true"
+                        :create-option="true"
+                        placeholder="Seleccione"
+                        :options="[
+                          { value: 'Cédula', label: 'Cédula' },
+                          {
+                            value: 'TI',
+                            label: 'TI',
+                          },
+                          {
+                            value: 'Pasaporte',
+                            label: 'Pasaporte',
+                          },
+                          {
+                            value: 'Cédula extranjería',
+                            label: 'Cédula extranjería',
+                          },
+                          {
+                            value: 'NIT',
+                            label: 'NIT',
+                          },
+                        ]"
+                      />
+                      <ValidateOutLabels v-bind="{ v2$ }" attribute="idType" />
+                    </BCol>
+                    <BCol lg="12" class="mt-3">
+                      <label for="name" class="form-label fw-bold"
+                        >Número de identificación
+                        <span class="text-danger fw-bold">*</span></label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        :required="true"
+                        placeholder="Ingrese el numero de identidicación"
+                        v-model="outForm.idNumber"
+                      />
+                      <ValidateOutLabels
+                        v-bind="{ v2$ }"
+                        attribute="idNumber"
+                      />
+                    </BCol>
+                    <BCol lg="12" class="mt-3">
+                      <label for="name" class="form-label fw-bold"
+                        >Nombres
+                        <span class="text-danger fw-bold">*</span></label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        :required="true"
+                        placeholder="Ingrese nombres"
+                        v-model="outForm.names"
+                      />
+                      <ValidateOutLabels v-bind="{ v2$ }" attribute="names" />
+                    </BCol>
+                    <BCol lg="12" class="mt-3">
+                      <label for="name" class="form-label fw-bold"
+                        >Apellidos
+                        <span class="text-danger fw-bold">*</span></label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        :required="true"
+                        placeholder="Ingrese apellidos"
+                        v-model="outForm.lastNames"
+                      />
+                      <ValidateOutLabels
+                        v-bind="{ v2$ }"
+                        attribute="lastnames"
+                      />
+                    </BCol>
+                    <BCol lg="12" class="mt-3">
+                      <label for="name" class="form-label fw-bold"
+                        >Dirección
+                        <span class="text-danger fw-bold">*</span></label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        :required="true"
+                        placeholder="Ingrese direccion"
+                        v-model="outForm.address"
+                      />
+                      <ValidateOutLabels v-bind="{ v2$ }" attribute="address" />
+                    </BCol>
+                    <BCol lg="12" class="mt-3">
+                      <label for="name" class="form-label fw-bold"
+                        >Teléfono
+                        <span class="text-danger fw-bold">*</span></label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        :required="true"
+                        placeholder="Ingrese teléfono"
+                        v-model="outForm.phone"
+                      />
+                      <ValidateOutLabels v-bind="{ v2$ }" attribute="phone" />
+                    </BCol>
+                    <BCol lg="12" class="mt-3">
+                      <label for="name" class="form-label fw-bold"
+                        >Correo electrónico
+                        <span class="text-danger fw-bold">*</span></label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        :required="true"
+                        placeholder="Ingrese correo electronico"
+                        v-model="outForm.email"
+                      />
+                      <ValidateOutLabels v-bind="{ v2$ }" attribute="email" />
+                    </BCol>
+                  </div>
+                  <div v-else>
+                    <BCol lg="12">
+                      <label for="name" class="form-label fw-bold"
+                        >Área <span class="text-danger fw-bold">*</span></label
+                      >
+                      <Multiselect
+                        :required="true"
+                        v-model="form.area"
+                        :close-on-select="true"
+                        :searchable="true"
+                        :create-option="true"
+                        placeholder="Seleccione"
+                        :options="trds"
+                      />
+                      <ValidateLabel
+                        v-bind="{ v$ }"
+                        attribute="area"
+                      />
+                    </BCol>
+                    <BCol lg="12" class="mt-3" >
+                      <label for="name" class="form-label fw-bold"
+                        >Destinatario
+                        <span class="text-danger fw-bold">*</span></label
+                      >
+                      <Multiselect
+                        :required="true"
+                        v-model="form.assignedTo"
+                        :close-on-select="true"
+                        :searchable="true"
+                        :create-option="true"
+                        placeholder="Seleccione"
+                        :options="peopleList"
+                      />
+                      <ValidateLabel
+                        v-bind="{ v$ }"
+                        attribute="assignedTo"
+                      />
+                    </BCol>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- información de documento -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingFour">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseFour"
+                  aria-expanded="false"
+                  aria-controls="collapseFour"
                 >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="name"
-                  :required="true"
-                  placeholder="Ingrese el nombre del destinatario"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-              <BCol lg="12" class="mt-3" >
-                <label for="name" class="form-label fw-bold"
-                  >Número de identificación
-                  <span class="text-danger fw-bold">*</span></label
+                  INFORMACIÓN DEL DOCUMENTO
+                </button>
+              </h2>
+              <div
+                id="collapseFour"
+                class="accordion-collapse collapse"
+                aria-labelledby="headingFour"
+                data-bs-parent="#accordionExample"
+              >
+                <div class="accordion-body">
+                  <BCol lg="12">
+                    <label for="name" class="form-label fw-bold"
+                      >Área <span class="text-danger fw-bold">*</span></label
+                    >
+                    <Multiselect
+                      :required="true"
+                      v-model="form.area"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      :options="trds"
+                    />
+                    <ValidateLabel v-bind="{ v$ }" attribute="area" />
+                  </BCol>
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold"
+                      >Serie <span class="text-danger fw-bold">*</span></label
+                    >
+                    <Multiselect
+                      :required="true"
+                      v-model="form.serie"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      :options="series"
+                    />
+                    <ValidateLabel v-bind="{ v$ }" attribute="serie" />
+                  </BCol>
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold"
+                      >Subserie
+                      <span class="text-danger fw-bold">*</span></label
+                    >
+                    <Multiselect
+                      :required="true"
+                      v-model="form.subSerie"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      :options="subseries"
+                    />
+                    <ValidateLabel v-bind="{ v$ }" attribute="subserie" />
+                  </BCol>
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold"
+                      >Tipología documental
+                      <span class="text-danger fw-bold">*</span></label
+                    >
+                    <Multiselect
+                      :required="true"
+                      v-model="form.documentType"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      :options="isDocs"
+                    />
+                    <ValidateLabel v-bind="{ v$ }" attribute="documentType" />
+                  </BCol>
+                </div>
+              </div>
+            </div>
+
+            <!-- información de remitente -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingThree">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseThree"
+                  aria-expanded="false"
+                  aria-controls="collapseThree"
                 >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="name"
-                  :required="true"
-                  placeholder="Ingrese el nombre del destinatario"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-              <BCol lg="12" class="mt-3" >
-                <label for="name" class="form-label fw-bold"
-                  >Nombres
-                  <span class="text-danger fw-bold">*</span></label
+                  INFORMACIÓN DEL REMITENTE
+                </button>
+              </h2>
+              <div
+                id="collapseThree"
+                class="accordion-collapse collapse"
+                aria-labelledby="headingThree"
+                data-bs-parent="#accordionExample"
+              >
+                <div class="accordion-body">
+                  <BCol lg="12">
+                    <label for="name" class="form-label fw-bold"
+                      >Área <span class="text-danger fw-bold">*</span></label
+                    >
+                    <Multiselect
+                      :required="true"
+                      v-model="outForm.sender_area"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      :options="trds"
+                    />
+                    <ValidateOutLabels
+                      v-bind="{ v2$ }"
+                      attribute="sender_area"
+                    />
+                  </BCol>
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold"
+                      >Nombre del remitente
+                      <span class="text-danger fw-bold">*</span></label
+                    >
+                    <Multiselect
+                      :required="true"
+                      v-model="outForm.sender_name"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                    />
+                    <ValidateOutLabels
+                      v-bind="{ v2$ }"
+                      attribute="sender_name"
+                    />
+                  </BCol>
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold"
+                      >Cargo <span class="text-danger fw-bold">*</span></label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      :required="true"
+                      placeholder="Ingrese el cargo del remitente"
+                      v-model="outForm.sender_occupation"
+                    />
+                    <ValidateOutLabels
+                      v-bind="{ v2$ }"
+                      attribute="sender_occupation"
+                    />
+                  </BCol>
+                </div>
+              </div>
+            </div>
+
+            <!-- información de revision -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingTwo">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseTwo"
+                  aria-expanded="false"
+                  aria-controls="collapseTwo"
                 >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="name"
-                  :required="true"
-                  placeholder="Ingrese el nombre del destinatario"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-              <BCol lg="12" class="mt-3" >
-                <label for="name" class="form-label fw-bold"
-                  >Apellidos
-                  <span class="text-danger fw-bold">*</span></label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="name"
-                  :required="true"
-                  placeholder="Ingrese el nombre del destinatario"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-              <BCol lg="12" class="mt-3" >
-                <label for="name" class="form-label fw-bold"
-                  >Dirección
-                  <span class="text-danger fw-bold">*</span></label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="name"
-                  :required="true"
-                  placeholder="Ingrese el nombre del destinatario"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-              <BCol lg="12" class="mt-3" >
-                <label for="name" class="form-label fw-bold"
-                  >Teléfono
-                  <span class="text-danger fw-bold">*</span></label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="name"
-                  :required="true"
-                  placeholder="Ingrese el nombre del destinatario"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-              <BCol lg="12" class="mt-3" >
-                <label for="name" class="form-label fw-bold"
-                  >Correo electrónico
-                  <span class="text-danger fw-bold">*</span></label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="name"
-                  :required="true"
-                  placeholder="Ingrese el nombre del destinatario"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-            </BCardBody>
-          </BCard>
-          <BCard no-body class="mt-3">
-            <BCardHeader>
-              <h6>Información de Revisión</h6>
-            </BCardHeader>
-            <BCardBody>
-              <BCol lg="12">
-                <label for="name" class="form-label fw-bold"
-                  >Área
-                  <span class="text-danger fw-bold">*</span></label
-                >
-                <Multiselect
-                  :required="true"
-                  :close-on-select="true"
-                  :searchable="true"
-                  :create-option="true"
-                  placeholder="Seleccione"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-              <BCol lg="12" class="mt-3" >
-                <label for="name" class="form-label fw-bold"
-                  >Nombre de quien revisa
-                  <span class="text-danger fw-bold">*</span></label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="name"
-                  :required="true"
-                  placeholder="Ingrese el nombre del destinatario"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-              <BCol lg="12" class="mt-3" >
-                <label for="name" class="form-label fw-bold"
-                  >Cargo
-                  <span class="text-danger fw-bold">*</span></label
-                >
-                <Multiselect
-                  :required="true"
-                  :close-on-select="true"
-                  :searchable="true"
-                  :create-option="true"
-                  placeholder="Seleccione"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-            </BCardBody>
-          </BCard>
-          <BCard no-body class="mt-3">
-            <BCardHeader>
-              <h6>Información del Remitente</h6>
-            </BCardHeader>
-            <BCardBody>
-              <BCol lg="12">
-                <label for="name" class="form-label fw-bold"
-                  >Área
-                  <span class="text-danger fw-bold">*</span></label
-                >
-                <Multiselect
-                  :required="true"
-                  :close-on-select="true"
-                  :searchable="true"
-                  :create-option="true"
-                  placeholder="Seleccione"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-              <BCol lg="12" class="mt-3" >
-                <label for="name" class="form-label fw-bold"
-                  >Nombre del remitente
-                  <span class="text-danger fw-bold">*</span></label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="name"
-                  :required="true"
-                  placeholder="Ingrese el nombre del destinatario"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-              <BCol lg="12" class="mt-3" >
-                <label for="name" class="form-label fw-bold"
-                  >Cargo
-                  <span class="text-danger fw-bold">*</span></label
-                >
-                <Multiselect
-                  :required="true"
-                  :close-on-select="true"
-                  :searchable="true"
-                  :create-option="true"
-                  placeholder="Seleccione"
-                />
-                <!-- <span class="text-danger">
-                  <span>Este campo es obligatorio</span>
-                </span> -->
-              </BCol>
-            </BCardBody>
-          </BCard>
+                  INFORMACIÓN DE REVISIÓN
+                </button>
+              </h2>
+              <div
+                id="collapseTwo"
+                class="accordion-collapse collapse"
+                aria-labelledby="headingTwo"
+                data-bs-parent="#accordionExample"
+              >
+                <div class="accordion-body">
+                  <BCol lg="12">
+                    <label for="name" class="form-label fw-bold"
+                      >Área <span class="text-danger fw-bold">*</span></label
+                    >
+                    <Multiselect
+                      :required="true"
+                      v-model="outForm.review_area"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      :options="trds"
+                    />
+                    <ValidateOutLabels
+                      v-bind="{ v2$ }"
+                      attribute="review_area"
+                    />
+                  </BCol>
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold"
+                      >Nombre de quien revisa
+                      <span class="text-danger fw-bold">*</span></label
+                    >
+                    <Multiselect
+                      :required="true"
+                      v-model="outForm.review_name"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                    />
+                    <ValidateOutLabels
+                      v-bind="{ v2$ }"
+                      attribute="review_name"
+                    />
+                  </BCol>
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold"
+                      >Cargo <span class="text-danger fw-bold">*</span></label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      :required="true"
+                      placeholder="Ingrese el cargo de quien revisa"
+                      v-model="outForm.review_name"
+                    />
+                    <ValidateOutLabels
+                      v-bind="{ v2$ }"
+                      attribute="review_occupation"
+                    />
+                  </BCol>
+                </div>
+              </div>
+            </div>
+          </div>
         </BCol>
       </BRow>
     </div>
