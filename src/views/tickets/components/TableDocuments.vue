@@ -7,6 +7,7 @@ import moment from "moment";
 import { transformDate } from "@/helpers/transformDate";
 import setState from "@/helpers/setState";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
+import { state as State } from "@/state/modules/auth";
 
 const dataSource = reactive([]);
 const state = reactive({
@@ -16,7 +17,7 @@ const state = reactive({
 const searchInput = ref();
 const filteredInfo = ref(null);
 const sortedInfo = ref(null);
-
+const user = JSON.parse(State.currentUserInfo);
 // let dateStart = ref(null);
 // let dateEnd = ref(null);
 // const originDataSource = ref([]);
@@ -29,7 +30,10 @@ onBeforeMount(async () => {
         "Content-Type": "application/json",
     };
     await axios
-        .get(`${process.env.VUE_APP_CF_BASE_URL}/CLAIM_LIST_V1`, { headers })
+        .get(
+            `${process.env.VUE_APP_CF_BASE_URL}/claim/role-id/?uid=${user.uid}`,
+            { headers }
+        )
         .then((response) => {
             response.data.map((data) => {
                 dataSource.push({
