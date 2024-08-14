@@ -9,6 +9,7 @@ import {
   // onMounted,
 } from "vue";
 import Multiselect from "@vueform/multiselect";
+import { transformDate } from "@/helpers/transformDate";
 import dayjs from "dayjs";
 import "@vueform/multiselect/themes/default.css";
 import useVuelidate from "@vuelidate/core";
@@ -87,6 +88,8 @@ export default {
     const isDocs = ref([]);
     const radicate = ref("");
     const peopleList = ref([]);
+    const peopleListSender = ref([]);
+    const peopleListReview = ref([]);
     const timerAI = ref([]);
     const timerExtractingInformationAI = ref(null);
     const dropzone = ref(false);
@@ -110,6 +113,7 @@ export default {
       { label: "Diagonal", value: "DG. " },
       { label: "Vía", value: "VI. " },
     ]);
+    const isLoadingPreview = ref(false);
 
     let config = {
       method: "get",
@@ -121,7 +125,7 @@ export default {
     };
 
     // controlador de variables relacionadas a los radicados de salida
-    const addressee = ref(false);
+    const isExternal = ref(false);
     const outForm = reactive({
       subject: "",
       body: "",
@@ -337,6 +341,15 @@ export default {
       } else {
         console.warn("No hay suscripción activa para desuscribirse.");
       }
+    };
+
+    const showToast = (message, type) => {
+      toast(message, {
+        type: type,
+        autoClose: 3000,
+        closeButton: true,
+        closeOnClick: true,
+      });
     };
 
     // Select files and drag and drop
@@ -597,6 +610,66 @@ export default {
         });
     }
 
+    // obtener listado de usuarios activos por area Remitente
+    async function getPeopleSender() {
+      const config = {
+        method: "get",
+        maxBodyLength: Infinity,
+        url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaIdSender.value}`,
+        headers: {
+          company: "BAQVERDE",
+        },
+      };
+      var auxPeople = [];
+      axios
+        .request(config)
+        .then((response) => {
+          response.data.forEach((element) => {
+            auxPeople.push({
+              label: element.name,
+              value: element.name,
+              area: element.area,
+              role: element.role,
+              uid: element.uid,
+            });
+          });
+          peopleListSender.value = auxPeople;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+
+    // obtener listado de usuarios activos por area Revisión
+    async function getPeopleReview() {
+      const config = {
+        method: "get",
+        maxBodyLength: Infinity,
+        url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaIdReview.value}`,
+        headers: {
+          company: "BAQVERDE",
+        },
+      };
+      var auxPeople = [];
+      axios
+        .request(config)
+        .then((response) => {
+          response.data.forEach((element) => {
+            auxPeople.push({
+              label: element.name,
+              value: element.name,
+              area: element.area,
+              role: element.role,
+              uid: element.uid,
+            });
+          });
+          peopleListReview.value = auxPeople;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+
     //obtener dias segun tipologia documental
     const getDocDays = computed(() => {
       return isDocs.value.filter((el) =>
@@ -611,9 +684,19 @@ export default {
       );
     });
 
-    //obtener dias segun tipologia documental
+    //obtener id de area
     const getAreaId = computed(() => {
       return trds.value.find((el) => el.value === form.area)?.id;
+    });
+
+    //obtener id de area para formulario de Remitente
+    const getAreaIdSender = computed(() => {
+      return trds.value.find((el) => el.value === outForm.sender_area)?.id;
+    });
+
+    //obtener id de area para formulario de Revision
+    const getAreaIdReview = computed(() => {
+      return trds.value.find((el) => el.value === outForm.review_area)?.id;
     });
 
     const stateDoc = computed(() => store.state.createDocState.stateDoc);
@@ -708,15 +791,76 @@ export default {
       await getPeople();
     }
 
-    // const userInfo = JSON.parse(sessionStorage.getItem("authUserInfo"));
+    async function clearSelectInputSender() {
+      await getPeopleSender();
+    }
 
-    // onMounted(() => {
-    //   const totalName = userInfo.name.split(" ");
+    async function clearSelectInputReview() {
+      await getPeopleReview();
+    }
 
-    //   form.email = userInfo.email;
-    //   form.names = totalName[0];
-    //   form.lastNames = totalName[1] + " " + totalName[2];
-    // });
+    const getDate = () => {
+      // Get the current date and time in seconds
+      const seconds = Math.floor(new Date().getTime() / 1000);
+
+      const formatDate = transformDate(seconds, "DD [de] MMMM [de] YYYY");
+      return formatDate;
+    };
+
+    //Function to create the pdf
+    const createPDF = async () => {
+      const dataCreatePDF = JSON.stringify({
+        entryDate: getDate(),
+        name: isExternal.value ? outForm.names + outForm.lastNames : form.assignedTo || ' - ',
+        copyName: " - ",
+        companyName: " - ",
+        documentType: isExternal.value ? form?.documentType : ' - ',
+        documentNumber: isExternal.value ? form?.documentNumber : ' - ',
+        email: isExternal.value ? outForm.email : ' - ',
+        address: isExternal.value ? finalAddress.value : ' - ',
+        city: isExternal.value ? ' - ' : ' - ',
+        subject: outForm.subject || ' - ',
+        body: outForm.body || ' - ',
+        senderName: outForm.sender_name || ' - ',
+        position: " - ",
+        senderArea: outForm.sender_area || ' - ',
+        senderCompany: " - ",
+      });
+
+      const configCreatePDF = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: `${process.env.VUE_APP_CF_BASE_URL}/doc/create-response`,
+        headers: {
+          Accept: "/",
+          "Content-Type": "application/json",
+        },
+        responseType: "blob",
+        data: dataCreatePDF,
+      };
+
+      try {
+        const response = await axios.request(configCreatePDF);
+        return response.data;
+      } catch (error) {
+        showToast("Hubo un error al crear el PDF", "error");
+        console.error(error);
+      }
+    };
+
+    const seeResponseClaim = async () => {
+      isLoadingPreview.value = true;
+      try {
+        const response = await createPDF();
+        const pdfBlob = response;
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        window.open(pdfUrl);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        isLoadingPreview.value = false;
+      }
+    };
 
     watch(
       () => [...files.value],
@@ -728,12 +872,6 @@ export default {
 
     watch(stateDoc, (newValue) => {
       if (newValue.status == "ERROR") {
-        // toast.update(idProccessAI, {
-        //     render: "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
-        //     type: toast.TYPE.WARNING,
-        //     isLoading: false,
-        //     autoClose: 7000,
-        // });
         loadingAI.value = false;
         clearTimeout(timerAI.value);
         timerAI.value = 0;
@@ -812,9 +950,13 @@ export default {
       isDocs,
       radicate,
       peopleList,
+      peopleListSender,
+      peopleListReview,
       getAssignedUid,
       getDocDays,
       getAreaId,
+      getAreaIdReview,
+      getAreaIdSender,
       manual_address,
       classDropZone,
       showDeadLine,
@@ -822,6 +964,8 @@ export default {
       manual_address_info,
       finalAddress,
       clearSelectInput,
+      clearSelectInputSender,
+      clearSelectInputReview,
       getTrds,
       deleteRecord,
       onDragOver,
@@ -830,6 +974,8 @@ export default {
       selectedFile,
       onFileDrop,
       getPeople,
+      getPeopleSender,
+      getPeopleReview,
       concatAddress,
       getAddressManual,
       canUseAI,
@@ -838,7 +984,9 @@ export default {
       outRules,
       v2$,
       Editor,
-      addressee,
+      isExternal,
+      isLoadingPreview,
+      seeResponseClaim,
     };
   },
 
@@ -878,7 +1026,7 @@ export default {
         console.error(error);
       }
     },
-    async handleSaveChanges() {
+    async handleSaveChanges(FilingMethod) {
       this.canUseAI = false;
       try {
         const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`;
@@ -890,7 +1038,7 @@ export default {
         };
 
         const body = {
-          subject: this.form.subject,
+          subject: FilingMethod == 'Out' ? this.outForm.subject : this.form.subject,
           summary: this.form.description,
           area: this.form.area,
           areaId: this.getAreaId,
@@ -911,11 +1059,11 @@ export default {
             personType: this.form.personType,
             identificationType: this.form.idType,
             identificationNumber: this.form.idNumber,
-            firstNames: this.form.names,
-            lastNames: this.form.lastNames,
-            address: this.form.address,
+            firstNames: FilingMethod == 'Out' ? this.outForm.names : this.form.names,
+            lastNames: FilingMethod == 'Out' ? this.outForm.lastNames : this.form.lastNames,
+            address:  FilingMethod == 'Out' ? this.outForm.address : this.form.address,
             phoneNumber: this.form.contactPhone,
-            email: this.form.email,
+            email: FilingMethod == 'Out' ? this.outForm.email : this.form.email,
             companyName: this.form.companyName || "",
           },
         };
@@ -930,7 +1078,6 @@ export default {
         console.error(error);
       }
     },
-
     async handleSubmitDocument() {
       try {
         console.log(this.form.idType);
@@ -1012,7 +1159,6 @@ export default {
         console.error(error);
       }
     },
-
     async handleSaveInfo(section) {
       if (section == "Out") {
         try {
@@ -1042,7 +1188,6 @@ export default {
         console.error(error);
       }
     },
-
     async generateSticker() {
       let data = JSON.stringify({
         company: this.companyID,
@@ -2055,6 +2200,7 @@ export default {
     <!-- out section -->
     <div v-else class="w-100 h-100">
       <BRow>
+        <!-- Document section -->
         <BCol lg="8" md="12" sm="12">
           <BCard no-body>
             <BCardHeader>
@@ -2082,12 +2228,45 @@ export default {
                       :editor="Editor"
                       v-model="outForm.body"
                       :config="editorSettings"
-                      class="w-100 h-100"
                     >
                     </ckeditor>
                   </div>
                 </BCol>
               </BRow>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: flex-end;
+                  padding: 0px;
+                "
+              >
+                <a-tooltip>
+                  <template #title
+                    >Previsualizar información de radicado</template
+                  >
+                  <BButton
+                    v-if="!isLoadingPreview"
+                    type="button"
+                    variant="info"
+                    size="md"
+                    class="w-auto h-100 mx-2 d-inline-flex align-items-center justify-content-center"
+                    @click="seeResponseClaim"
+                  >
+                    Previsualizar
+                  </BButton>
+                  <BButton
+                    v-else
+                    type="button"
+                    variant="info"
+                    size="md"
+                    class="w-auto h-100 mx-2 d-inline-flex align-items-center justify-content-center"
+                    disabled
+                  >
+                    Previsualizar
+                  </BButton>
+                </a-tooltip>
+              </div>
             </BCardBody>
           </BCard>
           <BCard no-body class="mt-3">
@@ -2099,6 +2278,8 @@ export default {
             </BCardBody>
           </BCard>
         </BCol>
+
+        <!-- forms section -->
         <BCol lg="4" md="12" sm="12">
           <div class="accordion" id="accordionExample">
             <!-- Información del destinatario -->
@@ -2144,7 +2325,7 @@ export default {
                           class="form-check-input"
                           type="checkbox"
                           id="flexSwitchCheckChecked"
-                          v-model="addressee"
+                          v-model="isExternal"
                         />
                       </div>
                       <div>
@@ -2156,7 +2337,7 @@ export default {
                       </div>
                     </div>
                   </BCol>
-                  <div v-if="addressee">
+                  <div v-if="isExternal">
                     <BCol lg="12">
                       <label for="name" class="form-label fw-bold"
                         >Tipo de persona
@@ -2267,21 +2448,205 @@ export default {
                         attribute="lastnames"
                       />
                     </BCol>
+
+                    <!-- Direccion -->
                     <BCol lg="12" class="mt-3">
-                      <label for="name" class="form-label fw-bold"
-                        >Dirección
-                        <span class="text-danger fw-bold">*</span></label
+                      <div
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: space-between;
+                        "
                       >
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="name"
-                        :required="true"
-                        placeholder="Ingrese direccion"
-                        v-model="outForm.address"
-                      />
-                      <ValidateOutLabels v-bind="{ v2$ }" attribute="address" />
+                        <label for="name" class="form-label fw-bold"
+                          >Dirección
+                          <span class="text-danger fw-bold">*</span></label
+                        >
+                        <div class="">
+                          <label
+                            for=""
+                            class="px-2 fw-bold text-muted"
+                            style="font-size: 12px"
+                          >
+                            Agregar dirección manual
+                          </label>
+                          <input
+                            v-model="manual_address"
+                            class="form-check-input"
+                            type="checkbox"
+                          />
+                        </div>
+                      </div>
                     </BCol>
+
+                    <div v-if="!manual_address">
+                      <BRow>
+                        <BCol lg="12" class="mb-3">
+                          <input
+                            v-model="address_info[0]"
+                            id="place"
+                            class="form-control"
+                            type="text"
+                            :disabled="radicated || loadingAI"
+                            placeholder="Ingrese la dirección"
+                            @input="getAddress()"
+                          />
+                        </BCol>
+                        <BCol lg="12" class="mb-3">
+                          <input
+                            v-model="address_info[1]"
+                            id="place"
+                            class="form-control"
+                            type="text"
+                            :disabled="radicated || loadingAI"
+                            placeholder="Ingrese el departamento"
+                            autocomplete="address-level1"
+                            @input="getAddress()"
+                          />
+                        </BCol>
+                        <BCol lg="12" class="mb-3">
+                          <input
+                            v-model="address_info[2]"
+                            id="place"
+                            class="form-control"
+                            type="text"
+                            :disabled="radicated || loadingAI"
+                            placeholder="Ingrese la ciudad"
+                            autocomplete="address-level2"
+                            @input="getAddress()"
+                          />
+                        </BCol>
+                      </BRow>
+                    </div>
+
+                    <div
+                      v-else
+                      class="row row-cols-1 row-cols-md-6 gx-1 gy-3 py-2"
+                    >
+                      <div class="col-sm-12 col-md-12">
+                        <Multiselect
+                          v-model="manual_address_info[0]"
+                          :close-on-select="true"
+                          :searchable="true"
+                          :disabled="radicated || loadingAI"
+                          placeholder="Seleccione"
+                          :options="addressOptions"
+                          @input="concatAddress()"
+                        />
+                      </div>
+                      <div class="col-sm-12 col-md-12">
+                        <input
+                          v-model="manual_address_info[1]"
+                          class="form-control"
+                          type="text"
+                          :disabled="radicated || loadingAI"
+                          placeholder="Número"
+                          @input="concatAddress()"
+                        />
+                      </div>
+                      <div class="col-sm-12 col-md-12">
+                        <input
+                          v-model="manual_address_info[2]"
+                          class="form-control"
+                          type="text"
+                          :disabled="radicated || loadingAI"
+                          placeholder="Letra"
+                          @input="concatAddress()"
+                        />
+                      </div>
+                      <!-- ------------ -->
+                      <div
+                        class="col-sm-12 col-md-12"
+                        style="
+                          width: 30px !important;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          height: 40px;
+                        "
+                      >
+                        <span> # </span>
+                      </div>
+                      <!-- ------------ -->
+                      <div class="col-sm-12 col-md-12">
+                        <input
+                          v-model="manual_address_info[3]"
+                          class="form-control"
+                          type="text"
+                          :disabled="radicated || loadingAI"
+                          placeholder="Número"
+                          @input="concatAddress()"
+                        />
+                      </div>
+                      <div class="col-sm-12 col-md-12">
+                        <input
+                          v-model="manual_address_info[4]"
+                          class="form-control"
+                          type="text"
+                          :disabled="radicated || loadingAI"
+                          placeholder="Letra"
+                          @input="concatAddress()"
+                        />
+                      </div>
+                      <div class="col-sm-12 col-md-12">
+                        <input
+                          v-model="manual_address_info[5]"
+                          class="form-control"
+                          :disabled="radicated || loadingAI"
+                          type="text"
+                          placeholder="Número"
+                          @input="concatAddress()"
+                        />
+                      </div>
+                      <!-- ----------- -->
+                      <div
+                        class="col-sm-12 col-md-12"
+                        style="
+                          width: 30px !important;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          height: 40px;
+                        "
+                      >
+                        <span> - </span>
+                      </div>
+                      <!-- ----------- -->
+                      <div class="col-sm-12 col-md-12">
+                        <input
+                          v-model="manual_address_info[6]"
+                          class="form-control"
+                          :disabled="radicated || loadingAI"
+                          type="text"
+                          placeholder="Complemento"
+                          @input="concatAddress()"
+                        />
+                      </div>
+                      <div class="col-sm-12 col-md-12">
+                        <input
+                          v-model="manual_address_info[7]"
+                          class="form-control"
+                          :disabled="radicated || loadingAI"
+                          type="text"
+                          placeholder="Ciudad"
+                          @input="concatAddress()"
+                          autocomplete="address-level2"
+                        />
+                      </div>
+                      <div class="col-sm-12 col-md-12">
+                        <input
+                          v-model="manual_address_info[8]"
+                          class="form-control"
+                          type="text"
+                          :disabled="radicated || loadingAI"
+                          placeholder="Departamento"
+                          @input="concatAddress()"
+                          autocomplete="address-level1"
+                        />
+                      </div>
+                    </div>
+                    <!-- Direccion -->
+
                     <BCol lg="12" class="mt-3">
                       <label for="name" class="form-label fw-bold"
                         >Teléfono
@@ -2319,37 +2684,34 @@ export default {
                         >Área <span class="text-danger fw-bold">*</span></label
                       >
                       <Multiselect
-                        :required="true"
                         v-model="form.area"
+                        :required="true"
                         :close-on-select="true"
                         :searchable="true"
                         :create-option="true"
                         placeholder="Seleccione"
                         :options="trds"
+                        @select="clearSelectInput"
+                        :disabled="radicated"
                       />
-                      <ValidateLabel
-                        v-bind="{ v$ }"
-                        attribute="area"
-                      />
+                      <ValidateLabel v-bind="{ v$ }" attribute="area" />
                     </BCol>
-                    <BCol lg="12" class="mt-3" >
+                    <BCol lg="12" class="mt-3">
                       <label for="name" class="form-label fw-bold"
                         >Destinatario
                         <span class="text-danger fw-bold">*</span></label
                       >
                       <Multiselect
-                        :required="true"
                         v-model="form.assignedTo"
+                        :required="true"
                         :close-on-select="true"
-                        :searchable="true"
                         :create-option="true"
+                        :searchable="true"
                         placeholder="Seleccione"
                         :options="peopleList"
+                        :disabled="radicated"
                       />
-                      <ValidateLabel
-                        v-bind="{ v$ }"
-                        attribute="assignedTo"
-                      />
+                      <ValidateLabel v-bind="{ v$ }" attribute="assignedTo" />
                     </BCol>
                   </div>
                 </div>
@@ -2469,13 +2831,15 @@ export default {
                       >Área <span class="text-danger fw-bold">*</span></label
                     >
                     <Multiselect
-                      :required="true"
                       v-model="outForm.sender_area"
+                      :required="true"
                       :close-on-select="true"
                       :searchable="true"
                       :create-option="true"
                       placeholder="Seleccione"
                       :options="trds"
+                      @select="clearSelectInputSender"
+                      :disabled="radicated"
                     />
                     <ValidateOutLabels
                       v-bind="{ v2$ }"
@@ -2493,6 +2857,7 @@ export default {
                       :close-on-select="true"
                       :searchable="true"
                       :create-option="true"
+                      :options="peopleListSender"
                       placeholder="Seleccione"
                     />
                     <ValidateOutLabels
@@ -2547,13 +2912,15 @@ export default {
                       >Área <span class="text-danger fw-bold">*</span></label
                     >
                     <Multiselect
-                      :required="true"
                       v-model="outForm.review_area"
+                      :required="true"
                       :close-on-select="true"
                       :searchable="true"
                       :create-option="true"
                       placeholder="Seleccione"
                       :options="trds"
+                      @select="clearSelectInputReview"
+                      :disabled="radicated"
                     />
                     <ValidateOutLabels
                       v-bind="{ v2$ }"
@@ -2571,6 +2938,7 @@ export default {
                       :close-on-select="true"
                       :searchable="true"
                       :create-option="true"
+                      :options="peopleListReview"
                       placeholder="Seleccione"
                     />
                     <ValidateOutLabels
@@ -2588,7 +2956,7 @@ export default {
                       id="name"
                       :required="true"
                       placeholder="Ingrese el cargo de quien revisa"
-                      v-model="outForm.review_name"
+                      v-model="outForm.review_occupation"
                     />
                     <ValidateOutLabels
                       v-bind="{ v2$ }"
@@ -2689,7 +3057,7 @@ export default {
 }
 
 .ck-editor__editable {
-  height: 79.3% !important;
+  height: 90% !important;
 }
 
 .ck-powered-by {
