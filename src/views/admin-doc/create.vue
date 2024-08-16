@@ -27,7 +27,6 @@ import { setTracking } from "@/helpers/tracking";
 import Modal from "../modals/Modal.vue";
 import moment from "moment";
 import store from "@/state/store";
-import InputFile from "@/components/InputFile.vue";
 import {
   FileTextIcon,
   // AlertOctagonIcon,
@@ -35,6 +34,7 @@ import {
   CpuIcon,
 } from "@zhuowenli/vue-feather-icons";
 import { Editor } from "@camilo__lp/custom-editor-vue3";
+import { requiredIf } from "@vuelidate/validators";
 
 // import {
 //   onSnapshot,
@@ -56,6 +56,8 @@ import {
 import axios from "axios";
 
 export default {
+  validations() {},
+
   setup() {
     const instance = getCurrentInstance();
     const storage = getFirebaseBackend().storage;
@@ -65,6 +67,7 @@ export default {
     const readDocument = ref(false);
     const dropzoneFile = ref("");
     const loadingBtnAI = ref(false);
+    const isLoadingUsers = ref(false);
     const canUseAI = ref(true);
     const documentID = ref(null);
     const documentAI = ref(null);
@@ -127,16 +130,6 @@ export default {
     // controlador de variables relacionadas a los radicados de salida
     const isExternal = ref(false);
     const outForm = reactive({
-      subject: "",
-      body: "",
-      personType: "",
-      idType: "",
-      idNumber: "",
-      names: "",
-      lastNames: "",
-      address: "",
-      phone: "",
-      email: "",
       review_area: "",
       review_name: "",
       review_occupation: "",
@@ -182,34 +175,44 @@ export default {
       untilDate: {},
       folios: { required: MESSAGE_REQUIRED },
       externalFiling: {},
-      personType: { required: MESSAGE_REQUIRED },
-      idType: { required: MESSAGE_REQUIRED },
-      idNumber: { required: MESSAGE_REQUIRED },
-      contactPhone: { required: MESSAGE_REQUIRED },
-      names: { required: MESSAGE_REQUIRED },
-      companyName: showcompanyNameForm.value && {
-        required: MESSAGE_REQUIRED,
+      personType: {
+        required: requiredIf( () => isExternal.value === true ? MESSAGE_REQUIRED : '' ),
       },
-      lastNames: { required: MESSAGE_REQUIRED },
-      email: { required: MESSAGE_REQUIRED, MESSAGE_EMAIL },
-      address: { required: MESSAGE_REQUIRED },
-      assignedTo: { required: MESSAGE_REQUIRED },
-      subject: { required: MESSAGE_REQUIRED },
-      description: { required: MESSAGE_REQUIRED },
+      idType: {
+        required: requiredIf( () => isExternal.value === true ? MESSAGE_REQUIRED : '' ),
+      },
+      idNumber: {
+        required: requiredIf( () => !isExternal.value ? MESSAGE_REQUIRED : '' ),
+      },
+      contactPhone: {
+        required: requiredIf( () => !isExternal.value ? MESSAGE_REQUIRED : '' ),
+      },
+      names: {
+        required: requiredIf( () => !isExternal.value ? MESSAGE_REQUIRED : '' ),
+      },
+      companyName: showcompanyNameForm.value && { required: MESSAGE_REQUIRED },
+      lastNames: {
+        required: requiredIf( () => !isExternal.value ? MESSAGE_REQUIRED : '' ),
+      },
+      email: {
+        required: requiredIf( () => !isExternal.value ? MESSAGE_REQUIRED : '' ), MESSAGE_EMAIL,
+      },
+      address: {
+        required: requiredIf(!isExternal.value ? MESSAGE_REQUIRED : '' ),
+      },
+      assignedTo: {
+        required: requiredIf(isExternal.value === true ? MESSAGE_REQUIRED : ''),
+      },
+      subject: {
+        required: requiredIf(isExternal.value === true ? MESSAGE_REQUIRED : ''),
+      },
+      description: {
+        required: requiredIf(isExternal.value === true ? MESSAGE_REQUIRED : ''),
+      },
       city: {},
     };
 
     const outRules = {
-      subject: { required: MESSAGE_REQUIRED },
-      body: { required: MESSAGE_REQUIRED },
-      personType: { required: MESSAGE_REQUIRED },
-      idType: { required: MESSAGE_REQUIRED },
-      idNumber: { required: MESSAGE_REQUIRED },
-      names: { required: MESSAGE_REQUIRED },
-      lastNames: { required: MESSAGE_REQUIRED },
-      Address: { required: MESSAGE_REQUIRED },
-      phone: { required: MESSAGE_REQUIRED },
-      email: { required: MESSAGE_REQUIRED },
       review_area: { required: MESSAGE_REQUIRED },
       review_name: { required: MESSAGE_REQUIRED },
       review_occupation: { required: MESSAGE_REQUIRED },
@@ -591,6 +594,7 @@ export default {
         },
       };
       var auxPeople = [];
+      isLoadingUsers.value = true;
       axios
         .request(config)
         .then((response) => {
@@ -604,8 +608,10 @@ export default {
             });
           });
           peopleList.value = auxPeople;
+          isLoadingUsers.value = false;
         })
         .catch((error) => {
+          isLoadingUsers.value = false;
           console.error(error);
         });
     }
@@ -811,19 +817,21 @@ export default {
     const createPDF = async () => {
       const dataCreatePDF = JSON.stringify({
         entryDate: getDate(),
-        name: isExternal.value ? outForm.names + outForm.lastNames : form.assignedTo || ' - ',
+        name: isExternal.value
+          ? form.names + form.lastNames
+          : form.assignedTo || " - ",
         copyName: " - ",
         companyName: " - ",
-        documentType: isExternal.value ? form?.documentType : ' - ',
-        documentNumber: isExternal.value ? form?.documentNumber : ' - ',
-        email: isExternal.value ? outForm.email : ' - ',
-        address: isExternal.value ? finalAddress.value : ' - ',
-        city: isExternal.value ? ' - ' : ' - ',
-        subject: outForm.subject || ' - ',
-        body: outForm.body || ' - ',
-        senderName: outForm.sender_name || ' - ',
+        documentType: isExternal.value ? form?.documentType : " - ",
+        documentNumber: isExternal.value ? form?.documentNumber : " - ",
+        email: isExternal.value ? form.email : " - ",
+        address: isExternal.value ? finalAddress.value : " - ",
+        city: isExternal.value ? " - " : " - ",
+        subject: form.subject || " - ",
+        body: form.body || " - ",
+        senderName: outForm.sender_name || " - ",
         position: " - ",
-        senderArea: outForm.sender_area || ' - ',
+        senderArea: outForm.sender_area || " - ",
         senderCompany: " - ",
       });
 
@@ -940,6 +948,7 @@ export default {
       showcompanyNameForm,
       qrModal,
       loadingAI,
+      isLoadingUsers,
       newDate,
       trds,
       series,
@@ -1026,7 +1035,7 @@ export default {
         console.error(error);
       }
     },
-    async handleSaveChanges(FilingMethod) {
+    async handleSaveChanges() {
       this.canUseAI = false;
       try {
         const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`;
@@ -1038,7 +1047,7 @@ export default {
         };
 
         const body = {
-          subject: FilingMethod == 'Out' ? this.outForm.subject : this.form.subject,
+          subject: this.form.subject,
           summary: this.form.description,
           area: this.form.area,
           areaId: this.getAreaId,
@@ -1059,12 +1068,12 @@ export default {
             personType: this.form.personType,
             identificationType: this.form.idType,
             identificationNumber: this.form.idNumber,
-            firstNames: FilingMethod == 'Out' ? this.outForm.names : this.form.names,
-            lastNames: FilingMethod == 'Out' ? this.outForm.lastNames : this.form.lastNames,
-            address:  FilingMethod == 'Out' ? this.outForm.address : this.form.address,
+            firstNames: this.form.names,
+            lastNames: this.form.lastNames,
+            address: this.form.address,
             phoneNumber: this.form.contactPhone,
-            email: FilingMethod == 'Out' ? this.outForm.email : this.form.email,
-            companyName: this.form.companyName || "",
+            email: this.form.email,
+            companyName: this.form.companyName,
           },
         };
         const response = await axios.post(url, body, config);
@@ -1078,6 +1087,7 @@ export default {
         console.error(error);
       }
     },
+
     async handleSubmitDocument() {
       try {
         console.log(this.form.idType);
@@ -1159,22 +1169,7 @@ export default {
         console.error(error);
       }
     },
-    async handleSaveInfo(section) {
-      if (section == "Out") {
-        try {
-          this.v2$.$touch();
-          if (this.v2$.$invalid) {
-            return;
-          } else {
-            this.saveLoading = true;
-            await this.handleSaveChanges();
-          }
-        } catch (error) {
-          this.saveLoading = false;
-          console.error(error);
-        }
-      }
-
+    async handleSaveInfo() {
       try {
         this.v$.$touch();
         if (this.v$.$invalid) {
@@ -1305,7 +1300,6 @@ export default {
     // AlertOctagonIcon,
     Trash2Icon,
     CpuIcon,
-    InputFile,
   },
 };
 </script>
@@ -1403,7 +1397,7 @@ export default {
           type="submit"
           variant="success"
           class="w-sm"
-          @click="handleSaveInfo(mode)"
+          @click="handleSaveInfo()"
           :disabled="saveLoading"
         >
           <div class="button-content">
@@ -1809,6 +1803,14 @@ export default {
               <BCol lg="6" class="mb-3">
                 <label for="username" class="form-label fw-bold">
                   Asignado a
+                  <BSpinner
+                    v-if="isLoadingUsers"
+                    class="float-end ms-3"
+                    small
+                    v-b-tooltip.hover.top
+                    title="Extrayendo información de peticionario con IA"
+                    type="grow"
+                  />
                   <span class="text-danger">*</span></label
                 >
                 <Multiselect
@@ -2212,21 +2214,37 @@ export default {
                   <label for="subject" class="form-label fw-bold"
                     >Asunto <span class="text-danger fw-bold">*</span></label
                   >
+                  <BSpinner
+                    v-if="loadingAI"
+                    class="float-end"
+                    small
+                    v-b-tooltip.hover.top
+                    title="Extrayendo asunto con IA"
+                    type="grow"
+                  />
                   <input
                     type="text"
                     class="form-control"
                     :required="true"
-                    v-model="outForm.subject"
+                    v-model="form.subject"
                     id="subject"
                     placeholder="Ingrese el asunto"
                   />
                   <ValidateOutLabels v-bind="{ v2$ }" attribute="subject" />
                 </BCol>
                 <BCol lg="12" class="mt-3 h-100">
+                  <BSpinner
+                    v-if="loadingAI"
+                    class="float-end ms-3"
+                    small
+                    v-b-tooltip.hover.top
+                    title="Extrayendo información de peticionario con IA"
+                    type="grow"
+                  />
                   <div class="ck-content w-full h-100">
                     <ckeditor
                       :editor="Editor"
-                      v-model="outForm.body"
+                      v-model="form.description"
                       :config="editorSettings"
                     >
                     </ckeditor>
@@ -2269,36 +2287,349 @@ export default {
               </div>
             </BCardBody>
           </BCard>
-          <BCard no-body class="mt-3">
-            <BCardBody>
-              <InputFile
-                @emitFiles="emitFiles"
-                title="AGREGA ARCHIVO PARA RESPONDER AL CIUDADANO"
-              />
+          <BCard no-body>
+            <BCardHeader>
+              <h5 class="card-title mb-0 text-muted fw-light fst-italic">
+                AGREGA ARCHIVO PARA RADICAR
+              </h5>
+            </BCardHeader>
+            <BCardBody v-if="!answered">
+              <div>
+                <div :class="classDropZone">
+                  <p>
+                    <FileTextIcon size="28" />
+                  </p>
+                  <span> Arrastra el archivo para subirlo</span>
+                  <input
+                    type="file"
+                    name="formFile"
+                    id="formFile"
+                    multiple
+                    class="input-file"
+                    @change="selectedFile"
+                    :disabled="radicated"
+                  />
+                  <label for="formFile" class="link-primary label-formFile"
+                    >o Clic acá para selecciona un archivo</label
+                  >
+                </div>
+                <div class="vstack gap-2 mt-3" v-if="files.length > 0">
+                  <div
+                    class="border rounded"
+                    v-for="(file, index) of files"
+                    :key="index"
+                  >
+                    <div class="d-flex align-items-center p-2" v-if="file">
+                      <div class="flex-grow-1">
+                        <div class="pt-1">
+                          <h5 class="fs-14 mb-1" data-dz-name="">
+                            {{ file.name }}
+                          </h5>
+                          <p class="fs-13 text-muted mb-0" data-dz-size="">
+                            <strong>{{ file.size / 1024 }}</strong>
+                            KB
+                          </p>
+                          <strong
+                            class="error text-danger"
+                            data-dz-errormessage=""
+                          ></strong>
+                        </div>
+                      </div>
+                      <div class="flex-shrink-0 ms-3 gap-1">
+                        <a-tooltip>
+                          <template #title>Aplicar resumen</template>
+                          <BButton
+                            variant="info"
+                            size="sm"
+                            class="me-1"
+                            data-dz-remove=""
+                            @click="changeDocumentAI(file.name)"
+                          >
+                            <CpuIcon />
+                          </BButton>
+                        </a-tooltip>
+                        <a-tooltip>
+                          <template #title>Borrar documento</template>
+                          <BButton
+                            variant="danger"
+                            size="sm"
+                            data-dz-remove=""
+                            @click="deleteRecord(file.name)"
+                          >
+                            <Trash2Icon />
+                          </BButton>
+                        </a-tooltip>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </BCardBody>
+            <BoCardBody v-else>
+              <h3
+                class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
+              >
+                Radicado Generado
+              </h3>
+            </BoCardBody>
           </BCard>
         </BCol>
 
         <!-- forms section -->
         <BCol lg="4" md="12" sm="12">
           <div class="accordion" id="accordionExample">
-            <!-- Información del destinatario -->
+            <!-- información de documento -->
             <div class="accordion-item">
-              <h2 class="accordion-header" id="headingOne">
+              <h2 class="accordion-header" id="headingFour">
                 <button
                   class="accordion-button"
                   type="button"
                   data-bs-toggle="collapse"
-                  data-bs-target="#collapseOne"
+                  data-bs-target="#collapseFour"
                   aria-expanded="true"
+                  aria-controls="collapseFour"
+                >
+                  INFORMACIÓN DEL DOCUMENTO
+                  <BSpinner
+                    v-if="loadingAI"
+                    class="float-end ms-3"
+                    small
+                    v-b-tooltip.hover.top
+                    title="Extrayendo información de peticionario con IA"
+                    type="grow"
+                  />
+                </button>
+              </h2>
+              <div
+                id="collapseFour"
+                class="accordion-collapse collapse show"
+                aria-labelledby="headingFour"
+                data-bs-parent="#accordionExample"
+              >
+                <div class="accordion-body">
+                  <BCol lg="12">
+                    <label for="name" class="form-label fw-bold"
+                      >Área <span class="text-danger fw-bold">*</span></label
+                    >
+                    <Multiselect
+                      :required="true"
+                      v-model="form.area"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      @select="clearSelectInput"
+                      :options="trds"
+                    />
+                    <ValidateLabel v-bind="{ v$ }" attribute="area" />
+                  </BCol>
+
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold"
+                      >Serie <span class="text-danger fw-bold">*</span></label
+                    >
+                    <Multiselect
+                      :required="true"
+                      v-model="form.serie"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      :options="series"
+                    />
+                    <ValidateLabel v-bind="{ v$ }" attribute="serie" />
+                  </BCol>
+
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold"
+                      >Subserie
+                      <span class="text-danger fw-bold">*</span></label
+                    >
+                    <Multiselect
+                      :required="true"
+                      v-model="form.subSerie"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      :options="subseries"
+                    />
+                    <ValidateLabel v-bind="{ v$ }" attribute="subserie" />
+                  </BCol>
+
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold"
+                      >Tipología documental
+                      <span class="text-danger fw-bold">*</span></label
+                    >
+                    <Multiselect
+                      :required="true"
+                      v-model="form.documentType"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      :options="isDocs"
+                    />
+                    <ValidateLabel v-bind="{ v$ }" attribute="documentType" />
+                  </BCol>
+
+                  <BCol lg="12" v-if="showDeadLine" class="mt-3">
+                    <label
+                      for="datepicker-deadline-input"
+                      class="form-label fw-bold"
+                      >Fecha límite</label
+                    >
+                    <flat-pickr
+                      v-model="form.untilDate"
+                      :config="rangeDateconfig"
+                      class="form-control flatpickr-input"
+                      :disabled="radicated"
+                    ></flat-pickr>
+                    <ValidateLabel v-bind="{ v$ }" attribute="untilDate" />
+                  </BCol>
+
+                  <BCol lg="12" class="mt-3">
+                    <label
+                      for="choices-privacy-status-input"
+                      class="form-label fw-bold"
+                      >Método de entrada</label
+                    >
+                    <Multiselect
+                      v-model="form.inputMethod"
+                      :required="true"
+                      :disabled="radicated"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      :options="[
+                        {
+                          value: 'Página web',
+                          label: 'Página web',
+                        },
+                        {
+                          value: 'Presencial',
+                          label: 'Presencial',
+                        },
+                        {
+                          value: 'Mensajería Certificada',
+                          label: 'Mensajería Certificada',
+                        },
+                        {
+                          value: 'Correo Electrónico',
+                          label: 'Correo Electrónico',
+                        },
+                        {
+                          value: 'WhatsApp',
+                          label: 'WhatsApp',
+                        },
+                      ]"
+                    />
+                    <ValidateLabel v-bind="{ v$ }" attribute="inputMethod" />
+                  </BCol>
+
+                  <BCol lg="12" class="mt-3">
+                    <label
+                      for="username"
+                      class="form-label fw-bold d-flex align-items-center"
+                      >Folios
+                      <BSpinner
+                        v-if="loadingNumberOfPages || loadingAI"
+                        class="float-end ms-1"
+                        small
+                        v-b-tooltip.hover.top
+                        title="Extrayendo la cantidad de folios con IA"
+                        type="grow"
+                      />
+                      <span class="text-danger fw-bold" v-else>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="form.folios"
+                      :class="{
+                        'is-invalid': submitted && v$.user.username.$error,
+                      }"
+                      id="folios"
+                      placeholder="Ingrese folios"
+                      :disabled="radicated || loadingNumberOfPages || loadingAI"
+                    />
+
+                    <ValidateLabel v-bind="{ v$ }" attribute="folios" />
+                  </BCol>
+
+                  <BCol lg="12" class="mt-3">
+                    <label for="username" class="form-label fw-bold"
+                      >Radicado Interno</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="form.externalFiling"
+                      :class="{
+                        'is-invalid': submitted && v$.user.username.$error,
+                      }"
+                      id="RadicadoExterno"
+                      placeholder="# Radicado externo"
+                      :disabled="radicated"
+                    />
+                  </BCol>
+
+                  <BCol lg="12" class="mt-3">
+                    <label for="username" class="form-label fw-bold">
+                      Asignado a
+                      <BSpinner
+                        v-if="isLoadingUsers"
+                        class="float-end ms-3"
+                        small
+                        v-b-tooltip.hover.top
+                        title="Extrayendo información de peticionario con IA"
+                        type="grow"
+                      />
+                      <span class="text-danger">*</span></label
+                    >
+                    <Multiselect
+                      v-model="form.assignedTo"
+                      :required="true"
+                      :close-on-select="true"
+                      :create-option="true"
+                      :searchable="true"
+                      placeholder="Seleccione"
+                      :options="peopleList"
+                      :disabled="radicated"
+                    />
+                    <ValidateLabel v-bind="{ v$ }" attribute="assignedTo" />
+                  </BCol>
+                </div>
+              </div>
+            </div>
+
+            <!-- Información del destinatario -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingOne">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseOne"
+                  aria-expanded="false"
                   aria-controls="collapseOne"
                 >
                   INFORMACIÓN DEL DESTINATARIO
+                  <BSpinner
+                    v-if="loadingAI"
+                    class="float-end ms-3"
+                    small
+                    v-b-tooltip.hover.top
+                    title="Extrayendo información de peticionario con IA"
+                    type="grow"
+                  />
                 </button>
               </h2>
               <div
                 id="collapseOne"
-                class="accordion-collapse collapse show"
+                class="accordion-collapse collapse"
                 aria-labelledby="headingOne"
                 data-bs-parent="#accordionExample"
               >
@@ -2345,7 +2676,7 @@ export default {
                       >
                       <Multiselect
                         :required="true"
-                        v-model="outForm.personType"
+                        v-model="form.personType"
                         :close-on-select="true"
                         :searchable="true"
                         :create-option="true"
@@ -2358,10 +2689,7 @@ export default {
                           },
                         ]"
                       />
-                      <ValidateOutLabels
-                        v-bind="{ v2$ }"
-                        attribute="personType"
-                      />
+                      <ValidateLabel v-bind="{ v$ }" attribute="personType" />
                     </BCol>
                     <BCol lg="12" class="mt-3">
                       <label for="name" class="form-label fw-bold"
@@ -2370,7 +2698,7 @@ export default {
                       >
                       <Multiselect
                         :required="true"
-                        v-model="outForm.idType"
+                        v-model="form.idType"
                         :close-on-select="true"
                         :searchable="true"
                         :create-option="true"
@@ -2395,7 +2723,7 @@ export default {
                           },
                         ]"
                       />
-                      <ValidateOutLabels v-bind="{ v2$ }" attribute="idType" />
+                      <ValidateLabel v-bind="{ v$ }" attribute="idType" />
                     </BCol>
                     <BCol lg="12" class="mt-3">
                       <label for="name" class="form-label fw-bold"
@@ -2408,12 +2736,23 @@ export default {
                         id="name"
                         :required="true"
                         placeholder="Ingrese el numero de identidicación"
-                        v-model="outForm.idNumber"
+                        v-model="form.idNumber"
                       />
-                      <ValidateOutLabels
-                        v-bind="{ v2$ }"
-                        attribute="idNumber"
+                      <ValidateLabel v-bind="{ v$ }" attribute="idNumber" />
+                    </BCol>
+                    <BCol lg="12" class="mt-3" v-if="showcompanyNameForm">
+                      <label for="companyName" class="form-label fw-bold"
+                        >Nombre de la compañía
+                        <span class="text-danger fw-bold">*</span></label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        v-model="form.companyName"
+                        :disabled="radicated || loadingAI"
+                        placeholder="Ingrese el nombre de la compañía"
                       />
+                      <ValidateLabel v-bind="{ v$ }" attribute="companyName" />
                     </BCol>
                     <BCol lg="12" class="mt-3">
                       <label for="name" class="form-label fw-bold"
@@ -2426,9 +2765,9 @@ export default {
                         id="name"
                         :required="true"
                         placeholder="Ingrese nombres"
-                        v-model="outForm.names"
+                        v-model="form.names"
                       />
-                      <ValidateOutLabels v-bind="{ v2$ }" attribute="names" />
+                      <ValidateLabel v-bind="{ v$ }" attribute="names" />
                     </BCol>
                     <BCol lg="12" class="mt-3">
                       <label for="name" class="form-label fw-bold"
@@ -2441,12 +2780,9 @@ export default {
                         id="name"
                         :required="true"
                         placeholder="Ingrese apellidos"
-                        v-model="outForm.lastNames"
+                        v-model="form.lastNames"
                       />
-                      <ValidateOutLabels
-                        v-bind="{ v2$ }"
-                        attribute="lastnames"
-                      />
+                      <ValidateLabel v-bind="{ v$ }" attribute="lastnames" />
                     </BCol>
 
                     <!-- Direccion -->
@@ -2658,9 +2994,9 @@ export default {
                         id="name"
                         :required="true"
                         placeholder="Ingrese teléfono"
-                        v-model="outForm.phone"
+                        v-model="form.contactPhone"
                       />
-                      <ValidateOutLabels v-bind="{ v2$ }" attribute="phone" />
+                      <ValidateLabel v-bind="{ v$ }" attribute="phone" />
                     </BCol>
                     <BCol lg="12" class="mt-3">
                       <label for="name" class="form-label fw-bold"
@@ -2673,9 +3009,9 @@ export default {
                         id="name"
                         :required="true"
                         placeholder="Ingrese correo electronico"
-                        v-model="outForm.email"
+                        v-model="form.email"
                       />
-                      <ValidateOutLabels v-bind="{ v2$ }" attribute="email" />
+                      <ValidateLabel v-bind="{ v$ }" attribute="email" />
                     </BCol>
                   </div>
                   <div v-else>
@@ -2718,93 +3054,6 @@ export default {
               </div>
             </div>
 
-            <!-- información de documento -->
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingFour">
-                <button
-                  class="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseFour"
-                  aria-expanded="false"
-                  aria-controls="collapseFour"
-                >
-                  INFORMACIÓN DEL DOCUMENTO
-                </button>
-              </h2>
-              <div
-                id="collapseFour"
-                class="accordion-collapse collapse"
-                aria-labelledby="headingFour"
-                data-bs-parent="#accordionExample"
-              >
-                <div class="accordion-body">
-                  <BCol lg="12">
-                    <label for="name" class="form-label fw-bold"
-                      >Área <span class="text-danger fw-bold">*</span></label
-                    >
-                    <Multiselect
-                      :required="true"
-                      v-model="form.area"
-                      :close-on-select="true"
-                      :searchable="true"
-                      :create-option="true"
-                      placeholder="Seleccione"
-                      :options="trds"
-                    />
-                    <ValidateLabel v-bind="{ v$ }" attribute="area" />
-                  </BCol>
-                  <BCol lg="12" class="mt-3">
-                    <label for="name" class="form-label fw-bold"
-                      >Serie <span class="text-danger fw-bold">*</span></label
-                    >
-                    <Multiselect
-                      :required="true"
-                      v-model="form.serie"
-                      :close-on-select="true"
-                      :searchable="true"
-                      :create-option="true"
-                      placeholder="Seleccione"
-                      :options="series"
-                    />
-                    <ValidateLabel v-bind="{ v$ }" attribute="serie" />
-                  </BCol>
-                  <BCol lg="12" class="mt-3">
-                    <label for="name" class="form-label fw-bold"
-                      >Subserie
-                      <span class="text-danger fw-bold">*</span></label
-                    >
-                    <Multiselect
-                      :required="true"
-                      v-model="form.subSerie"
-                      :close-on-select="true"
-                      :searchable="true"
-                      :create-option="true"
-                      placeholder="Seleccione"
-                      :options="subseries"
-                    />
-                    <ValidateLabel v-bind="{ v$ }" attribute="subserie" />
-                  </BCol>
-                  <BCol lg="12" class="mt-3">
-                    <label for="name" class="form-label fw-bold"
-                      >Tipología documental
-                      <span class="text-danger fw-bold">*</span></label
-                    >
-                    <Multiselect
-                      :required="true"
-                      v-model="form.documentType"
-                      :close-on-select="true"
-                      :searchable="true"
-                      :create-option="true"
-                      placeholder="Seleccione"
-                      :options="isDocs"
-                    />
-                    <ValidateLabel v-bind="{ v$ }" attribute="documentType" />
-                  </BCol>
-                </div>
-              </div>
-            </div>
-
             <!-- información de remitente -->
             <div class="accordion-item">
               <h2 class="accordion-header" id="headingThree">
@@ -2841,10 +3090,10 @@ export default {
                       @select="clearSelectInputSender"
                       :disabled="radicated"
                     />
-                    <ValidateOutLabels
+                    <!-- <ValidateOutLabel
                       v-bind="{ v2$ }"
                       attribute="sender_area"
-                    />
+                    /> -->
                   </BCol>
                   <BCol lg="12" class="mt-3">
                     <label for="name" class="form-label fw-bold"
@@ -2860,10 +3109,10 @@ export default {
                       :options="peopleListSender"
                       placeholder="Seleccione"
                     />
-                    <ValidateOutLabels
+                    <!-- <ValidateOutLabels
                       v-bind="{ v2$ }"
                       attribute="sender_name"
-                    />
+                    /> -->
                   </BCol>
                   <BCol lg="12" class="mt-3">
                     <label for="name" class="form-label fw-bold"
@@ -2877,10 +3126,10 @@ export default {
                       placeholder="Ingrese el cargo del remitente"
                       v-model="outForm.sender_occupation"
                     />
-                    <ValidateOutLabels
+                    <!-- <ValidateOutLabels
                       v-bind="{ v2$ }"
                       attribute="sender_occupation"
-                    />
+                    /> -->
                   </BCol>
                 </div>
               </div>
@@ -2922,10 +3171,10 @@ export default {
                       @select="clearSelectInputReview"
                       :disabled="radicated"
                     />
-                    <ValidateOutLabels
+                    <!-- <ValidateOutLabels
                       v-bind="{ v2$ }"
                       attribute="review_area"
-                    />
+                    /> -->
                   </BCol>
                   <BCol lg="12" class="mt-3">
                     <label for="name" class="form-label fw-bold"
@@ -2941,10 +3190,10 @@ export default {
                       :options="peopleListReview"
                       placeholder="Seleccione"
                     />
-                    <ValidateOutLabels
+                    <!-- <ValidateOutLabels
                       v-bind="{ v2$ }"
                       attribute="review_name"
-                    />
+                    /> -->
                   </BCol>
                   <BCol lg="12" class="mt-3">
                     <label for="name" class="form-label fw-bold"
@@ -2958,10 +3207,10 @@ export default {
                       placeholder="Ingrese el cargo de quien revisa"
                       v-model="outForm.review_occupation"
                     />
-                    <ValidateOutLabels
+                    <!-- <ValidateOutLabels
                       v-bind="{ v2$ }"
                       attribute="review_occupation"
-                    />
+                    /> -->
                   </BCol>
                 </div>
               </div>
