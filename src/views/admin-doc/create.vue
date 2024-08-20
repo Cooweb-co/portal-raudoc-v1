@@ -21,7 +21,6 @@ import "flatpickr/dist/flatpickr.css";
 import { getFirebaseBackend } from "../../authUtils.js";
 import { uploadBytes, ref as storageRef } from "firebase/storage";
 import ValidateLabel from "../../utils/ValidateLabel.vue";
-import ValidateOutLabels from "../../utils/ValidateOutLabels.vue";
 import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
 import { setTracking } from "@/helpers/tracking";
 import Modal from "../modals/Modal.vue";
@@ -176,38 +175,100 @@ export default {
       folios: { required: MESSAGE_REQUIRED },
       externalFiling: {},
       personType: {
-        required: requiredIf( () => isExternal.value === true ? MESSAGE_REQUIRED : '' ),
+        required: requiredIf(() => {
+          if (mode.value == "Out") {
+            if (isExternal.value) {
+              return MESSAGE_REQUIRED;
+            }
+          } else {
+            return MESSAGE_REQUIRED;
+          }
+        }),
       },
       idType: {
-        required: requiredIf( () => isExternal.value === true ? MESSAGE_REQUIRED : '' ),
+        required: requiredIf(() => {
+          if (mode.value == "Out") {
+            if (isExternal.value) {
+              return MESSAGE_REQUIRED;
+            }
+          } else {
+            return MESSAGE_REQUIRED;
+          }
+        }),
       },
       idNumber: {
-        required: requiredIf( () => !isExternal.value ? MESSAGE_REQUIRED : '' ),
+        required: requiredIf(() => {
+          if (mode.value == "Out") {
+            if (isExternal.value) {
+              return MESSAGE_REQUIRED;
+            }
+          } else {
+            return MESSAGE_REQUIRED;
+          }
+        }),
       },
       contactPhone: {
-        required: requiredIf( () => !isExternal.value ? MESSAGE_REQUIRED : '' ),
+        required: requiredIf(() => {
+          if (mode.value == "Out") {
+            if (isExternal.value) {
+              return MESSAGE_REQUIRED;
+            }
+          } else {
+            return MESSAGE_REQUIRED;
+          }
+        }),
       },
       names: {
-        required: requiredIf( () => !isExternal.value ? MESSAGE_REQUIRED : '' ),
+        required: requiredIf(() => {
+          if (mode.value == "Out") {
+            if (isExternal.value) {
+              return MESSAGE_REQUIRED;
+            }
+          } else {
+            return MESSAGE_REQUIRED;
+          }
+        }),
       },
       companyName: showcompanyNameForm.value && { required: MESSAGE_REQUIRED },
       lastNames: {
-        required: requiredIf( () => !isExternal.value ? MESSAGE_REQUIRED : '' ),
+        required: requiredIf(() => {
+          if (mode.value == "Out") {
+            if (isExternal.value) {
+              return MESSAGE_REQUIRED;
+            }
+          } else {
+            return MESSAGE_REQUIRED;
+          }
+        }),
       },
-      email: {
-        required: requiredIf( () => !isExternal.value ? MESSAGE_REQUIRED : '' ), MESSAGE_EMAIL,
-      },
+      email: { required: MESSAGE_REQUIRED && MESSAGE_EMAIL },
       address: {
-        required: requiredIf(!isExternal.value ? MESSAGE_REQUIRED : '' ),
+        required: requiredIf(() => {
+          if (mode.value == "Out") {
+            if (isExternal.value) {
+              return MESSAGE_REQUIRED;
+            }
+          } else {
+            return MESSAGE_REQUIRED;
+          }
+        }),
       },
       assignedTo: {
-        required: requiredIf(isExternal.value === true ? MESSAGE_REQUIRED : ''),
+        required: requiredIf(() => {
+          if (mode.value == "Out") {
+            if (isExternal.value) {
+              return MESSAGE_REQUIRED;
+            }
+          } else {
+            return MESSAGE_REQUIRED;
+          }
+        }),
       },
       subject: {
-        required: requiredIf(isExternal.value === true ? MESSAGE_REQUIRED : ''),
+        required: MESSAGE_REQUIRED,
       },
       description: {
-        required: requiredIf(isExternal.value === true ? MESSAGE_REQUIRED : ''),
+        required: MESSAGE_REQUIRED,
       },
       city: {},
     };
@@ -426,7 +487,6 @@ export default {
           companyID.value,
           documentID.value
         );
-        console.log(numberOfPages);
         form.folios = numberOfPages;
         loadingNumberOfPages.value = false;
       } catch (error) {
@@ -817,18 +877,16 @@ export default {
     const createPDF = async () => {
       const dataCreatePDF = JSON.stringify({
         entryDate: getDate(),
-        name: isExternal.value
-          ? form.names + form.lastNames
-          : form.assignedTo || " - ",
+        name: isExternal.value ? form.names + form.lastNames : form.assignedTo ,
         copyName: " - ",
-        companyName: " - ",
+        companyName: form.companyName || " - ",
         documentType: isExternal.value ? form?.documentType : " - ",
         documentNumber: isExternal.value ? form?.documentNumber : " - ",
         email: isExternal.value ? form.email : " - ",
         address: isExternal.value ? finalAddress.value : " - ",
         city: isExternal.value ? " - " : " - ",
         subject: form.subject || " - ",
-        body: form.body || " - ",
+        body: form.description || " - ",
         senderName: outForm.sender_name || " - ",
         position: " - ",
         senderArea: outForm.sender_area || " - ",
@@ -1076,6 +1134,7 @@ export default {
             companyName: this.form.companyName,
           },
         };
+
         const response = await axios.post(url, body, config);
         if (response.data.message) {
           this.saveLoading = false;
@@ -1090,7 +1149,6 @@ export default {
 
     async handleSubmitDocument() {
       try {
-        console.log(this.form.idType);
         this.submitLoading = true;
         this.handleSaveChanges();
         const config = {
@@ -1294,7 +1352,6 @@ export default {
     Multiselect,
     flatPickr,
     ValidateLabel,
-    ValidateOutLabels,
     Modal,
     FileTextIcon,
     // AlertOctagonIcon,
@@ -2230,7 +2287,7 @@ export default {
                     id="subject"
                     placeholder="Ingrese el asunto"
                   />
-                  <ValidateOutLabels v-bind="{ v2$ }" attribute="subject" />
+                  <ValidateLabel v-bind="{ v$ }" attribute="subject" />
                 </BCol>
                 <BCol lg="12" class="mt-3 h-100">
                   <BSpinner
@@ -2248,6 +2305,7 @@ export default {
                       :config="editorSettings"
                     >
                     </ckeditor>
+                    <ValidateLabel v-bind="{ v$ }" attribute="description" />
                   </div>
                 </BCol>
               </BRow>
