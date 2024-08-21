@@ -932,7 +932,7 @@ export default {
                 };
 
                 const response = await axios.post(
-                    `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_GENERATE_RADICATE_V1?claimId=${this.documentID}`,
+                    `${process.env.VUE_APP_CF_BASE_URL}/claim/radicate-entry?claimId=${this.documentID}&typeRadicate=${this.mode}`,
                     body,
                     config
                 );
