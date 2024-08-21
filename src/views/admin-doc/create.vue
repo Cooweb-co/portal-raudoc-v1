@@ -116,6 +116,7 @@ export default {
       { label: "Vía", value: "VI. " },
     ]);
     const isLoadingPreview = ref(false);
+    const isLoadingCreateDocument = ref(false);
 
     let config = {
       method: "get",
@@ -265,10 +266,26 @@ export default {
         }),
       },
       subject: {
-        required: MESSAGE_REQUIRED,
+        required: requiredIf(() => {
+          if (mode.value == "Out") {
+            if (!files.value[0]) {
+              return MESSAGE_REQUIRED;
+            }
+          } else {
+            return MESSAGE_REQUIRED;
+          }
+        }),
       },
       description: {
-        required: MESSAGE_REQUIRED,
+        required: requiredIf(() => {
+          if (mode.value == "Out") {
+            if (!files.value[0]) {
+              return MESSAGE_REQUIRED;
+            }
+          } else {
+            return MESSAGE_REQUIRED;
+          }
+        }),
       },
       city: {},
     };
@@ -291,99 +308,101 @@ export default {
     const v2$ = useVuelidate(outRules, outForm);
 
     const startListening = () => {
-      if (!isListeningEnabled.value) {
-        return;
-      }
-      try {
-        idProccessAI = toast("Analizando documento con IA...", {
-          isLoading: true,
-          hideProgressBar: true,
-          closeButton: false,
-          closeOnClick: false,
-        });
-        unsubscribe = onListenClaimData(
-          documentAI.value.claimID,
-          companyID.value,
-          async (data) => {
-            await getDocStatus(companyID.value, documentAI.value.claimID);
-            claimData.value = data;
-            if (data.status == "DRAFT" && data.summary == null) {
-              loadingAI.value = true;
-              timerAI.value = setTimeout(() => {
+      if (mode.value != "Out") {
+        if (!isListeningEnabled.value) {
+          return;
+        }
+        try {
+          idProccessAI = toast("Analizando documento con IA...", {
+            isLoading: true,
+            hideProgressBar: true,
+            closeButton: false,
+            closeOnClick: false,
+          });
+          unsubscribe = onListenClaimData(
+            documentAI.value.claimID,
+            companyID.value,
+            async (data) => {
+              await getDocStatus(companyID.value, documentAI.value.claimID);
+              claimData.value = data;
+              if (data.status == "DRAFT" && data.summary == null) {
+                loadingAI.value = true;
+                timerAI.value = setTimeout(() => {
+                  toast.update(idProccessAI, {
+                    render:
+                      "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
+                    type: toast.TYPE.WARNING,
+                    isLoading: false,
+                    autoClose: 7000,
+                  });
+                  loadingAI.value = false;
+                }, 60000);
+                timerExtractingInformationAI.value = setTimeout(() => {
+                  toast.update(idProccessAI, {
+                    render: "Extrayendo información relevante...",
+                    type: toast.TYPE.INFO,
+                  });
+                }, 3000);
+              }
+              if (data.summary && isListeningEnabled.value && canUseAI.value) {
+                canUseAI.value = false;
+                await getNumberOfFolios();
                 toast.update(idProccessAI, {
-                  render:
-                    "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
-                  type: toast.TYPE.WARNING,
+                  render: "Resumen realizado con exito!",
+                  type: toast.TYPE.SUCCESS,
                   isLoading: false,
-                  autoClose: 7000,
+                  autoClose: 3000,
                 });
                 loadingAI.value = false;
-              }, 60000);
-              timerExtractingInformationAI.value = setTimeout(() => {
-                toast.update(idProccessAI, {
-                  render: "Extrayendo información relevante...",
-                  type: toast.TYPE.INFO,
-                });
-              }, 3000);
-            }
-            if (data.summary && isListeningEnabled.value && canUseAI.value) {
-              canUseAI.value = false;
-              await getNumberOfFolios();
-              toast.update(idProccessAI, {
-                render: "Resumen realizado con exito!",
-                type: toast.TYPE.SUCCESS,
-                isLoading: false,
-                autoClose: 3000,
-              });
-              loadingAI.value = false;
-              clearTimeout(timerAI.value);
-              timerAI.value = 0;
-              instance.proxy.subject = data.subject ? data.subject : "";
-              instance.proxy.editorData = data.summary ? data.summary : "";
-              form.subject = data.subject ? data.subject : "";
-              form.description = data.summary ? data.summary : "";
-              if (data?.personInformation) {
-                form.personType = data?.personInformation.personType
-                  ? data?.personInformation.personType
-                  : "";
-                form.idType = data?.personInformation.identificationType
-                  ? data?.personInformation.identificationType
-                  : "";
-                form.idNumber = data?.personInformation.idNumber
-                  ? data?.personInformation.idNumber
-                  : "";
-                form.names = data?.personInformation.name
-                  ? data?.personInformation.name
-                  : "";
-                form.lastNames = data?.personInformation.lastName
-                  ? data?.personInformation.lastName
-                  : "";
-                form.email = data?.personInformation.email
-                  ? data?.personInformation.email
-                  : "";
-                address_info.value[0] = data?.personInformation.address
-                  ? data?.personInformation.address
-                  : "";
-                address_info.value[1] = data?.personInformation.department
-                  ? data?.personInformation.department
-                  : "";
-                address_info.value[2] = data?.personInformation.city
-                  ? data?.personInformation.city
-                  : "";
-                form.phoneNumber = data?.personInformation.phoneNumber
-                  ? data?.personInformation.phoneNumber
-                  : "";
-                getAddress();
-                form.companyName = data?.personInformation.companyName
-                  ? data?.personInformation.companyName
-                  : "";
+                clearTimeout(timerAI.value);
+                timerAI.value = 0;
+                instance.proxy.subject = data.subject ? data.subject : "";
+                instance.proxy.editorData = data.summary ? data.summary : "";
+                form.subject = data.subject ? data.subject : "";
+                form.description = data.summary ? data.summary : "";
+                if (data?.personInformation) {
+                  form.personType = data?.personInformation.personType
+                    ? data?.personInformation.personType
+                    : "";
+                  form.idType = data?.personInformation.identificationType
+                    ? data?.personInformation.identificationType
+                    : "";
+                  form.idNumber = data?.personInformation.idNumber
+                    ? data?.personInformation.idNumber
+                    : "";
+                  form.names = data?.personInformation.name
+                    ? data?.personInformation.name
+                    : "";
+                  form.lastNames = data?.personInformation.lastName
+                    ? data?.personInformation.lastName
+                    : "";
+                  form.email = data?.personInformation.email
+                    ? data?.personInformation.email
+                    : "";
+                  address_info.value[0] = data?.personInformation.address
+                    ? data?.personInformation.address
+                    : "";
+                  address_info.value[1] = data?.personInformation.department
+                    ? data?.personInformation.department
+                    : "";
+                  address_info.value[2] = data?.personInformation.city
+                    ? data?.personInformation.city
+                    : "";
+                  form.phoneNumber = data?.personInformation.phoneNumber
+                    ? data?.personInformation.phoneNumber
+                    : "";
+                  getAddress();
+                  form.companyName = data?.personInformation.companyName
+                    ? data?.personInformation.companyName
+                    : "";
+                }
               }
             }
-          }
-        );
-        return unsubscribe;
-      } catch (error) {
-        console.error("error: ", error);
+          );
+          return unsubscribe;
+        } catch (error) {
+          console.error("error: ", error);
+        }
       }
     };
 
@@ -914,6 +933,7 @@ export default {
       }
     };
 
+    // Function to preview document information generated about text editor
     const seeResponseClaim = async () => {
       isLoadingPreview.value = true;
       try {
@@ -925,6 +945,28 @@ export default {
         console.error(error);
       } finally {
         isLoadingPreview.value = false;
+      }
+    };
+
+    // Function tu create document for Out claim
+    const createOutDocument = async () => {
+      isLoadingCreateDocument.value = true;
+      try {
+        const response = await createPDF();
+        const pdfBlob = response;
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        var link = document.createElement("a");
+        link.href = pdfUrl;
+        link.download = form.subject;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        console.log(document);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        isLoadingCreateDocument.value = false;
       }
     };
 
@@ -1054,6 +1096,8 @@ export default {
       isExternal,
       isLoadingPreview,
       seeResponseClaim,
+      createOutDocument,
+      isLoadingCreateDocument,
     };
   },
 
@@ -2405,6 +2449,42 @@ export default {
               >
                 <a-tooltip>
                   <template #title
+                    >Crear documento a partir de la información del
+                    editor.</template
+                  >
+                  <BButton
+                    v-if="!isLoadingCreateDocument"
+                    type="button"
+                    variant="success"
+                    size="md"
+                    class="w-auto h-100 mx-2 d-inline-flex align-items-center justify-content-center"
+                    @click="createOutDocument"
+                  >
+                    Crear documento
+                  </BButton>
+                  <BButton
+                    v-else
+                    type="button"
+                    variant="success"
+                    size="md"
+                    class="w-auto h-100 mx-2 d-inline-flex align-items-center justify-content-center"
+                    disabled
+                  >
+                    Creando
+                    <div
+                      class="d-flex justify-content-center"
+                      style="margin-left: 10px; width: 15px; height: 15px"
+                    >
+                      <div
+                        class="spinner-border"
+                        role="status"
+                        style="width: 15px; height: 15px"
+                      ></div>
+                    </div>
+                  </BButton>
+                </a-tooltip>
+                <a-tooltip>
+                  <template #title
                     >Previsualizar información de radicado</template
                   >
                   <BButton
@@ -2426,96 +2506,20 @@ export default {
                     disabled
                   >
                     Previsualizar
+                    <div
+                      class="d-flex justify-content-center"
+                      style="margin-left: 10px; width: 15px; height: 15px"
+                    >
+                      <div
+                        class="spinner-border"
+                        role="status"
+                        style="width: 15px; height: 15px"
+                      ></div>
+                    </div>
                   </BButton>
                 </a-tooltip>
               </div>
             </BCardBody>
-          </BCard>
-          <BCard no-body>
-            <BCardHeader>
-              <h5 class="card-title mb-0 text-muted fw-light fst-italic">
-                AGREGA ARCHIVO PARA RADICAR
-              </h5>
-            </BCardHeader>
-            <BCardBody v-if="!answered">
-              <div>
-                <div :class="classDropZone">
-                  <p>
-                    <FileTextIcon size="28" />
-                  </p>
-                  <span> Arrastra el archivo para subirlo</span>
-                  <input
-                    type="file"
-                    name="formFile"
-                    id="formFile"
-                    multiple
-                    class="input-file"
-                    @change="selectedFile"
-                    :disabled="radicated"
-                  />
-                  <label for="formFile" class="link-primary label-formFile"
-                    >o Clic acá para selecciona un archivo</label
-                  >
-                </div>
-                <div class="vstack gap-2 mt-3" v-if="files.length > 0">
-                  <div
-                    class="border rounded"
-                    v-for="(file, index) of files"
-                    :key="index"
-                  >
-                    <div class="d-flex align-items-center p-2" v-if="file">
-                      <div class="flex-grow-1">
-                        <div class="pt-1">
-                          <h5 class="fs-14 mb-1" data-dz-name="">
-                            {{ file.name }}
-                          </h5>
-                          <p class="fs-13 text-muted mb-0" data-dz-size="">
-                            <strong>{{ file.size / 1024 }}</strong>
-                            KB
-                          </p>
-                          <strong
-                            class="error text-danger"
-                            data-dz-errormessage=""
-                          ></strong>
-                        </div>
-                      </div>
-                      <div class="flex-shrink-0 ms-3 gap-1">
-                        <a-tooltip>
-                          <template #title>Aplicar resumen</template>
-                          <BButton
-                            variant="info"
-                            size="sm"
-                            class="me-1"
-                            data-dz-remove=""
-                            @click="changeDocumentAI(file.name)"
-                          >
-                            <CpuIcon />
-                          </BButton>
-                        </a-tooltip>
-                        <a-tooltip>
-                          <template #title>Borrar documento</template>
-                          <BButton
-                            variant="danger"
-                            size="sm"
-                            data-dz-remove=""
-                            @click="deleteRecord(file.name)"
-                          >
-                            <Trash2Icon />
-                          </BButton>
-                        </a-tooltip>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </BCardBody>
-            <BoCardBody v-else>
-              <h3
-                class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
-              >
-                Radicado Generado
-              </h3>
-            </BoCardBody>
           </BCard>
         </BCol>
 

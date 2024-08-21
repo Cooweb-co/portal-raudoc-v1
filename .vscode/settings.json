@@ -12,5 +12,8 @@
         "raudoc",
         "Raudoc",
         "Routechange"
-    ]
+    ],
+    "editor.fontFamily": "MonoLisa Vartan, 'Courier New', monospace",
+    "editor.fontSize": 15,
+    "editor.letterSpacing": -0.35
 }
