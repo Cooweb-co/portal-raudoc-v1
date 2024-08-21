@@ -877,7 +877,7 @@ export default {
     const createPDF = async () => {
       const dataCreatePDF = JSON.stringify({
         entryDate: getDate(),
-        name: isExternal.value ? form.names + form.lastNames : form.assignedTo ,
+        name: isExternal.value ? form.names + form.lastNames : form.assignedTo,
         copyName: " - ",
         companyName: form.companyName || " - ",
         documentType: isExternal.value ? form?.documentType : " - ",
@@ -2263,6 +2263,92 @@ export default {
         <BCol lg="8" md="12" sm="12">
           <BCard no-body>
             <BCardHeader>
+              <h5 class="card-title mb-0 text-muted fw-light fst-italic">
+                AGREGA ARCHIVO PARA RADICAR
+              </h5>
+            </BCardHeader>
+            <BCardBody v-if="!answered">
+              <div>
+                <div :class="classDropZone">
+                  <p>
+                    <FileTextIcon size="28" />
+                  </p>
+                  <span> Arrastra el archivo para subirlo</span>
+                  <input
+                    type="file"
+                    name="formFile"
+                    id="formFile"
+                    multiple
+                    class="input-file"
+                    @change="selectedFile"
+                    :disabled="radicated"
+                  />
+                  <label for="formFile" class="link-primary label-formFile"
+                    >o Clic acá para selecciona un archivo</label
+                  >
+                </div>
+                <div class="vstack gap-2 mt-3" v-if="files.length > 0">
+                  <div
+                    class="border rounded"
+                    v-for="(file, index) of files"
+                    :key="index"
+                  >
+                    <div class="d-flex align-items-center p-2" v-if="file">
+                      <div class="flex-grow-1">
+                        <div class="pt-1">
+                          <h5 class="fs-14 mb-1" data-dz-name="">
+                            {{ file.name }}
+                          </h5>
+                          <p class="fs-13 text-muted mb-0" data-dz-size="">
+                            <strong>{{ file.size / 1024 }}</strong>
+                            KB
+                          </p>
+                          <strong
+                            class="error text-danger"
+                            data-dz-errormessage=""
+                          ></strong>
+                        </div>
+                      </div>
+                      <div class="flex-shrink-0 ms-3 gap-1">
+                        <a-tooltip>
+                          <template #title>Aplicar resumen</template>
+                          <BButton
+                            variant="info"
+                            size="sm"
+                            class="me-1"
+                            data-dz-remove=""
+                            @click="changeDocumentAI(file.name)"
+                          >
+                            <CpuIcon />
+                          </BButton>
+                        </a-tooltip>
+                        <a-tooltip>
+                          <template #title>Borrar documento</template>
+                          <BButton
+                            variant="danger"
+                            size="sm"
+                            data-dz-remove=""
+                            @click="deleteRecord(file.name)"
+                          >
+                            <Trash2Icon />
+                          </BButton>
+                        </a-tooltip>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </BCardBody>
+            <BoCardBody v-else>
+              <h3
+                class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
+              >
+                Radicado Generado
+              </h3>
+            </BoCardBody>
+          </BCard>
+          <BCard no-body>
+            <BCardHeader>
               <h6>Generador de documentos</h6>
             </BCardHeader>
             <BCardBody>
@@ -2512,7 +2598,7 @@ export default {
                       placeholder="Seleccione"
                       :options="subseries"
                     />
-                    <ValidateLabel v-bind="{ v$ }" attribute="subserie" />
+                    <ValidateLabel v-bind="{ v$ }" attribute="subSerie" />
                   </BCol>
 
                   <BCol lg="12" class="mt-3">
@@ -2632,6 +2718,7 @@ export default {
                       placeholder="# Radicado externo"
                       :disabled="radicated"
                     />
+                    <ValidateLabel v-bind="{ v$ }" attribute="externalFiling" />
                   </BCol>
 
                   <BCol lg="12" class="mt-3">
@@ -2840,7 +2927,7 @@ export default {
                         placeholder="Ingrese apellidos"
                         v-model="form.lastNames"
                       />
-                      <ValidateLabel v-bind="{ v$ }" attribute="lastnames" />
+                      <ValidateLabel v-bind="{ v$ }" attribute="lastNames" />
                     </BCol>
 
                     <!-- Direccion -->
@@ -3054,21 +3141,23 @@ export default {
                         placeholder="Ingrese teléfono"
                         v-model="form.contactPhone"
                       />
-                      <ValidateLabel v-bind="{ v$ }" attribute="phone" />
+                      <ValidateLabel v-bind="{ v$ }" attribute="contactPhone" />
                     </BCol>
                     <BCol lg="12" class="mt-3">
-                      <label for="name" class="form-label fw-bold"
+                      <label for="email" class="form-label fw-bold"
                         >Correo electrónico
                         <span class="text-danger fw-bold">*</span></label
                       >
                       <input
                         type="text"
                         class="form-control"
-                        id="name"
-                        :required="true"
-                        placeholder="Ingrese correo electronico"
                         v-model="form.email"
+                        id="email"
+                        :disabled="radicated || loadingAI"
+                        placeholder="Ingrese email"
+                        autocomplete="email"
                       />
+
                       <ValidateLabel v-bind="{ v$ }" attribute="email" />
                     </BCol>
                   </div>
@@ -3360,7 +3449,7 @@ export default {
 .ck-reset,
 .ck-content,
 .ck-editor__main {
-  height: 450px !important;
+  height: 350px !important;
 }
 
 .ck-editor__editable {
