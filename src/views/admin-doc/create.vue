@@ -21,6 +21,7 @@ import "flatpickr/dist/flatpickr.css";
 import { getFirebaseBackend } from "../../authUtils.js";
 import { uploadBytes, ref as storageRef } from "firebase/storage";
 import ValidateLabel from "../../utils/ValidateLabel.vue";
+import ValidateOutLabels from "../../utils/ValidateOutLabels.vue";
 import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
 import { setTracking } from "@/helpers/tracking";
 import Modal from "../modals/Modal.vue";
@@ -90,6 +91,7 @@ export default {
     const isDocs = ref([]);
     const radicate = ref("");
     const peopleList = ref([]);
+    const peopleListAddressee = ref([]);
     const peopleListSender = ref([]);
     const peopleListReview = ref([]);
     const timerAI = ref([]);
@@ -129,6 +131,7 @@ export default {
 
     // controlador de variables relacionadas a los radicados de salida
     const isExternal = ref(false);
+
     const outForm = reactive({
       review_area: "",
       review_name: "",
@@ -255,15 +258,7 @@ export default {
         }),
       },
       assignedTo: {
-        required: requiredIf(() => {
-          if (mode.value == "Out") {
-            if (isExternal.value) {
-              return MESSAGE_REQUIRED;
-            }
-          } else {
-            return MESSAGE_REQUIRED;
-          }
-        }),
+        required: requiredIf(() => mode.value == "Entry" ?? MESSAGE_REQUIRED),
       },
       subject: {
         required: requiredIf(() => {
@@ -290,22 +285,24 @@ export default {
       city: {},
     };
 
-    const outRules = {
-      review_area: { required: MESSAGE_REQUIRED },
-      review_name: { required: MESSAGE_REQUIRED },
-      review_occupation: { required: MESSAGE_REQUIRED },
-      sender_area: { required: MESSAGE_REQUIRED },
-      sender_name: { required: MESSAGE_REQUIRED },
-      sender_occupation: { required: MESSAGE_REQUIRED },
+    // formulario destinatario interno
+    const internalAddressee = reactive({
+      area: "",
+      addressee: "",
+    });
+
+    // reglas para validar el destinatario.
+    const internalAddresseeRules = {
+      area: { required: MESSAGE_REQUIRED },
+      addressee: { required: MESSAGE_REQUIRED },
     };
+
+    const v$ = useVuelidate(rules, form);
+    const addressee$ = useVuelidate(internalAddresseeRules, internalAddressee);
 
     const editorSettings = {
       placeholder: "Escribe acá la respuesta para el ciudadano.",
     };
-
-    const v$ = useVuelidate(rules, form);
-
-    const v2$ = useVuelidate(outRules, outForm);
 
     const startListening = () => {
       if (mode.value != "Out") {
@@ -696,7 +693,39 @@ export default {
     }
 
     // obtener listado de usuarios activos por area Remitente
+    async function getPeopleAddressee() {
+      const config = {
+        method: "get",
+        maxBodyLength: Infinity,
+        url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaIdAddressee.value}`,
+        headers: {
+          company: "BAQVERDE",
+        },
+      };
+      var auxPeople = [];
+      axios
+        .request(config)
+        .then((response) => {
+          response.data.forEach((element) => {
+            auxPeople.push({
+              label: element.name,
+              value: element.name,
+              area: element.area,
+              role: element.role,
+              uid: element.uid,
+            });
+          });
+          peopleListAddressee.value = auxPeople;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+
+    // obtener listado de usuarios activos por area Remitente
+    const loadingSenderName = ref(false);
     async function getPeopleSender() {
+      loadingSenderName.value = true;
       const config = {
         method: "get",
         maxBodyLength: Infinity,
@@ -719,14 +748,18 @@ export default {
             });
           });
           peopleListSender.value = auxPeople;
+          loadingSenderName.value = false;
         })
         .catch((error) => {
+          loadingSenderName.value = false;
           console.error(error);
         });
     }
 
     // obtener listado de usuarios activos por area Revisión
+    const loadingReviewerName = ref(false);
     async function getPeopleReview() {
+      loadingReviewerName.value = true;
       const config = {
         method: "get",
         maxBodyLength: Infinity,
@@ -749,8 +782,10 @@ export default {
             });
           });
           peopleListReview.value = auxPeople;
+          loadingReviewerName.value = false;
         })
         .catch((error) => {
+          loadingReviewerName.value = false;
           console.error(error);
         });
     }
@@ -772,6 +807,11 @@ export default {
     //obtener id de area
     const getAreaId = computed(() => {
       return trds.value.find((el) => el.value === form.area)?.id;
+    });
+
+    //obtener id de area para formulario de Remitente
+    const getAreaIdAddressee = computed(() => {
+      return trds.value.find((el) => el.value === internalAddressee.area)?.id;
     });
 
     //obtener id de area para formulario de Remitente
@@ -876,6 +916,10 @@ export default {
       await getPeople();
     }
 
+    async function clearSelectInputAddresee() {
+      await getPeopleAddressee();
+    }
+
     async function clearSelectInputSender() {
       await getPeopleSender();
     }
@@ -887,29 +931,33 @@ export default {
     const getDate = () => {
       // Get the current date and time in seconds
       const seconds = Math.floor(new Date().getTime() / 1000);
-
       const formatDate = transformDate(seconds, "DD [de] MMMM [de] YYYY");
       return formatDate;
     };
 
     //Function to create the pdf
-    const createPDF = async () => {
+    const createPDF = async (prop) => {
+      const user = JSON.parse(sessionStorage.getItem("authUserInfo"));
       const dataCreatePDF = JSON.stringify({
-        entryDate: getDate(),
-        name: isExternal.value ? form.names + form.lastNames : form.assignedTo,
-        copyName: " - ",
-        companyName: form.companyName || " - ",
-        documentType: isExternal.value ? form?.documentType : " - ",
-        documentNumber: isExternal.value ? form?.documentNumber : " - ",
+        name: isExternal.value ? form.names : internalAddressee.addressee,
+        lastName: isExternal.value ? form.lastNames : " - ",
         email: isExternal.value ? form.email : " - ",
-        address: isExternal.value ? finalAddress.value : " - ",
-        city: isExternal.value ? " - " : " - ",
-        subject: form.subject || " - ",
-        body: form.description || " - ",
-        senderName: outForm.sender_name || " - ",
-        position: " - ",
-        senderArea: outForm.sender_area || " - ",
-        senderCompany: " - ",
+        body: form.description,
+        entryDate: getDate(),
+        typeOfDocument: isExternal.value ? form.idType : " - ",
+        numberOfDocument: isExternal.value ? form.idNumber : " - ",
+        subject: form.subject,
+        position: "",
+        copyName: "",
+        city: isExternal.value ? form.city : " - ",
+        address: isExternal.value ? form.address : " - ",
+        senderName: outForm.sender_name,
+        senderDesignation: outForm.sender_occupation,
+        senderArea: outForm.sender_area,
+        projectorName: user.name,
+        projectorDesignation: user.idRole,
+        reviewerName: outForm.review_name,
+        reviewerDesignation: outForm.review_occupation,
       });
 
       const configCreatePDF = {
@@ -926,6 +974,12 @@ export default {
 
       try {
         const response = await axios.request(configCreatePDF);
+
+        if (prop === "create") {
+          files.value.push(response);
+          filesToUpload.value.push(response.data);
+        }
+
         return response.data;
       } catch (error) {
         showToast("Hubo un error al crear el PDF", "error");
@@ -934,10 +988,10 @@ export default {
     };
 
     // Function to preview document information generated about text editor
-    const seeResponseClaim = async () => {
+    const seeResponseClaim = async (prop) => {
       isLoadingPreview.value = true;
       try {
-        const response = await createPDF();
+        const response = await createPDF(prop);
         const pdfBlob = response;
         const pdfUrl = URL.createObjectURL(pdfBlob);
         window.open(pdfUrl);
@@ -949,10 +1003,10 @@ export default {
     };
 
     // Function tu create document for Out claim
-    const createOutDocument = async () => {
+    const createOutDocument = async (prop) => {
       isLoadingCreateDocument.value = true;
       try {
-        const response = await createPDF();
+        const response = await createPDF(prop);
         const pdfBlob = response;
         const pdfUrl = URL.createObjectURL(pdfBlob);
         var link = document.createElement("a");
@@ -1038,6 +1092,7 @@ export default {
       claimData,
       form,
       v$,
+      addressee$,
       mode,
       radicated,
       loadingNumberOfPages,
@@ -1048,6 +1103,8 @@ export default {
       showcompanyNameForm,
       qrModal,
       loadingAI,
+      loadingSenderName,
+      loadingReviewerName,
       isLoadingUsers,
       newDate,
       trds,
@@ -1059,11 +1116,13 @@ export default {
       isDocs,
       radicate,
       peopleList,
+      peopleListAddressee,
       peopleListSender,
       peopleListReview,
       getAssignedUid,
       getDocDays,
       getAreaId,
+      getAreaIdAddressee,
       getAreaIdReview,
       getAreaIdSender,
       manual_address,
@@ -1073,6 +1132,7 @@ export default {
       manual_address_info,
       finalAddress,
       clearSelectInput,
+      clearSelectInputAddresee,
       clearSelectInputSender,
       clearSelectInputReview,
       getTrds,
@@ -1084,20 +1144,20 @@ export default {
       onFileDrop,
       getPeople,
       getPeopleSender,
+      getPeopleAddressee,
       getPeopleReview,
       concatAddress,
       getAddressManual,
       canUseAI,
       editorSettings,
       outForm,
-      outRules,
-      v2$,
       Editor,
       isExternal,
       isLoadingPreview,
       seeResponseClaim,
       createOutDocument,
       isLoadingCreateDocument,
+      internalAddressee,
     };
   },
 
@@ -1137,8 +1197,10 @@ export default {
         console.error(error);
       }
     },
+
     async handleSaveChanges() {
       this.canUseAI = false;
+
       try {
         const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`;
         const config = {
@@ -1160,9 +1222,9 @@ export default {
           entryDate: this.form.date,
           endDate: !this.form.untilDate ? null : this.form.untilDate,
           assignedToUid: this.getAssignedUid[0]?.uid,
-          city: this.form.city ?? "",
+          city: this.form.city,
           folios: parseInt(this.form.folios),
-          assignedTo: this.form.assignedTo,
+          assignedTo: this.form.assignedTo || this.internalAddressee.addressee,
           observations: this.form.observations,
           externalRadicate: this.form.externalFiling,
           inputMethod: this.form.inputMethod,
@@ -1271,12 +1333,29 @@ export default {
         console.error(error);
       }
     },
+
     async handleSaveInfo() {
+      console.log("entro al metodo de guardado");
+
       try {
         this.v$.$touch();
+
+        if (this.mode == "Out" && !this.isExternal) {
+          console.log("entro a la validacion de modo y tipo de destinatario");
+
+          this.addressee$.$touch();
+          if (this.addressee$.$invalid) {
+            return;
+          }
+        }
+
         if (this.v$.$invalid) {
+          console.log("formulario invalido");
+
           return;
         } else {
+          console.log("entro a la ejecucion del servicio de guardado");
+
           this.saveLoading = true;
           await this.handleSaveChanges();
         }
@@ -1285,6 +1364,7 @@ export default {
         console.error(error);
       }
     },
+
     async generateSticker() {
       let data = JSON.stringify({
         company: this.companyID,
@@ -1396,6 +1476,7 @@ export default {
     Multiselect,
     flatPickr,
     ValidateLabel,
+    ValidateOutLabels,
     Modal,
     FileTextIcon,
     // AlertOctagonIcon,
@@ -1492,7 +1573,29 @@ export default {
         <div>{{ auxSubSerie }}</div>
         <div>{{ auxDocTypes }}</div>
       </div>
+      
       <div class="text-end mb-4 col-6 col-sm-6">
+        <a-tooltip>
+          <template #title>Guardar respuesta</template>
+          <BButton
+            v-if="!isAnswered && mode === 'Out'"
+            type="button"
+            variant="info"
+            size="sm"
+            style="margin-right: 10px"
+            class="w-auto h-100 ms-2 d-inline-flex align-items-center justify-content-center"
+            disabled
+          >
+            <span
+              v-if="isLoadingSave"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <i class="ri-save-2-fill fs-5" v-else></i>
+            <!-- <EyeIcon size="22" /> -->
+          </BButton>
+        </a-tooltip>
         <BButton
           v-if="!showRadicationButton"
           type="submit"
@@ -1562,7 +1665,6 @@ export default {
         @dragleave.prevent="onDragLeave"
         @drop="onFileDrop"
       >
-        <!-- {{ claimData }} -->
         <BCard no-body>
           <BCardHeader>
             <h5 class="card-title mb-0 text-muted fw-light fst-italic">
@@ -1596,6 +1698,7 @@ export default {
                   :key="index"
                 >
                   <div class="d-flex align-items-center p-2" v-if="file">
+                    <pre>{{ file }}</pre>
                     <div class="flex-grow-1">
                       <div class="pt-1">
                         <h5 class="fs-14 mb-1" data-dz-name="">
@@ -1649,6 +1752,7 @@ export default {
             </h3>
           </BoCardBody>
         </BCard>
+
         <BCard no-body>
           <BCardBody class="h-100">
             <div class="mb-3">
@@ -2362,17 +2466,16 @@ export default {
                 "
               >
                 <a-tooltip>
-                  <template #title
-                    >Crear documento a partir de la información del
-                    editor.</template
-                  >
+                  <template #title>
+                    Crear documento a partir de la información del área de texto.
+                  </template>
                   <BButton
                     v-if="!isLoadingCreateDocument"
                     type="button"
                     variant="success"
                     size="md"
                     class="w-auto h-100 mx-2 d-inline-flex align-items-center justify-content-center"
-                    @click="createOutDocument"
+                    @click="createOutDocument('create')"
                   >
                     Crear documento
                   </BButton>
@@ -2407,7 +2510,7 @@ export default {
                     variant="info"
                     size="md"
                     class="w-auto h-100 mx-2 d-inline-flex align-items-center justify-content-center"
-                    @click="seeResponseClaim"
+                    @click="seeResponseClaim('preview')"
                   >
                     Previsualizar
                   </BButton>
@@ -2471,10 +2574,25 @@ export default {
                       <div class="flex-grow-1">
                         <div class="pt-1">
                           <h5 class="fs-14 mb-1" data-dz-name="">
-                            {{ file.name }}
+                            {{
+                              file.name ||
+                              JSON.parse(file?.config?.data)?.subject
+                            }}
                           </h5>
-                          <p class="fs-13 text-muted mb-0" data-dz-size="">
+                          <p
+                            v-if="file.size"
+                            class="fs-13 text-muted mb-0"
+                            data-dz-size=""
+                          >
                             <strong>{{ file.size / 1024 }}</strong>
+                            KB
+                          </p>
+                          <p
+                            v-else
+                            class="fs-13 text-muted mb-0"
+                            data-dz-size=""
+                          >
+                            <strong> 159.3818359375 </strong>
                             KB
                           </p>
                           <strong
@@ -2641,7 +2759,7 @@ export default {
                     <label
                       for="choices-privacy-status-input"
                       class="form-label fw-bold"
-                      >Método de entrada</label
+                      >Método de salida</label
                     >
                     <Multiselect
                       v-model="form.inputMethod"
@@ -2724,32 +2842,6 @@ export default {
                     />
                     <ValidateLabel v-bind="{ v$ }" attribute="externalFiling" />
                   </BCol>
-
-                  <BCol lg="12" class="mt-3">
-                    <label for="username" class="form-label fw-bold">
-                      Asignado a
-                      <BSpinner
-                        v-if="isLoadingUsers"
-                        class="float-end ms-3"
-                        small
-                        v-b-tooltip.hover.top
-                        title="Extrayendo información de peticionario con IA"
-                        type="grow"
-                      />
-                      <span class="text-danger">*</span></label
-                    >
-                    <Multiselect
-                      v-model="form.assignedTo"
-                      :required="true"
-                      :close-on-select="true"
-                      :create-option="true"
-                      :searchable="true"
-                      placeholder="Seleccione"
-                      :options="peopleList"
-                      :disabled="radicated"
-                    />
-                    <ValidateLabel v-bind="{ v$ }" attribute="assignedTo" />
-                  </BCol>
                 </div>
               </div>
             </div>
@@ -2817,6 +2909,7 @@ export default {
                       </div>
                     </div>
                   </BCol>
+
                   <div v-if="isExternal">
                     <BCol lg="12">
                       <label for="name" class="form-label fw-bold"
@@ -3165,40 +3258,48 @@ export default {
                       <ValidateLabel v-bind="{ v$ }" attribute="email" />
                     </BCol>
                   </div>
+
                   <div v-else>
                     <BCol lg="12">
                       <label for="name" class="form-label fw-bold"
                         >Área <span class="text-danger fw-bold">*</span></label
                       >
                       <Multiselect
-                        v-model="form.area"
+                        v-model="internalAddressee.area"
                         :required="true"
                         :close-on-select="true"
                         :searchable="true"
                         :create-option="true"
                         placeholder="Seleccione"
                         :options="trds"
-                        @select="clearSelectInput"
+                        @select="clearSelectInputAddresee"
                         :disabled="radicated"
                       />
-                      <ValidateLabel v-bind="{ v$ }" attribute="area" />
+                      <ValidateOutLabels
+                        v-bind="{ addressee$ }"
+                        attribute="area"
+                      />
                     </BCol>
+
                     <BCol lg="12" class="mt-3">
                       <label for="name" class="form-label fw-bold"
                         >Destinatario
                         <span class="text-danger fw-bold">*</span></label
                       >
                       <Multiselect
-                        v-model="form.assignedTo"
+                        v-model="internalAddressee.addressee"
                         :required="true"
                         :close-on-select="true"
                         :create-option="true"
                         :searchable="true"
                         placeholder="Seleccione"
-                        :options="peopleList"
+                        :options="peopleListAddressee"
                         :disabled="radicated"
                       />
-                      <ValidateLabel v-bind="{ v$ }" attribute="assignedTo" />
+                      <ValidateOutLabels
+                        v-bind="{ addressee$ }"
+                        attribute="addressee"
+                      />
                     </BCol>
                   </div>
                 </div>
@@ -3241,16 +3342,20 @@ export default {
                       @select="clearSelectInputSender"
                       :disabled="radicated"
                     />
-                    <!-- <ValidateOutLabel
-                      v-bind="{ v2$ }"
-                      attribute="sender_area"
-                    /> -->
                   </BCol>
                   <BCol lg="12" class="mt-3">
                     <label for="name" class="form-label fw-bold"
                       >Nombre del remitente
-                      <span class="text-danger fw-bold">*</span></label
-                    >
+                      <span class="text-danger fw-bold">*</span>
+                      <BSpinner
+                        v-if="loadingSenderName"
+                        class="float-end"
+                        small
+                        v-b-tooltip.hover.top
+                        title="Extrayendo asunto con IA"
+                        type="grow"
+                      />
+                    </label>
                     <Multiselect
                       :required="true"
                       v-model="outForm.sender_name"
@@ -3260,10 +3365,6 @@ export default {
                       :options="peopleListSender"
                       placeholder="Seleccione"
                     />
-                    <!-- <ValidateOutLabels
-                      v-bind="{ v2$ }"
-                      attribute="sender_name"
-                    /> -->
                   </BCol>
                   <BCol lg="12" class="mt-3">
                     <label for="name" class="form-label fw-bold"
@@ -3277,10 +3378,6 @@ export default {
                       placeholder="Ingrese el cargo del remitente"
                       v-model="outForm.sender_occupation"
                     />
-                    <!-- <ValidateOutLabels
-                      v-bind="{ v2$ }"
-                      attribute="sender_occupation"
-                    /> -->
                   </BCol>
                 </div>
               </div>
@@ -3309,8 +3406,8 @@ export default {
                 <div class="accordion-body">
                   <BCol lg="12">
                     <label for="name" class="form-label fw-bold"
-                      >Área <span class="text-danger fw-bold">*</span></label
-                    >
+                      >Área <span class="text-danger fw-bold">*</span>
+                    </label>
                     <Multiselect
                       v-model="outForm.review_area"
                       :required="true"
@@ -3322,16 +3419,21 @@ export default {
                       @select="clearSelectInputReview"
                       :disabled="radicated"
                     />
-                    <!-- <ValidateOutLabels
-                      v-bind="{ v2$ }"
-                      attribute="review_area"
-                    /> -->
                   </BCol>
+
                   <BCol lg="12" class="mt-3">
                     <label for="name" class="form-label fw-bold"
                       >Nombre de quien revisa
-                      <span class="text-danger fw-bold">*</span></label
-                    >
+                      <span class="text-danger fw-bold">*</span>
+                      <BSpinner
+                        v-if="loadingReviewerName"
+                        class="float-end"
+                        small
+                        v-b-tooltip.hover.top
+                        title="Extrayendo asunto con IA"
+                        type="grow"
+                      />
+                    </label>
                     <Multiselect
                       :required="true"
                       v-model="outForm.review_name"
@@ -3341,11 +3443,8 @@ export default {
                       :options="peopleListReview"
                       placeholder="Seleccione"
                     />
-                    <!-- <ValidateOutLabels
-                      v-bind="{ v2$ }"
-                      attribute="review_name"
-                    /> -->
                   </BCol>
+
                   <BCol lg="12" class="mt-3">
                     <label for="name" class="form-label fw-bold"
                       >Cargo <span class="text-danger fw-bold">*</span></label
@@ -3358,10 +3457,6 @@ export default {
                       placeholder="Ingrese el cargo de quien revisa"
                       v-model="outForm.review_occupation"
                     />
-                    <!-- <ValidateOutLabels
-                      v-bind="{ v2$ }"
-                      attribute="review_occupation"
-                    /> -->
                   </BCol>
                 </div>
               </div>

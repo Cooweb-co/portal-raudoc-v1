@@ -316,20 +316,7 @@ getTrds();
                       </h5>
                     </div>
                   </BCol>
-                  <!-- <BCol lg="3" sm="6">
-                                        <div>
-                                            <p
-                                                class="mb-2 text-uppercase fw-medium"
-                                            >
-                                                Prioridad :
-                                            </p>
-                                            <BBadge
-                                                tag="div"
-                                                :variant="setVariantPriority"
-                                                >{{ data.priority }}</BBadge
-                                            >
-                                        </div>
-                                    </BCol> -->
+                
                   <BCol lg="3" sm="6">
                     <div>
                       <p class="mb-2 text-uppercase fw-medium">Estatus :</p>
@@ -404,7 +391,10 @@ getTrds();
                       <td>{{ data.area }}</td>
                     </tr>
                     <tr>
-                      <td class="fw-medium">Método de entrada</td>
+                      <td class="fw-medium">
+                        Método de 
+                        {{ data.status === 'Respondido' ? 'salida' : 'entrada' }} 
+                      </td>
                       <td>{{ data.inputMethod }}</td>
                     </tr>
                     <tr>
@@ -416,10 +406,13 @@ getTrds();
                       <td>{{ data.subSerie }}</td>
                     </tr>
                     <tr>
-                      <td class="fw-medium">Radicado Externo</td>
+                      <td class="fw-medium">
+                        Radicado 
+                        {{ data.status === 'Respondido' ? 'interno' : 'externo' }} 
+                      </td>
                       <td>{{ data.externalRadicate }}</td>
                     </tr>
-                    <tr>
+                    <tr v-if="data.status != 'Respondido'" >
                       <td class="fw-medium">Asignado a:</td>
                       <td>
                         {{ data.assignedTo }}
@@ -444,7 +437,10 @@ getTrds();
         <BCard no-body v-else>
           <BCardHeader class="align-items-center d-flex border-bottom-dashed">
             <BCardTitle class="mb-0 flex-grow-1">
-              <h5>Detalles del destinatario</h5>
+              <h5>
+                Detalles del {{ data.status === 'Respondido' ? 'Destinatario ' : 'Peticionario ' }} 
+                <p v-if="data.fullName === ' '" class="text-info font-weight-bold h6" > INTERNO </p>
+              </h5>
             </BCardTitle>
           </BCardHeader>
 
@@ -452,14 +448,18 @@ getTrds();
             <table class="table table-borderless align-middle mb-0">
               <tbody>
                 <tr>
+                  <td class="fw-medium">Nombre de {{ data.status === 'Respondido' ? 'Destinatario ' : 'Peticionario ' }}</td>
+                  <td>{{ data.fullName === " " ? data.assignedTo : data.fullName }}</td>
+                </tr>
+                <tr v-if="data.personType != 'No definido'">
                   <td class="fw-medium">Tipo de Peticionario</td>
                   <td>{{ data.personType }}</td>
                 </tr>
-                <tr>
+                <tr v-if="data.identificationType != 'No definido'">
                   <td class="fw-medium">Tipo de Identificación</td>
                   <td>{{ data.identificationType }}</td>
                 </tr>
-                <tr>
+                <tr v-if="data.identificationNumber != 'No definido'">
                   <td class="fw-medium">Número de Identificación</td>
                   <td>{{ data.identificationNumber }}</td>
                 </tr>
