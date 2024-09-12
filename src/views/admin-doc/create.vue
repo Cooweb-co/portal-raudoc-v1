@@ -35,7 +35,7 @@ import {
 } from "@zhuowenli/vue-feather-icons";
 import { Editor } from "@camilo__lp/custom-editor-vue3";
 import { requiredIf } from "@vuelidate/validators";
-
+import Swal from "sweetalert2";
 // import {
 //   onSnapshot,
 //   collection,
@@ -1004,23 +1004,54 @@ export default {
 
     // Function tu create document for Out claim
     const createOutDocument = async (prop) => {
-      isLoadingCreateDocument.value = true;
-      try {
-        const response = await createPDF(prop);
-        const pdfBlob = response;
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        var link = document.createElement("a");
-        link.href = pdfUrl;
-        link.download = form.subject;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      v$.value.$touch();
 
-        console.log(document);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        isLoadingCreateDocument.value = false;
+      if (mode.value == "Out" && !isExternal.value) {
+        console.log("entro a la validacion de modo y tipo de destinatario");
+
+        addressee$.value.$touch();
+        if (addressee$.value.$invalid) {
+          toast.error("Formulario incompleto, revise la informacion diligenciada !", {
+            position: toast.POSITION.TOP_RIGHT,
+            autoClose: 3000,
+          });
+          return;
+        }
+      }
+
+      if (v$.value.$invalid) {
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: "Faltan campos del formulario",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+
+        return;
+      } else {
+        console.log(
+          "entro a la ejecucion del servicio de creacion de documento"
+        );
+
+        try {
+          isLoadingCreateDocument.value = true;
+          const response = await createPDF(prop);
+          const pdfBlob = response;
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          var link = document.createElement("a");
+          link.href = pdfUrl;
+          link.download = form.subject;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          console.log(document);
+        } catch (error) {
+          console.log(error);
+        } finally {
+          isLoadingCreateDocument.value = false;
+        }
       }
     };
 
@@ -1573,7 +1604,7 @@ export default {
         <div>{{ auxSubSerie }}</div>
         <div>{{ auxDocTypes }}</div>
       </div>
-      
+
       <div class="text-end mb-4 col-6 col-sm-6">
         <a-tooltip>
           <template #title>Guardar respuesta</template>
@@ -2467,7 +2498,8 @@ export default {
               >
                 <a-tooltip>
                   <template #title>
-                    Crear documento a partir de la información del área de texto.
+                    Crear documento a partir de la información del área de
+                    texto.
                   </template>
                   <BButton
                     v-if="!isLoadingCreateDocument"
