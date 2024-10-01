@@ -1,11 +1,12 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
+// import axios from "axios";
 // import { layoutMethods } from '@/state/helpers';
 import { state } from "../state/modules/auth";
 import { BButton } from "bootstrap-vue-next";
 // import i18n from '../i18n';
 
-// import Notification from "@/components/NavbarNotification";
+import Notification from "@/components/NavbarNotification";
 // import { Trash2Icon } from "@zhuowenli/vue-feather-icons";
 
 // Notifications /////////////////////////////////////////////////
@@ -19,8 +20,16 @@ const notifications = ref([
     numberClaim: "EXT-BV-2024-00050",
   },
 ]);
-
 const selectNotifications = ref([]);
+
+// async function getNotifications() {
+//   try {
+//     const response = await axios
+//       .get()
+//       .then(() => {})
+//       .catch(() => {});
+//   } catch (error) {}
+// }
 
 const setSelectNotifications = (id) => {
   selectNotifications.value.push(id);
@@ -375,29 +384,6 @@ onMounted(() => {
               </div>
 
               <BTab title="Notificaciones" class="p-2">
-                <div class="notify-box p-0">
-                  <div
-                    v-for="notification in notifications"
-                    :key="notification.id"
-                    class="notify-item p-3"
-                  >
-                    <div class="notify-item-left">
-                      <div class="form-check">
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          value=""
-                          id="flexCheckDefault"
-                        />
-                        <label class="form-check-label" for="flexCheckDefault">
-                          {{ notification.numberClaim }}
-                        </label>
-                      </div>
-                    </div>
-                    <div class="notify-item-right"></div>
-                  </div>
-                </div>
-
                 <Notification
                   v-for="notification in notifications"
                   :key="notification.id"

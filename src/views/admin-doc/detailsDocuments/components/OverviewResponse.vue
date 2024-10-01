@@ -5,7 +5,7 @@ import Multiselect from "@vueform/multiselect";
 import "@vueform/multiselect/themes/default.css";
 import { toast } from "vue3-toastify";
 import InputFile from "@/components/InputFile.vue";
-import { ref, reactive, watch, defineProps } from "vue";
+import { ref, reactive, watch, defineProps, computed } from "vue";
 import { Editor } from "@camilo__lp/custom-editor-vue3";
 import axios from "axios";
 
@@ -32,6 +32,9 @@ const hasShowInputCompany = ref(false);
 const hasSecondAddressee = ref(false);
 const claimNumber = ref("Número de radicado");
 const company = "BAQVERDE";
+const trds = ref([]);
+const peopleListSender = ref([]);
+const peopleListReview = ref([]);
 
 const emitFiles = (inputFiles) => {
   responseFilesList.value = [];
@@ -73,6 +76,12 @@ const form = reactive({
   position: "",
   senderArea: "",
   senderCompany: company,
+  sender_area: "",
+  sender_name: "",
+  sender_occupation: "",
+  review_area: "",
+  review_name: "",
+  review_occupation: "",
 });
 
 const rules = {
@@ -382,6 +391,131 @@ const getAddressAndCity = (address) => {
   };
 };
 
+// obtener listado trds
+
+let config = {
+  method: "get",
+  maxBodyLength: Infinity,
+  url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
+  headers: {
+    company: "BAQVERDE",
+  },
+};
+
+async function getTrds() {
+
+  trds.value = []
+
+  await axios
+    .request(config)
+    .then((response) => {
+      response.data.forEach((element) => {
+        trds.value.push({
+          label: element.name,
+          value: element.name,
+          series: element.series,
+          id: element.id,
+        });
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+getTrds()
+
+
+const loadingSenderName = ref(false);
+
+// obtener listado de usuarios activos por area Remitente
+async function getPeopleSender() {
+  loadingSenderName.value = true;
+  const config = {
+    method: "get",
+    maxBodyLength: Infinity,
+    url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaIdSender.value}`,
+    headers: {
+      company: "BAQVERDE",
+    },
+  };
+  var auxPeople = [];
+  axios
+    .request(config)
+    .then((response) => {
+      response.data.forEach((element) => {
+        auxPeople.push({
+          label: element.name,
+          value: element.name,
+          area: element.area,
+          role: element.role,
+          uid: element.uid,
+        });
+      });
+      peopleListSender.value = auxPeople;
+      loadingSenderName.value = false;
+    })
+    .catch((error) => {
+      loadingSenderName.value = false;
+      console.error(error);
+    });
+}
+
+//obtener id de area para formulario de Remitente
+const getAreaIdSender = computed(() => {
+  return trds.value.find((el) => el.value === form.sender_area)?.id;
+});
+
+// Function to getPeopleSender()
+async function clearSelectInputSender() {
+  await getPeopleSender();
+}
+
+const loadingReviewerName = ref(false);
+
+//obtener id de area para formulario de Revision
+const getAreaIdReview = computed(() => {
+  return trds.value.find((el) => el.value === form.review_area)?.id;
+});
+
+// obtener listado de usuarios activos por area Revisión
+async function getPeopleReview() {
+  loadingReviewerName.value = true;
+  const config = {
+    method: "get",
+    maxBodyLength: Infinity,
+    url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaIdReview.value}`,
+    headers: {
+      company: "BAQVERDE",
+    },
+  };
+  var auxPeople = [];
+  axios
+    .request(config)
+    .then((response) => {
+      response.data.forEach((element) => {
+        auxPeople.push({
+          label: element.name,
+          value: element.name,
+          area: element.area,
+          role: element.role,
+          uid: element.uid,
+        });
+      });
+      peopleListReview.value = auxPeople;
+      loadingReviewerName.value = false;
+    })
+    .catch((error) => {
+      loadingReviewerName.value = false;
+      console.error(error);
+    });
+}
+
+// Function to getPeopleReview()
+async function clearSelectInputReview() {
+  await getPeopleReview();
+}
+
 watch(
   () => props.data,
   async (currentValue) => {
@@ -421,6 +555,7 @@ watch(
     }
   }
 );
+
 </script>
 
 <template>
@@ -511,11 +646,7 @@ watch(
                   role="status"
                   aria-hidden="true"
                 ></span>
-                <!-- <img
-                                    v-else
-                                    src="@/assets/images/svg/overviewDocuments/eye.svg"
-                                    alt="Eye"
-                                /> -->
+
                 <i class="ri-eye-fill fs-5" v-else></i>
                 <!-- <EyeIcon size="22" /> -->
               </BButton>
@@ -531,12 +662,13 @@ watch(
             >
           </div>
         </div>
+
         <BCard no-body class="mt-3" v-if="!isAnswered">
           <BCardHeader>
             <h6>Generador de documentos</h6>
           </BCardHeader>
           <BCardBody>
-            <BRow class="mb-3">
+            <BRow class="mb-3" style="min-height: 600px">
               <BCol lg="8" class="row-container-form">
                 <BCol lg="12">
                   <label for="subject" class="form-label fw-bold"
@@ -590,271 +722,430 @@ watch(
                     :required="true"
                     placeholder="Ingrese el nombre de la empresa del destinatario"
                   />
-                  <!-- <div v-if="data?.companyName">
-                                        <span
-                                        v-if="v$?.$invalid"
-                                        class="text-danger"
-                                    >
-                                        <span
-                                            v-if="
-                                                v$?.companyName?.required
-                                                    ?.$invalid
-                                            "
-                                            >Este campo es obligatorio</span
-                                        >
-                                    </span>
-                                    </div> -->
                 </BCol>
-                <BCol lg="12">
-                  <label for="name" class="form-label fw-bold"
-                    >Destinatario
-                    <span class="text-danger fw-bold">*</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="form.name"
-                    id="name"
-                    :required="true"
-                    placeholder="Ingrese el nombre del destinatario"
-                  />
-                  <span v-if="v$.$invalid" class="text-danger">
-                    <span v-if="v$.name.required.$invalid"
-                      >Este campo es obligatorio</span
-                    >
-                  </span>
-                  <div class="fs-15 mt-2">
-                    <label for="" class="pe-2 fw-bold text-muted"
-                      >Agregar otros destinatarios</label
-                    >
-                    <input
-                      v-model="hasSecondAddressee"
-                      class="form-check-input"
-                      type="checkbox"
-                    />
+
+                <BCol class="mt-4" lg="12" md="12" sm="12">
+                  <div class="accordion" id="accordionResponse">
+                    <!-- información principal -->
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="_headingMain">
+                        <button
+                          class="accordion-button"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#_collapseMain"
+                          aria-expanded="true"
+                          aria-controls="_collapseMain"
+                        >
+                          INFORMACIÓN PRINCIPAL
+                        </button>
+                      </h2>
+                      <div
+                        id="_collapseMain"
+                        class="accordion-collapse collapse show"
+                        aria-labelledby="_headingMain"
+                        data-bs-parent="#accordionResponse"
+                      >
+                        <div class="accordion-body">
+                          <BCol lg="12">
+                            <label for="name" class="form-label fw-bold"
+                              >Destinatario
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              v-model="form.name"
+                              id="name"
+                              :required="true"
+                              placeholder="Ingrese el nombre del destinatario"
+                            />
+                            <span v-if="v$.$invalid" class="text-danger">
+                              <span v-if="v$.name.required.$invalid"
+                                >Este campo es obligatorio</span
+                              >
+                            </span>
+                            <div class="fs-15 mt-2">
+                              <label for="" class="pe-2 fw-bold text-muted"
+                                >Agregar otros destinatarios</label
+                              >
+                              <input
+                                v-model="hasSecondAddressee"
+                                class="form-check-input"
+                                type="checkbox"
+                              />
+                            </div>
+                          </BCol>
+
+                          <BCol lg="12" class="mb-3" v-if="hasSecondAddressee">
+                            <label for="name" class="form-label fw-bold"
+                              >Nombres de los otros destinatarios
+                            </label>
+                            <input
+                              type="text"
+                              class="form-control"
+                              v-model="form.copyName"
+                              id="name"
+                              :required="true"
+                              placeholder="Ingrese los nombres separados por comas"
+                            />
+                          </BCol>
+
+                          <BCol lg="12" class="mb-3">
+                            <label for="name" class="form-label fw-bold"
+                              >Tipo de documento
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <Multiselect
+                              v-model="form.documentType"
+                              :required="true"
+                              :close-on-select="true"
+                              :searchable="true"
+                              :create-option="true"
+                              placeholder="Seleccione"
+                              :disabled="radicated"
+                              :options="[
+                                {
+                                  value: 'Cédula',
+                                  label: 'Cédula',
+                                },
+                                {
+                                  value: 'TI',
+                                  label: 'TI',
+                                },
+                                {
+                                  value: 'Pasaporte',
+                                  label: 'Pasaporte',
+                                },
+                                {
+                                  value: 'Cédula extranjería',
+                                  label: 'Cédula extranjería',
+                                },
+                                {
+                                  value: 'NIT',
+                                  label: 'NIT',
+                                },
+                              ]"
+                            />
+                            <span v-if="v$.$invalid" class="text-danger">
+                              <span v-if="v$.documentType.required.$invalid"
+                                >Este campo es obligatorio</span
+                              >
+                            </span>
+                          </BCol>
+
+                          <BCol lg="12" class="mb-3">
+                            <label for="name" class="form-label fw-bold"
+                              >Número de documento
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              v-model="form.documentNumber"
+                              id="name"
+                              :required="true"
+                              placeholder="Ingrese el número del documento del destinatario"
+                            />
+                            <span v-if="v$.$invalid" class="text-danger">
+                              <span v-if="v$.documentNumber.required.$invalid"
+                                >Este campo es obligatorio</span
+                              >
+                            </span>
+                          </BCol>
+
+                          <BCol lg="12" class="mb-3">
+                            <label for="email" class="form-label fw-bold"
+                              >Email
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              v-model="form.email"
+                              id="email"
+                              :required="true"
+                              placeholder="Ingrese el correo del destinatario"
+                            />
+                            <span v-if="v$.$invalid" class="text-danger">
+                              <span v-if="v$.email.required.$invalid"
+                                >Este campo es obligatorio</span
+                              >
+                              <span v-if="v$.email.email.$invalid"
+                                >El email no es válido</span
+                              >
+                            </span>
+                          </BCol>
+
+                          <BCol lg="12" class="mb-3">
+                            <label for="address" class="form-label fw-bold"
+                              >Dirección
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              v-model="form.address"
+                              id="address"
+                              :required="true"
+                              placeholder="Ingrese la dirección del destinatario"
+                            />
+                            <span v-if="v$.$invalid" class="text-danger">
+                              <span v-if="v$.address.required.$invalid"
+                                >Este campo es obligatorio</span
+                              >
+                            </span>
+                          </BCol>
+
+                          <BCol lg="12" class="mb-3">
+                            <label for="city" class="form-label fw-bold"
+                              >Ciudad
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              v-model="form.city"
+                              id="city"
+                              :required="true"
+                              placeholder="Ingrese la ciudad del destinatario"
+                            />
+                            <span v-if="v$.$invalid" class="text-danger">
+                              <span v-if="v$.city.required.$invalid"
+                                >Este campo es obligatorio</span
+                              >
+                            </span>
+                          </BCol>
+
+                          <BCol lg="12" class="mb-3">
+                            <label for="senderName" class="form-label fw-bold"
+                              >Nombre del remitente
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              v-model="form.senderName"
+                              id="senderName"
+                              :required="true"
+                              placeholder="Ingrese el nombre del remitente"
+                            />
+                            <span v-if="v$.$invalid" class="text-danger">
+                              <span v-if="v$.senderName.required.$invalid"
+                                >Este campo es obligatorio</span
+                              >
+                            </span>
+                          </BCol>
+
+                          <BCol lg="12" class="mb-3">
+                            <label for="name" class="form-label fw-bold"
+                              >Area del remitente
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              v-model="form.senderArea"
+                              id="name"
+                              :required="true"
+                              placeholder="Ingrese el area del remitente"
+                            />
+                            <span v-if="v$.$invalid" class="text-danger">
+                              <span v-if="v$.senderArea.required.$invalid"
+                                >Este campo es obligatorio</span
+                              >
+                            </span>
+                          </BCol>
+
+                          <BCol lg="12" class="mb-3">
+                            <label for="position" class="form-label fw-bold"
+                              >Cargo del remitente
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              v-model="form.position"
+                              id="position"
+                              :required="true"
+                              placeholder="Ingrese el cargo del remitente"
+                            />
+                            <span v-if="v$.$invalid" class="text-danger">
+                              <span v-if="v$.position.required.$invalid"
+                                >Este campo es obligatorio</span
+                              >
+                            </span>
+                          </BCol>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- información remitente -->
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="_headingSender">
+                        <button
+                          class="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#_collapseSender"
+                          aria-expanded="false"
+                          aria-controls="_collapseSender"
+                        >
+                          INFORMACIÓN DE REMITENTE
+                        </button>
+                      </h2>
+                      <div
+                        id="_collapseSender"
+                        class="accordion-collapse collapse"
+                        aria-labelledby="_headingSender"
+                        data-bs-parent="#accordionResponse"
+                      >
+                        <div class="accordion-body">
+                          <BCol lg="12">
+                            <label for="name" class="form-label fw-bold"
+                              >Área
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <Multiselect
+                              v-model="form.sender_area"
+                              :required="true"
+                              :close-on-select="true"
+                              :searchable="true"
+                              :create-option="true"
+                              placeholder="Seleccione"
+                              :options="trds"
+                              @select="clearSelectInputSender"
+                              :disabled="radicated"
+                            />
+                          </BCol>
+
+                          <BCol lg="12" class="mt-3">
+                            <label for="name" class="form-label fw-bold"
+                              >Nombre del remitente
+                              <span class="text-danger fw-bold">*</span>
+                              <BSpinner
+                                v-if="loadingSenderName"
+                                class="float-end"
+                                small
+                                v-b-tooltip.hover.top
+                                title="Extrayendo asunto con IA"
+                                type="grow"
+                              />
+                            </label>
+                            <Multiselect
+                              :required="true"
+                              v-model="form.sender_name"
+                              :close-on-select="true"
+                              :searchable="true"
+                              :create-option="true"
+                              :options="peopleListSender"
+                              placeholder="Seleccione"
+                            />
+                          </BCol>
+
+                          <BCol lg="12" class="mt-3">
+                            <label for="name" class="form-label fw-bold"
+                              >Cargo
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="name"
+                              :required="true"
+                              placeholder="Ingrese el cargo del remitente"
+                              v-model="form.sender_occupation"
+                            />
+                          </BCol>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- información revisión -->
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="_headingReview">
+                        <button
+                          class="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#_collapseReview"
+                          aria-expanded="false"
+                          aria-controls="_collapseReview"
+                        >
+                          INFORMACIÓN DE REVISIÓN
+                        </button>
+                      </h2>
+                      <div
+                        id="_collapseReview"
+                        class="accordion-collapse collapse"
+                        aria-labelledby="_headingReview"
+                        data-bs-parent="#accordionResponse"
+                      >
+                        <div class="accordion-body">
+                          <BCol lg="12">
+                            <label for="name" class="form-label fw-bold"
+                              >Área
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <Multiselect
+                              v-model="form.review_area"
+                              :required="true"
+                              :close-on-select="true"
+                              :searchable="true"
+                              :create-option="true"
+                              placeholder="Seleccione"
+                              :options="trds"
+                              @select="clearSelectInputReview"
+                              :disabled="radicated"
+                            />
+                          </BCol>
+                          <BCol lg="12" class="mt-3">
+                            <label for="name" class="form-label fw-bold"
+                              >Nombre del remitente
+                              <span class="text-danger fw-bold">*</span>
+                              <BSpinner
+                                v-if="loadingReviewerName"
+                                class="float-end"
+                                small
+                                v-b-tooltip.hover.top
+                                title="Extrayendo asunto con IA"
+                                type="grow"
+                              />
+                            </label>
+                            <Multiselect
+                              :required="true"
+                              v-model="form.review_name"
+                              :close-on-select="true"
+                              :searchable="true"
+                              :create-option="true"
+                              :options="peopleListSender"
+                              placeholder="Seleccione"
+                            />
+                          </BCol>
+                          <BCol lg="12" class="mt-3">
+                            <label for="name" class="form-label fw-bold"
+                              >Cargo
+                              <span class="text-danger fw-bold">*</span></label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="name"
+                              :required="true"
+                              placeholder="Ingrese el cargo del remitente"
+                              v-model="form.review_occupation"
+                            />
+                          </BCol>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </BCol>
-
-                <BCol lg="12" class="mb-3" v-if="hasSecondAddressee">
-                  <label for="name" class="form-label fw-bold"
-                    >Nombres de los otros destinatarios
-                  </label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="form.copyName"
-                    id="name"
-                    :required="true"
-                    placeholder="Ingrese los nombres separados por comas"
-                  />
-                </BCol>
-
-                <BCol lg="12" class="mb-3">
-                  <label for="name" class="form-label fw-bold"
-                    >Tipo de documento
-                    <span class="text-danger fw-bold">*</span></label
-                  >
-                  <Multiselect
-                    v-model="form.documentType"
-                    :required="true"
-                    :close-on-select="true"
-                    :searchable="true"
-                    :create-option="true"
-                    placeholder="Seleccione"
-                    :disabled="radicated"
-                    :options="[
-                      {
-                        value: 'Cédula',
-                        label: 'Cédula',
-                      },
-                      {
-                        value: 'TI',
-                        label: 'TI',
-                      },
-                      {
-                        value: 'Pasaporte',
-                        label: 'Pasaporte',
-                      },
-                      {
-                        value: 'Cédula extranjería',
-                        label: 'Cédula extranjería',
-                      },
-                      {
-                        value: 'NIT',
-                        label: 'NIT',
-                      },
-                    ]"
-                  />
-                  <span v-if="v$.$invalid" class="text-danger">
-                    <span v-if="v$.documentType.required.$invalid"
-                      >Este campo es obligatorio</span
-                    >
-                  </span>
-                </BCol>
-
-                <BCol lg="12" class="mb-3">
-                  <label for="name" class="form-label fw-bold"
-                    >Número de documento
-                    <span class="text-danger fw-bold">*</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="form.documentNumber"
-                    id="name"
-                    :required="true"
-                    placeholder="Ingrese el número del documento del destinatario"
-                  />
-                  <span v-if="v$.$invalid" class="text-danger">
-                    <span v-if="v$.documentNumber.required.$invalid"
-                      >Este campo es obligatorio</span
-                    >
-                  </span>
-                </BCol>
-
-                <BCol lg="12" class="mb-3">
-                  <label for="email" class="form-label fw-bold"
-                    >Email <span class="text-danger fw-bold">*</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="form.email"
-                    id="email"
-                    :required="true"
-                    placeholder="Ingrese el correo del destinatario"
-                  />
-                  <span v-if="v$.$invalid" class="text-danger">
-                    <span v-if="v$.email.required.$invalid"
-                      >Este campo es obligatorio</span
-                    >
-                    <span v-if="v$.email.email.$invalid"
-                      >El email no es válido</span
-                    >
-                  </span>
-                </BCol>
-
-                <!-- <BCol
-                                    lg="12"
-                                    class="mb-3"
-                                    v-if="hasShowInputCompany"
-                                >
-                                    <label
-                                        for="company"
-                                        class="form-label fw-bold"
-                                        >Compañía
-                                    </label>
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        v-model="form.company"
-                                        id="company"
-                                        :required="true"
-                                        placeholder="Ingrese la compañía del destinatario"
-                                    />
-                                </BCol> -->
-
-                <BCol lg="12" class="mb-3">
-                  <label for="address" class="form-label fw-bold"
-                    >Dirección <span class="text-danger fw-bold">*</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="form.address"
-                    id="address"
-                    :required="true"
-                    placeholder="Ingrese la dirección del destinatario"
-                  />
-                  <span v-if="v$.$invalid" class="text-danger">
-                    <span v-if="v$.address.required.$invalid"
-                      >Este campo es obligatorio</span
-                    >
-                  </span>
-                </BCol>
-
-                <BCol lg="12" class="mb-3">
-                  <label for="city" class="form-label fw-bold"
-                    >Ciudad <span class="text-danger fw-bold">*</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="form.city"
-                    id="city"
-                    :required="true"
-                    placeholder="Ingrese la ciudad del destinatario"
-                  />
-                  <span v-if="v$.$invalid" class="text-danger">
-                    <span v-if="v$.city.required.$invalid"
-                      >Este campo es obligatorio</span
-                    >
-                  </span>
-                </BCol>
-
-                <BCol lg="12" class="mb-3">
-                  <label for="senderName" class="form-label fw-bold"
-                    >Nombre del remitente
-                    <span class="text-danger fw-bold">*</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="form.senderName"
-                    id="senderName"
-                    :required="true"
-                    placeholder="Ingrese el nombre del remitente"
-                  />
-                  <span v-if="v$.$invalid" class="text-danger">
-                    <span v-if="v$.senderName.required.$invalid"
-                      >Este campo es obligatorio</span
-                    >
-                  </span>
-                </BCol>
-
-                <BCol lg="12" class="mb-3">
-                  <label for="name" class="form-label fw-bold"
-                    >Area del remitente
-                    <span class="text-danger fw-bold">*</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="form.senderArea"
-                    id="name"
-                    :required="true"
-                    placeholder="Ingrese el area del remitente"
-                  />
-                  <span v-if="v$.$invalid" class="text-danger">
-                    <span v-if="v$.senderArea.required.$invalid"
-                      >Este campo es obligatorio</span
-                    >
-                  </span>
-                </BCol>
-
-                <BCol lg="12" class="mb-3">
-                  <label for="position" class="form-label fw-bold"
-                    >Cargo del remitente
-                    <span class="text-danger fw-bold">*</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="form.position"
-                    id="position"
-                    :required="true"
-                    placeholder="Ingrese el cargo del remitente"
-                  />
-                  <span v-if="v$.$invalid" class="text-danger">
-                    <span v-if="v$.position.required.$invalid"
-                      >Este campo es obligatorio</span
-                    >
-                  </span>
                 </BCol>
               </BCol>
             </BRow>
           </BCardBody>
         </BCard>
+
         <div class="relative">
           <BCard no-body class="mt-3">
             <BCardBody v-if="!isAnswered">
