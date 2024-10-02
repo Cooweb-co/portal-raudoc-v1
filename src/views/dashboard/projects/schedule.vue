@@ -135,7 +135,7 @@
             class="nav-link"
             :class="activeTab == 'outDated' ? 'active' : ''"
             href="#"
-            >Vencidas</a
+            >Vencídas</a
           >
         </li>
       </ul>
