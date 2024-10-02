@@ -1729,7 +1729,6 @@ export default {
                   :key="index"
                 >
                   <div class="d-flex align-items-center p-2" v-if="file">
-                    <pre>{{ file }}</pre>
                     <div class="flex-grow-1">
                       <div class="pt-1">
                         <h5 class="fs-14 mb-1" data-dz-name="">
