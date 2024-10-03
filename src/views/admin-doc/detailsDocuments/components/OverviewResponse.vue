@@ -305,6 +305,7 @@
       projectorDesignation: user.idRole,
       reviewerName: form.review_name,
       reviewerDesignation: form.review_occupation,
+      reviewerArea: form.review_area
     });
 
     const configCreatePDF = {
@@ -1114,7 +1115,7 @@
                           </BCol>
                           <BCol lg="12" class="mt-3">
                             <label for="name" class="form-label fw-bold"
-                              >Nombre del remitente
+                              >Nombre de quien revisa
                               <span class="text-danger fw-bold">*</span>
                               <BSpinner
                                 v-if="loadingReviewerName"
