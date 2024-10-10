@@ -2,14 +2,14 @@
 
 import { defineProps } from 'vue'
 const props = defineProps({
-  v$: {type: String},
+  addressee$: {type: String},
   attribute: {type: String}
 });
 </script>
 
 <template>
   <span
-    v-for="error in props?.v$[props?.attribute]?.$errors"
+    v-for="error in props?.addressee$[props?.attribute]?.$errors"
     :key="error.$uid"
     class="text-danger fs-8"
   >
