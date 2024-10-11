@@ -304,3 +304,15 @@ export const getNumberOfPages = async (companyId, claimId) => {
         console.error("Error al obtener los documentos:", error);
     }
 }
+
+// Folder
+
+export const createCollectionFolder = async (collectionPath) => {
+    try {
+        const initialPathFolder = "/folders";
+        const pathCollection = `${initialPathFolder}/${collectionPath}`
+        console.log(pathCollection);
+    } catch (error) {
+        console.error(error);
+    }
+}

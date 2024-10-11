@@ -132,6 +132,12 @@ export default [
     component: () => import("../views/apps/jobs/candidate-lists.vue"),
   },
   {
+    path: "/folders",
+    name: "folders",
+    meta: { title: "Archivos", authRequired: true },
+    component: () => import("../views/folder"),
+  },
+  {
     path: "/dashboard/crypto",
     name: "dashboard-crypto",
     meta: {

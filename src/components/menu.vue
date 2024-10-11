@@ -12,7 +12,7 @@ import {
     FilePlusIcon,
     // DatabaseIcon,
     // PieChartIcon,
-    // ArchiveIcon,
+    ArchiveIcon,
     // MapPinIcon,
     // Share2Icon,
     // SearchIcon,
@@ -46,6 +46,7 @@ export default {
         // GitMergeIcon
         // ListIcon,
         FilePlusIcon,
+        ArchiveIcon,
     },
     data() {
         return {
@@ -242,7 +243,7 @@ export default {
             }
         },
         closeMenu() {
-          document.body.classList.remove("vertical-sidebar-enable");
+            document.body.classList.remove("vertical-sidebar-enable");
         },
 
         updateMenu(e, event) {
@@ -507,6 +508,22 @@ export default {
                             <span data-key="t-dashboard"
                                 >Tipos de Documentos</span
                             >
+                        </router-link>
+                    </li>
+
+                    <li class="menu-title">
+                        <i class="ri-more-fill"></i>
+                        <span data-key="t-components">Manejo de archivos</span>
+                    </li>
+
+                    <li class="nav-item">
+                        <router-link
+                            class="nav-link menu-link"
+                            to="/folders"
+                            @click.prevent="closeMenu()"
+                        >
+                            <ArchiveIcon width="24" height="24" />
+                            <span data-key="t-dashboard">Archivos</span>
                         </router-link>
                     </li>
 
