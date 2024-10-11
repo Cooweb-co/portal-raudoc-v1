@@ -17,27 +17,29 @@ const startProccessAt = ref(
         props.file?.startProccessAt?.seconds || props.file?.createdAt?.seconds
     )
 );
+
 const placement = ref("right");
 const summary = ref(props.file?.summary?.summary || "No definido");
 const legalBasis = ref(props.file?.summary?.legalBasis || false);
 const additionalInformation = ref(props.file?.summary?.additionalInformation || false);
 
 
-const open = ref(false);
+const isOpenDrawer = ref(false);
 
-const showDrawer = () => {
-    open.value = true;
+const openDrawer = () => {
+    isOpenDrawer.value = true;
 };
-const onClose = () => {
-    open.value = false;
+const closeDrawer = () => {
+    isOpenDrawer.value = false;
 };
 
-const goToDocument = () => {
+const goToDocument = async () => {
     const year =
         props.file?.startProccessAt?.toDate().getFullYear() ||
         props.file?.createdAt?.toDate().getFullYear();
     const path = `/Companies/BAQVERDE/${year}/Claims/${props.id}`;
-    openDocument(props.file.name, path);
+    const urlFile = await openDocument(props.file.name, path);
+    window.open(urlFile, "_blank");
 };
 </script>
 
@@ -48,7 +50,7 @@ const goToDocument = () => {
                 <template #title>
                     <a-button
                         type="link"
-                        @click="showDrawer"
+                        @click="openDrawer"
                         style="color: #eee"
                         >Ver resumen</a-button
                     >
@@ -92,8 +94,8 @@ const goToDocument = () => {
         :width="'auto'"
         :title="file?.summary?.subject || 'No definido'"
         :placement="placement"
-        :open="open"
-        @close="onClose"
+        :open="isOpenDrawer"
+        @close="closeDrawer"
         style="z-index: 100000 !important; max-width: 500px !important;"
     >
         <h5>Resumen</h5>

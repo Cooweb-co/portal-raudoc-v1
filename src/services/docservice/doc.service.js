@@ -126,7 +126,7 @@ export async function openDocument(fileName, filePath) {
 
     try {
         const url = await getDownloadURL(storageRef);
-        window.open(url, "_blank");
+        return url;
     } catch (error) {
         console.error("Error al obtener URL del archivo:", error);
     }
@@ -213,19 +213,15 @@ export const deleteFile = async (companyId, year, claimId, uniqueFileName) => {
 
 export const updateClaimSummary = async (companyId, claimId, uniqueValue) => {
     try {
-        // Definir la ruta de la colección
         const collectionPath = `Companies/${companyId}/Claims/${claimId}/Files`;
 
-        // Crear la consulta para encontrar el documento con el valor específico
         const q = query(
             collection(firestore, collectionPath),
-            where("name", "==", uniqueValue) // Cambiar "property" al nombre de la propiedad que contiene el valor único
+            where("name", "==", uniqueValue)
         );
 
-        // Ejecutar la consulta
         const querySnapshot = await getDocs(q);
 
-        // Verificar si se encontró algún documento
         if (!querySnapshot.empty) {
             let summary = null;
             // eslint-disable-next-line no-unused-vars
@@ -236,9 +232,7 @@ export const updateClaimSummary = async (companyId, claimId, uniqueValue) => {
                 summary = docSnapshot.data().summary;
             });
 
-            // Verificar que se haya encontrado el summary
             if (summary) {
-                // Actualizar el documento padre con el summary
                 const parentDocRef = doc(
                     firestore,
                     `Companies/${companyId}/Claims/${claimId}`

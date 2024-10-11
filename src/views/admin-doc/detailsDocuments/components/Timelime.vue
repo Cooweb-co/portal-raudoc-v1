@@ -1,6 +1,7 @@
 <script setup>
-import TimelimeElement from "./TimelimeElement.vue";
 import { defineProps, onMounted, ref } from "vue";
+import TimelimeElement from "./TimelimeElement.vue";
+
 import axios from "axios";
 
 const props = defineProps({
@@ -10,6 +11,7 @@ const props = defineProps({
 });
 
 const company = ref("BAQVERDE");
+const claimId = ref(props?.data?.id);
 const loading = ref(false);
 const data = ref(null);
 const dataLength = ref(0);
@@ -49,6 +51,7 @@ onMounted(async () => {
 function evenOrOdd(number) {
     return number % 2 === 0 ? "right" : "left";
 }
+
 </script>
 
 <template>
@@ -76,18 +79,8 @@ function evenOrOdd(number) {
                 :name="item.name"
                 :action="item.action"
                 :content="item.content || 'No se encontraron detalles'"
+                :claimId="claimId"
             />
-            <!-- <TimelimeElement
-                :createdAt="''"
-                :position="evenOrOdd(dataLength + 1)"
-                :name="'Sistema'"
-                :action="'Iniciado'"
-                :content="
-                    'Ha iniciado el proceso al siguiente documento ' +
-                    props.numberClaim +
-                    ', en el transcurso de los días se ira actualizando el estado del documento.'
-                "
-            /> -->
         </div>
     </div>
 </template>

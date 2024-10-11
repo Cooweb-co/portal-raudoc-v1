@@ -5,6 +5,7 @@
 <script setup>
 import axios from "axios";
 import { onMounted } from "vue";
+import { getMessaging, onMessage } from "firebase/messaging";
 
 onMounted(() => {
     let config = {
@@ -24,6 +25,21 @@ onMounted(() => {
         .catch((error) => {
             console.error(error);
         });
+    
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/firebase-messaging-sw.js')
+            .then((registration) => {
+            console.info('Service Worker register: ', registration.scope);
+            }).catch((err) => {
+            console.error('Error al registrar el Service Worker:', err);
+        });
+}
+});
+
+const messaging = getMessaging();
+onMessage(messaging, (payload) => {
+  console.log('Mensaje recibido en primer plano:', payload);
+  // Aquí puedes mostrar una notificación o actualizar la UI
 });
 </script>
 
