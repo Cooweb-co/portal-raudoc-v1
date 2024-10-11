@@ -9,6 +9,15 @@ import setState from "@/helpers/setState";
 import setVariantStateInfo from "@/helpers/setVariantStateInfo";
 import { state as State } from "@/state/modules/auth";
 
+import JsonExcel from "vue-json-excel3";
+
+
+
+
+
+
+
+
 const dataSource = reactive([]);
 const state = reactive({
     searchText: "",
@@ -16,7 +25,11 @@ const state = reactive({
 });
 const searchInput = ref();
 const filteredInfo = ref(null);
-const sortedInfo = ref(null);
+const sortedInfo = ref({
+    columnKey: "expirationDate",
+    field: "expirationDate",
+    order: "descend",
+});
 const user = JSON.parse(State.currentUserInfo);
 // let dateStart = ref(null);
 // let dateEnd = ref(null);
@@ -26,7 +39,7 @@ const loading = ref(false);
 onBeforeMount(async () => {
     loading.value = true;
     const headers = {
-        company: "BAQVERDE",
+        company: "BAQVERDE", // 🔥 hardcoded
         "Content-Type": "application/json",
     };
     await axios
@@ -91,13 +104,52 @@ const handleTableChange = (pag, filters, sorter) => {
 const columns = computed(() => {
     const sorted = sortedInfo.value || {};
     return [
-        {
-            title: "Visualizar",
-            dataIndex: "action",
-            key: "action",
+
+    {
+            title: "Estado",
+            dataIndex: "status",
+            key: "status",
             width: "3%",
+            filters: [
+                {
+                    text: "Vencido", //Rojo
+                    value: "Vencido",
+                },
+                {
+                    text: "Por vencer", //Amarillo
+                    value: "Por vencer",
+                },
+                {
+                    text: "En Termino", // Verde
+                    value: "En termino",
+                },
+                {
+                    text: "Respondido", // Azul
+                    value: "Respondido",
+                },
+                {
+                    text: "No requiere respuesta", // Azul
+                    value: "No requiere respuesta",
+                },
+            ],
+            onFilter: (value, record) => record.status.indexOf(value) === 0,
+        },
+
+        {
+            title: "Asignado a",
+            dataIndex: "assignedTo",
+            key: "assignedTo",
+            width: "8%",
             className: "text-center",
         },
+
+        // {
+        //     title: "Visualizar",
+        //     dataIndex: "action",
+        //     key: "action",
+        //     width: "3%",
+        //     className: "text-center",
+        // },
         {
             title: "N° Radicado",
             dataIndex: "numberClaim",
@@ -199,37 +251,9 @@ const columns = computed(() => {
             },
 
             sortOrder: sorted.columnKey === "expirationDate" && sorted.order,
-            ellipsis: true,
+            ellipsis: true
         },
-        {
-            title: "Estado",
-            dataIndex: "status",
-            key: "status",
-            width: "3%",
-            filters: [
-                {
-                    text: "Vencido", //Rojo
-                    value: "Vencido",
-                },
-                {
-                    text: "Por vencer", //Amarillo
-                    value: "Por vencer",
-                },
-                {
-                    text: "En Termino", // Verde
-                    value: "En termino",
-                },
-                {
-                    text: "Respondido", // Azul
-                    value: "Respondido",
-                },
-                {
-                    text: "No requiere respuesta", // Azul
-                    value: "No requiere respuesta",
-                },
-            ],
-            onFilter: (value, record) => record.status.indexOf(value) === 0,
-        },
+      
         // {
         //     title: "Prioridad",
         //     dataIndex: "priority",
@@ -263,10 +287,10 @@ const convertToTimestamp = (createdAt) => {
 };
 
 const numberClaimColor = (numberClaim) => {
-    return numberClaim?.startsWith("BV-") ? "link-success" : "link-primary";
+    return numberClaim?.startsWith("BV-") ? "link-success" : "link-primary"; // 🔥 hardcoded
 };
 const numberClaimColorhighlight = (numberClaim) => {
-    return numberClaim?.startsWith("BV-")
+    return numberClaim?.startsWith("BV-") // 🔥 hardcoded
         ? "link-success highlight-numberOutClaim"
         : "link-primary highlight-numberEntryClaim ";
 };
@@ -351,6 +375,25 @@ const setVariantState = (text) => {
 //         .format("D MMM, YYYY HH:mm:ss");
 //     return transformedDate;
 // };
+
+
+const downloadExcelJson = computed(() => {
+
+    return dataSource.map(item => {
+       return {
+        'Estado': item.status,
+        'Asignado a': item.assignedTo,
+        'N° Radicado': item.numberClaim,
+        'Asunto': item.subject,
+        'Nombre Peticionario': item.petitioner,
+        'Radicado de salida': item.numberOutClaim,
+        'Fecha de entrada': item.entryDate,
+        'Expiración': item.expirationDate
+       }
+   });
+});
+
+
 </script>
 
 <template>
@@ -361,6 +404,19 @@ const setVariantState = (text) => {
         />
     </div> -->
     <div>
+
+
+        <a-tooltip title="Reporte de Radicados">
+            <json-excel :data="downloadExcelJson" :name="'Reporte_Radicados_'+new Date().toLocaleDateString()" class="float-end mb-3">
+                <BButton variant="primary">
+                    Descargar Reporte en Excel <i class="bi bi-file-earmark-excel"></i>
+                </BButton>
+            </json-excel>
+        </a-tooltip>
+
+        <!-- <download-excel :data="dataSource">
+            Download Data
+        </download-excel> -->
         <a-table
             :dataSource="dataSource"
             :columns="columns"
