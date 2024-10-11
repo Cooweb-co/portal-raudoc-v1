@@ -1286,4 +1286,10 @@ export default [
     meta: { title: "Leaflet Maps", authRequired: true },
     component: () => import("../views/maps/leaflet/index"),
   },
+  {
+    path: "/admin-doc/external",
+    name: "External Claims",
+    meta: { title: "External Claims" },
+    component: () => import("../views/admin-doc/ExternalClaim"),
+  },
 ];
