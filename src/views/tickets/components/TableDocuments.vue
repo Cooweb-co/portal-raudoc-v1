@@ -11,13 +11,6 @@ import { state as State } from "@/state/modules/auth";
 
 import JsonExcel from "vue-json-excel3";
 
-
-
-
-
-
-
-
 const dataSource = reactive([]);
 const state = reactive({
     searchText: "",
@@ -104,12 +97,29 @@ const handleTableChange = (pag, filters, sorter) => {
 const columns = computed(() => {
     const sorted = sortedInfo.value || {};
     return [
-
-    {
+        {
+            title: "N° Radicado",
+            dataIndex: "numberClaim",
+            key: "numberClaim",
+            width: "6%",
+            customFilterDropdown: true,
+            onFilter: (value, record) =>
+                record.numberClaim
+                    .toString()
+                    .toLowerCase()
+                    .includes(value.toLowerCase()),
+            onFilterDropdownOpenChange: (visible) => {
+                if (visible) {
+                    setTimeout(() => {
+                        searchInput.value.focus();
+                    }, 100);
+                }
+            },
+        },
+        {
             title: "Estado",
             dataIndex: "status",
             key: "status",
-            width: "3%",
             filters: [
                 {
                     text: "Vencido", //Rojo
@@ -133,6 +143,7 @@ const columns = computed(() => {
                 },
             ],
             onFilter: (value, record) => record.status.indexOf(value) === 0,
+            width: "5%",
         },
 
         {
@@ -150,25 +161,6 @@ const columns = computed(() => {
         //     width: "3%",
         //     className: "text-center",
         // },
-        {
-            title: "N° Radicado",
-            dataIndex: "numberClaim",
-            key: "numberClaim",
-            width: "6%",
-            customFilterDropdown: true,
-            onFilter: (value, record) =>
-                record.numberClaim
-                    .toString()
-                    .toLowerCase()
-                    .includes(value.toLowerCase()),
-            onFilterDropdownOpenChange: (visible) => {
-                if (visible) {
-                    setTimeout(() => {
-                        searchInput.value.focus();
-                    }, 100);
-                }
-            },
-        },
         {
             title: "Asunto",
             dataIndex: "subject",
@@ -251,9 +243,9 @@ const columns = computed(() => {
             },
 
             sortOrder: sorted.columnKey === "expirationDate" && sorted.order,
-            ellipsis: true
+            ellipsis: true,
         },
-      
+
         // {
         //     title: "Prioridad",
         //     dataIndex: "priority",
@@ -376,24 +368,20 @@ const setVariantState = (text) => {
 //     return transformedDate;
 // };
 
-
 const downloadExcelJson = computed(() => {
-
-    return dataSource.map(item => {
-       return {
-        'Estado': item.status,
-        'Asignado a': item.assignedTo,
-        'N° Radicado': item.numberClaim,
-        'Asunto': item.subject,
-        'Nombre Peticionario': item.petitioner,
-        'Radicado de salida': item.numberOutClaim,
-        'Fecha de entrada': item.entryDate,
-        'Expiración': item.expirationDate
-       }
-   });
+    return dataSource.map((item) => {
+        return {
+            Estado: item.status,
+            "Asignado a": item.assignedTo,
+            "N° Radicado": item.numberClaim,
+            Asunto: item.subject,
+            "Nombre Peticionario": item.petitioner,
+            "Radicado de salida": item.numberOutClaim,
+            "Fecha de entrada": item.entryDate,
+            Expiración: item.expirationDate,
+        };
+    });
 });
-
-
 </script>
 
 <template>
@@ -404,12 +392,15 @@ const downloadExcelJson = computed(() => {
         />
     </div> -->
     <div>
-
-
         <a-tooltip title="Reporte de Radicados">
-            <json-excel :data="downloadExcelJson" :name="'Reporte_Radicados_'+new Date().toLocaleDateString()" class="float-end mb-3">
+            <json-excel
+                :data="downloadExcelJson"
+                :name="'Reporte_Radicados_' + new Date().toLocaleDateString()"
+                class="float-end mb-3"
+            >
                 <BButton variant="primary">
-                    Descargar Reporte en Excel <i class="bi bi-file-earmark-excel"></i>
+                    Descargar Reporte en Excel
+                    <i class="bi bi-file-earmark-excel"></i>
                 </BButton>
             </json-excel>
         </a-tooltip>
