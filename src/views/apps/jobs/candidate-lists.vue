@@ -91,7 +91,11 @@ export default {
     axios
       .request(this.config)
       .then((response) => {
-        this.originalCandidatelist = response.data;
+        this.originalCandidatelist = response.data.map((e) => ({
+          ...e,
+          loadingPassword: false,
+          loadingStatus: false,
+        }));
         this.selectRole = "TODOS";
         this.loading = false;
       })
@@ -134,23 +138,33 @@ export default {
         ? "text-success bg-success-subtle"
         : "text-danger bg-danger-subtle";
     },
-    async handleChangePassword(email) {
-      await axios.post(
-        `${process.env.VUE_APP_CF_BASE_URL}/user/update-password/`,
-        { email },
-        {
-          headers: {
-            company: "BAQVERDE",
-          },
-        }
-      );
-      toast("En momentos le llegará un correo con la información!", {
-        type: "success",
-        position: "top-right",
-      });
+    async handleChangePassword(item) {
+      try {
+        item.loadingPassword = true;
+        await axios.post(
+          `${process.env.VUE_APP_CF_BASE_URL}/user/update-password/`,
+          { email: item.email },
+          {
+            headers: {
+              company: "BAQVERDE",
+            },
+          }
+        );
+        toast("En momentos le llegará un correo con la información!", {
+          type: "success",
+          position: "top-right",
+        });
+      } catch (error) {
+        toast("Hubo un error, intente nuevamente!", {
+          type: "error",
+          position: "top-right",
+        });
+      } finally {
+        item.loadingPassword = false;
+      }
     },
-    async handleChangeUserStatus(status, uid) {
-      let message = status ? "habilitar" : "deshabilitar";
+    async handleChangeUserStatus(item, status) {
+      let message = item.status ? "habilitar" : "deshabilitar";
       Swal.fire({
         title: `Estas seguro de querer ${message} a este usuario?`,
         icon: "warning",
@@ -161,15 +175,30 @@ export default {
         confirmButtonText: "Si, continuar!",
       }).then(async (result) => {
         if (result.value) {
-          await axios.put(
-            `${process.env.VUE_APP_CF_BASE_URL}/user/update-status`,
-            { status, uid },
-            {
-              headers: {
-                company: "BAQVERDE",
-              },
-            }
-          );
+          try {
+            item.loadingStatus = true;
+            await axios.put(
+              `${process.env.VUE_APP_CF_BASE_URL}/user/update-status`,
+              { status, uid: item.uid },
+              {
+                headers: {
+                  company: "BAQVERDE",
+                },
+              }
+            );
+            item.isActive = status;
+            toast("Estado cambiado con exito!", {
+              type: "success",
+              position: "top-right",
+            });
+          } catch (error) {
+            toast("Hubo un error, intente nuevamente!", {
+              type: "error",
+              position: "top-right",
+            });
+          } finally {
+            item.loadingStatus = false;
+          }
         }
       });
     },
@@ -236,7 +265,7 @@ export default {
               <th scope="col">PERFIL</th>
               <th scope="col">AREA</th>
               <th scope="col">CORREO</th>
-              <th scope="col">ACCIONES</th>
+              <th v-if="user.idRole == 'ADMIN'" scope="col">ACCIONES</th>
             </tr>
           </thead>
           <tbody v-if="loading">
@@ -259,7 +288,7 @@ export default {
               <td>
                 <a-skeleton :loading="loading" :active="loading" />
               </td>
-              <td>
+              <td v-if="user.idRole == 'ADMIN'">
                 <a-skeleton :loading="loading" :active="loading" />
               </td>
             </tr>
@@ -296,45 +325,57 @@ export default {
               </td>
               <td>{{ this.setArea(data.areaId) }}</td>
               <td>{{ data.email }}</td>
-              <td class="d-flex justify-content-evenly align-items-center">
-                <a-tooltip
-                  v-if="user.idRole == 'ADMIN'"
-                  title="Restaurar contraseña"
-                >
-                  <BLink
-                    class="btn btn-primary p-2"
-                    @click="handleChangePassword(data.email)"
-                  >
-                    <i class="ri-lock-line align-bottom"></i>
-                  </BLink>
-                </a-tooltip>
-                <a-tooltip title="Editar">
-                  <BLink
-                    :href="`/edicion-usuario/${data.uid}`"
-                    class="btn btn-outline-primary p-2"
-                  >
-                    <i class="ri-edit-line align-bottom"></i>
-                  </BLink>
-                </a-tooltip>
-                <template v-if="user.idRole == 'ADMIN'">
+              <template v-if="user.idRole == 'ADMIN'">
+                <td class="d-flex justify-content-evenly align-items-center">
+                  <a-tooltip title="Restaurar contraseña">
+                    <BLink
+                      class="btn btn-primary p-2"
+                      @click="handleChangePassword(data)"
+                    >
+                      <span
+                        v-if="data.loadingPassword"
+                        class="spinner-border spinner-border-sm"
+                        aria-hidden="true"
+                      />
+                      <i v-else class="ri-lock-line align-bottom"></i>
+                    </BLink>
+                  </a-tooltip>
+                  <a-tooltip title="Editar">
+                    <BLink
+                      :href="`/edicion-usuario/${data.uid}`"
+                      class="btn btn-outline-primary p-2"
+                    >
+                      <i class="ri-edit-line align-bottom"></i>
+                    </BLink>
+                  </a-tooltip>
                   <a-tooltip v-if="data.isActive" title="Deshabilitar">
                     <BLink
                       class="btn btn-danger oulined p-2"
-                      @click="handleChangeUserStatus(false)"
+                      @click="handleChangeUserStatus(data, false)"
                     >
-                      <i class="ri-close-fill align-bottom"></i>
+                      <span
+                        v-if="data.loadingStatus"
+                        class="spinner-border spinner-border-sm"
+                        aria-hidden="true"
+                      />
+                      <i v-else class="ri-close-fill align-bottom"></i>
                     </BLink>
                   </a-tooltip>
                   <a-tooltip v-else title="Habilitar">
                     <BLink
                       class="btn btn-success oulined p-2"
-                      @click="handleChangeUserStatus(true)"
+                      @click="handleChangeUserStatus(data, true)"
                     >
-                      <i class="ri-check-fill align-bottom"></i>
+                      <span
+                        v-if="data.loadingStatus"
+                        class="spinner-border spinner-border-sm"
+                        aria-hidden="true"
+                      />
+                      <i v-else class="ri-check-fill align-bottom"></i>
                     </BLink>
                   </a-tooltip>
-                </template>
-              </td>
+                </td>
+              </template>
             </tr>
           </tbody>
         </table>
