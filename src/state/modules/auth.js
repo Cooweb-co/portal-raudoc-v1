@@ -43,7 +43,7 @@ export const actions = {
             // Fetch user info with an email and save it in session storage
             const currentUser = await getFirebaseBackend().getUserInfo('BAQVERDE', user.uid);
 
-            if(currentUser.isActive) return null
+            if(!currentUser.isActive) return null
 
             commit('SET_CURRENT_USER_INFO', currentUser)
 

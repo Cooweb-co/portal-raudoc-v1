@@ -77,7 +77,6 @@ export default {
                                 this.tryingToLogIn = false;
                                 this.isAuthError = false;
                                 // Redirect to the originally requested page, or to the home page
-
                                 if(!token) {
                                     this.logOut()
                                     this.processing = false;

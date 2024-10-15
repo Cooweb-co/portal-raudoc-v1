@@ -144,7 +144,7 @@ export default {
           },
         }
       );
-      toast("Información enviada al correo del usuario!", {
+      toast("En momentos le llegará un correo con la información!", {
         type: "success",
         position: "top-right",
       });
