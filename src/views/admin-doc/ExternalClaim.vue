@@ -7,6 +7,7 @@
   import Swal from "sweetalert2";
   import ValidateLabel from "../../utils/ValidateLabel.vue";
   import { requiredIf } from "@vuelidate/validators";
+  import { useRouter } from "vue-router";
 
   import {
     ContinentList,
@@ -16,6 +17,8 @@
 
   export default {
     setup() {
+      const router = useRouter();
+
       const externalClaim = ref({
         documentNumber: "",
         name: "",
@@ -71,7 +74,6 @@
         municipality: { required: MESSAGE_REQUIRED },
         claimSubject: { required: MESSAGE_REQUIRED },
         annexDescription: { required: MESSAGE_REQUIRED },
-        claimType: { required: MESSAGE_REQUIRED },
         termsAndConditions: {
           required: requiredIf(() => {
             if (externalClaim.value.termsAndConditions === false) {
@@ -83,7 +85,7 @@
 
       const v$ = useVuelidate(rules, externalClaim);
 
-      const file = ref([])
+      const file = ref([]);
 
       const selectedFile = () => {
         const newFile = document.getElementById("formFile").files;
@@ -96,16 +98,19 @@
         try {
           v$.value.$touch();
 
-          if (v$.value.$invalid) {
-            Swal.fire({
-              position: "top-end",
-              icon: "error",
-              title: "Faltan campos obligatorios del formulario",
-              showConfirmButton: false,
-              timer: 1500,
-            });
-            return;
-          }
+          if (v$.value.$invalid) return;
+
+          // const response = await axios.post(``, externalClaim)
+
+          Swal.fire({
+            position: "top-end",
+            icon: "success",
+            title: "Faltan campos obligatorios del formulario",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+
+          router.replace("/");
         } catch (error) {
           console.log(error);
         }
@@ -120,7 +125,7 @@
         v$,
         sendClaim,
         selectedFile,
-        file
+        file,
       };
     },
 
@@ -156,7 +161,12 @@
           >Archivo asociado al radicado
           <span class="text-danger fw-bold">*</span></label
         >
-        <input class="form-control" type="file" id="formFile" @change="selectedFile" />
+        <input
+          class="form-control"
+          type="file"
+          id="formFile"
+          @change="selectedFile"
+        />
       </BCol>
 
       <BCol lg="4" class="mt-3">
@@ -417,7 +427,11 @@
       </BCol>
 
       <BCol lg="12" class="mt-3 text-center">
-        <button type="button" class="col-12 col-md-12 col-lg-3 btn btn-success" @click="sendClaim">
+        <button
+          type="button"
+          class="col-12 col-md-12 col-lg-3 btn btn-success"
+          @click="sendClaim"
+        >
           Radicar
         </button>
       </BCol>
