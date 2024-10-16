@@ -1,1520 +1,1563 @@
 <script>
-import {
-  ref,
-  watch,
-  getCurrentInstance,
-  // onUnmounted,
-  computed,
-  reactive,
-  // onMounted,
-} from "vue";
-import Multiselect from "@vueform/multiselect";
-import { transformDate } from "@/helpers/transformDate";
-import dayjs from "dayjs";
-import "@vueform/multiselect/themes/default.css";
-import useVuelidate from "@vuelidate/core";
-import Layout from "@/layouts/main.vue";
-import PageHeader from "@/components/page-header";
-import { toast } from "vue3-toastify";
-import flatPickr from "vue-flatpickr-component";
-import "flatpickr/dist/flatpickr.css";
-import { getFirebaseBackend } from "../../authUtils.js";
-import { uploadBytes, ref as storageRef } from "firebase/storage";
-import ValidateLabel from "../../utils/ValidateLabel.vue";
-import ValidateOutLabels from "../../utils/ValidateOutLabels.vue";
-import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
-import { setTracking } from "@/helpers/tracking";
-import Modal from "../modals/Modal.vue";
-import moment from "moment";
-import store from "@/state/store";
-import {
-  FileTextIcon,
-  // AlertOctagonIcon,
-  Trash2Icon,
-  CpuIcon,
-} from "@zhuowenli/vue-feather-icons";
-import { Editor } from "@camilo__lp/custom-editor-vue3";
-import { requiredIf } from "@vuelidate/validators";
-import Swal from "sweetalert2";
-// import {
-//   onSnapshot,
-//   collection,
-// } from "firebase/firestore";
+  import {
+    ref,
+    watch,
+    getCurrentInstance,
+    // onUnmounted,
+    computed,
+    reactive,
+    // onMounted,
+  } from "vue";
+  import Multiselect from "@vueform/multiselect";
+  import { transformDate } from "@/helpers/transformDate";
+  import dayjs from "dayjs";
+  import "@vueform/multiselect/themes/default.css";
+  import useVuelidate from "@vuelidate/core";
+  import Layout from "@/layouts/main.vue";
+  import PageHeader from "@/components/page-header";
+  import { toast } from "vue3-toastify";
+  import flatPickr from "vue-flatpickr-component";
+  import "flatpickr/dist/flatpickr.css";
+  import { getFirebaseBackend } from "../../authUtils.js";
+  import { uploadBytes, ref as storageRef } from "firebase/storage";
+  import ValidateLabel from "../../utils/ValidateLabel.vue";
+  import ValidateOutLabels from "../../utils/ValidateOutLabels.vue";
+  import { MESSAGE_REQUIRED, MESSAGE_EMAIL } from "../../constants/rules.ts";
+  import { setTracking } from "@/helpers/tracking";
+  import Modal from "../modals/Modal.vue";
+  import moment from "moment";
+  import store from "@/state/store";
+  import {
+    FileTextIcon,
+    // AlertOctagonIcon,
+    Trash2Icon,
+    CpuIcon,
+  } from "@zhuowenli/vue-feather-icons";
+  import { Editor } from "@camilo__lp/custom-editor-vue3";
+  import { requiredIf } from "@vuelidate/validators";
+  import Swal from "sweetalert2";
+  // import {
+  //   onSnapshot,
+  //   collection,
+  // } from "firebase/firestore";
 
-//google places api imports
-import { Loader } from "@googlemaps/js-api-loader";
+  //google places api imports
+  import { Loader } from "@googlemaps/js-api-loader";
 
-import {
-  createClaimID,
-  onListenClaimData,
-  getDocStatus,
-  // deleteDocument,
-  deleteDocumentByName,
-  updateClaimSummary,
-  getNumberOfPages,
-} from "../../services/docservice/doc.service";
-import axios from "axios";
+  import {
+    createClaimID,
+    onListenClaimData,
+    getDocStatus,
+    // deleteDocument,
+    deleteDocumentByName,
+    updateClaimSummary,
+    getNumberOfPages,
+  } from "../../services/docservice/doc.service";
+  import axios from "axios";
 
-export default {
-  validations() {},
+  export default {
+    validations() {},
 
-  setup() {
-    const instance = getCurrentInstance();
-    const storage = getFirebaseBackend().storage;
-    const files = ref([]);
-    const filesToUpload = ref([]);
-    const uploadedFiles = ref([]);
-    const readDocument = ref(false);
-    const dropzoneFile = ref("");
-    const loadingBtnAI = ref(false);
-    const isLoadingUsers = ref(false);
-    const canUseAI = ref(true);
-    const documentID = ref(null);
-    const documentAI = ref(null);
-    const companyID = ref("BAQVERDE");
-    const urlSticker = ref(null);
-    const year = ref(new Date().getFullYear());
-    const claimData = ref(null);
-    const mode = ref("Entry");
-    const saveLoading = ref(false);
-    const submitLoading = ref(false);
-    const qrModal = ref(false);
-    let unsubscribe;
-    let idProccessAI;
-    const isListeningEnabled = ref(true);
-    const loadingAI = ref(false);
-    const loadingNumberOfPages = ref(false);
-    const newDate = ref(dayjs().format("DD/MM/YYYY HH:mm"));
-    const trds = ref([]);
-    const series = ref([]);
-    const subseries = ref([]);
-    const isDocs = ref([]);
-    const radicate = ref("");
-    const peopleList = ref([]);
-    const peopleListAddressee = ref([]);
-    const peopleListSender = ref([]);
-    const peopleListReview = ref([]);
-    const timerAI = ref([]);
-    const timerExtractingInformationAI = ref(null);
-    const dropzone = ref(false);
-    const manual_address = ref(false);
-    const radicated = ref(false);
-    const urlPage = ref(process.env.VUE_APP_URLPAGE);
-    const manual_address_info = ref(["", "", "", "", "", "", "", "", ""]);
-    const address_info = ref([
-      "" /* Dirección */,
-      "" /* Departamento */,
-      "" /* Ciudad */,
-    ]);
-    const finalAddress = ref("");
-    const showcompanyNameForm = ref(false);
-    const addressOptions = ref([
-      { label: "Calle", value: "CL. " },
-      { label: "Carrera", value: "CRA. " },
-      { label: "Autopista", value: "AU. " },
-      { label: "Avenida", value: "AV. " },
-      { label: "Transversal", value: "TV. " },
-      { label: "Diagonal", value: "DG. " },
-      { label: "Vía", value: "VI. " },
-    ]);
-    const isLoadingPreview = ref(false);
-    const isLoadingCreateDocument = ref(false);
+    setup() {
+      const instance = getCurrentInstance();
+      const storage = getFirebaseBackend().storage;
+      const files = ref([]);
+      const filesToUpload = ref([]);
+      const uploadedFiles = ref([]);
+      const haveAdditionalDocuments = ref(false);
+      const readDocument = ref(false);
+      const dropzoneFile = ref("");
+      const loadingBtnAI = ref(false);
+      const isLoadingUsers = ref(false);
+      const canUseAI = ref(true);
+      const documentID = ref(null);
+      const documentAI = ref(null);
+      const companyID = ref("BAQVERDE");
+      const urlSticker = ref(null);
+      const year = ref(new Date().getFullYear());
+      const claimData = ref(null);
+      const mode = ref("Entry");
+      const saveLoading = ref(false);
+      const submitLoading = ref(false);
+      const qrModal = ref(false);
+      let unsubscribe;
+      let idProccessAI;
+      const isListeningEnabled = ref(true);
+      const loadingAI = ref(false);
+      const loadingNumberOfPages = ref(false);
+      const newDate = ref(dayjs().format("DD/MM/YYYY HH:mm"));
+      const trds = ref([]);
+      const series = ref([]);
+      const subseries = ref([]);
+      const isDocs = ref([]);
+      const radicate = ref("");
+      const peopleList = ref([]);
+      const peopleListAddressee = ref([]);
+      const peopleListSender = ref([]);
+      const peopleListReview = ref([]);
+      const timerAI = ref([]);
+      const timerExtractingInformationAI = ref(null);
+      const dropzone = ref(false);
+      const manual_address = ref(false);
+      const radicated = ref(false);
+      const urlPage = ref(process.env.VUE_APP_URLPAGE);
+      const manual_address_info = ref(["", "", "", "", "", "", "", "", ""]);
+      const address_info = ref([
+        "" /* Dirección */,
+        "" /* Departamento */,
+        "" /* Ciudad */,
+      ]);
+      const finalAddress = ref("");
+      const showcompanyNameForm = ref(false);
+      const addressOptions = ref([
+        { label: "Calle", value: "CL. " },
+        { label: "Carrera", value: "CRA. " },
+        { label: "Autopista", value: "AU. " },
+        { label: "Avenida", value: "AV. " },
+        { label: "Transversal", value: "TV. " },
+        { label: "Diagonal", value: "DG. " },
+        { label: "Vía", value: "VI. " },
+      ]);
+      const isLoadingPreview = ref(false);
+      const isLoadingCreateDocument = ref(false);
+      const additionalDocs = ref([]);
 
-    let config = {
-      method: "get",
-      maxBodyLength: Infinity,
-      url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
-      headers: {
-        company: "BAQVERDE",
-      },
-    };
+      let config = {
+        method: "get",
+        maxBodyLength: Infinity,
+        url: `${process.env.VUE_APP_CF_BASE_URL}/TDRS_LIST_V1`,
+        headers: {
+          company: "BAQVERDE",
+        },
+      };
 
-    // controlador de variables relacionadas a los radicados de salida
-    const isExternal = ref(false);
+      // controlador de variables relacionadas a los radicados de salida
+      const isExternal = ref(false);
 
-    const outForm = reactive({
-      review_area: "",
-      review_name: "",
-      review_occupation: "",
-      sender_area: "",
-      sender_name: "",
-      sender_occupation: "",
-    });
+      const outForm = reactive({
+        review_area: "",
+        review_name: "",
+        review_occupation: "",
+        sender_area: "",
+        sender_name: "",
+        sender_occupation: "",
+      });
 
-    // controlador de variables para el formulario de radicacion
-    const form = reactive({
-      area: "",
-      date: newDate.value,
-      inputMethod: "",
-      serie: "",
-      subSerie: "",
-      documentType: "",
-      untilDate: "",
-      folios: "",
-      externalFiling: "",
-      personType: "",
-      idType: "",
-      idNumber: "",
-      contactPhone: "",
-      names: "",
-      companyName: "",
-      lastNames: "",
-      email: "",
-      address: "",
-      assignedTo: "",
-      subject: "",
-      description: "",
-      observations: "",
-    });
+      // controlador de variables para el formulario de radicacion
+      const form = reactive({
+        area: "",
+        date: newDate.value,
+        inputMethod: "",
+        serie: "",
+        subSerie: "",
+        documentType: "",
+        untilDate: "",
+        folios: "",
+        externalFiling: "",
+        personType: "",
+        idType: "",
+        idNumber: "",
+        contactPhone: "",
+        names: "",
+        companyName: "",
+        lastNames: "",
+        email: "",
+        address: "",
+        assignedTo: "",
+        subject: "",
+        description: "",
+        observations: "",
+      });
 
-    // reglas de validacion
-    const rules = {
-      area: { required: MESSAGE_REQUIRED },
-      date: { required: MESSAGE_REQUIRED },
-      inputMethod: { required: MESSAGE_REQUIRED },
-      serie: { required: MESSAGE_REQUIRED },
-      subSerie: { required: MESSAGE_REQUIRED },
-      documentType: { required: MESSAGE_REQUIRED },
-      untilDate: {},
-      folios: { required: MESSAGE_REQUIRED },
-      externalFiling: {},
-      personType: {
-        required: requiredIf(() => {
-          if (mode.value == "Out") {
-            if (isExternal.value) {
+      // reglas de validacion
+      const rules = {
+        area: { required: MESSAGE_REQUIRED },
+        date: { required: MESSAGE_REQUIRED },
+        inputMethod: { required: MESSAGE_REQUIRED },
+        serie: { required: MESSAGE_REQUIRED },
+        subSerie: { required: MESSAGE_REQUIRED },
+        documentType: { required: MESSAGE_REQUIRED },
+        untilDate: {},
+        folios: { required: MESSAGE_REQUIRED },
+        externalFiling: {},
+        personType: {
+          required: requiredIf(() => {
+            if (mode.value == "Out") {
+              if (isExternal.value) {
+                return MESSAGE_REQUIRED;
+              }
+            } else {
               return MESSAGE_REQUIRED;
             }
-          } else {
-            return MESSAGE_REQUIRED;
-          }
-        }),
-      },
-      idType: {
-        required: requiredIf(() => {
-          if (mode.value == "Out") {
-            if (isExternal.value) {
+          }),
+        },
+        idType: {
+          required: requiredIf(() => {
+            if (mode.value == "Out") {
+              if (isExternal.value) {
+                return MESSAGE_REQUIRED;
+              }
+            } else {
               return MESSAGE_REQUIRED;
             }
-          } else {
-            return MESSAGE_REQUIRED;
-          }
-        }),
-      },
-      idNumber: {
-        required: requiredIf(() => {
-          if (mode.value == "Out") {
-            if (isExternal.value) {
+          }),
+        },
+        idNumber: {
+          required: requiredIf(() => {
+            if (mode.value == "Out") {
+              if (isExternal.value) {
+                return MESSAGE_REQUIRED;
+              }
+            } else {
               return MESSAGE_REQUIRED;
             }
-          } else {
-            return MESSAGE_REQUIRED;
-          }
-        }),
-      },
-      contactPhone: {
-        required: requiredIf(() => {
-          if (mode.value == "Out") {
-            if (isExternal.value) {
+          }),
+        },
+        contactPhone: {
+          required: requiredIf(() => {
+            if (mode.value == "Out") {
+              if (isExternal.value) {
+                return MESSAGE_REQUIRED;
+              }
+            } else {
               return MESSAGE_REQUIRED;
             }
-          } else {
-            return MESSAGE_REQUIRED;
-          }
-        }),
-      },
-      names: {
-        required: requiredIf(() => {
-          if (mode.value == "Out") {
-            if (isExternal.value) {
+          }),
+        },
+        names: {
+          required: requiredIf(() => {
+            if (mode.value == "Out") {
+              if (isExternal.value) {
+                return MESSAGE_REQUIRED;
+              }
+            } else {
               return MESSAGE_REQUIRED;
             }
-          } else {
-            return MESSAGE_REQUIRED;
-          }
-        }),
-      },
-      companyName: showcompanyNameForm.value && { required: MESSAGE_REQUIRED },
-      lastNames: {
-        required: requiredIf(() => {
-          if (mode.value == "Out") {
-            if (isExternal.value) {
+          }),
+        },
+        companyName: showcompanyNameForm.value && {
+          required: MESSAGE_REQUIRED,
+        },
+        lastNames: {
+          required: requiredIf(() => {
+            if (mode.value == "Out") {
+              if (isExternal.value) {
+                return MESSAGE_REQUIRED;
+              }
+            } else {
               return MESSAGE_REQUIRED;
             }
-          } else {
-            return MESSAGE_REQUIRED;
-          }
-        }),
-      },
-      email: { required: MESSAGE_REQUIRED && MESSAGE_EMAIL },
-      address: {
-        required: requiredIf(() => {
-          if (mode.value == "Out") {
-            if (isExternal.value) {
+          }),
+        },
+        email: { required: MESSAGE_REQUIRED && MESSAGE_EMAIL },
+        address: {
+          required: requiredIf(() => {
+            if (mode.value == "Out") {
+              if (isExternal.value) {
+                return MESSAGE_REQUIRED;
+              }
+            } else {
               return MESSAGE_REQUIRED;
             }
-          } else {
-            return MESSAGE_REQUIRED;
-          }
-        }),
-      },
-      assignedTo: {
-        required: requiredIf(() => mode.value == "Entry" ?? MESSAGE_REQUIRED),
-      },
-      subject: {
-        required: requiredIf(() => {
-          if (mode.value == "Out") {
-            if (!files.value[0]) {
+          }),
+        },
+        assignedTo: {
+          required: requiredIf(() => mode.value == "Entry" ?? MESSAGE_REQUIRED),
+        },
+        subject: {
+          required: requiredIf(() => {
+            if (mode.value == "Out") {
+              if (!files.value[0]) {
+                return MESSAGE_REQUIRED;
+              }
+            } else {
               return MESSAGE_REQUIRED;
             }
-          } else {
-            return MESSAGE_REQUIRED;
-          }
-        }),
-      },
-      description: {
-        required: requiredIf(() => {
-          if (mode.value == "Out") {
-            if (!files.value[0]) {
+          }),
+        },
+        description: {
+          required: requiredIf(() => {
+            if (mode.value == "Out") {
+              if (!files.value[0]) {
+                return MESSAGE_REQUIRED;
+              }
+            } else {
               return MESSAGE_REQUIRED;
             }
-          } else {
-            return MESSAGE_REQUIRED;
-          }
-        }),
-      },
-      city: {},
-    };
+          }),
+        },
+        city: {},
+      };
 
-    // formulario destinatario interno
-    const internalAddressee = reactive({
-      area: "",
-      addressee: "",
-    });
+      // formulario destinatario interno
+      const internalAddressee = reactive({
+        area: "",
+        addressee: "",
+      });
 
-    // reglas para validar el destinatario.
-    const internalAddresseeRules = {
-      area: { required: MESSAGE_REQUIRED },
-      addressee: { required: MESSAGE_REQUIRED },
-    };
+      // reglas para validar el destinatario.
+      const internalAddresseeRules = {
+        area: { required: MESSAGE_REQUIRED },
+        addressee: { required: MESSAGE_REQUIRED },
+      };
 
-    const v$ = useVuelidate(rules, form);
-    const addressee$ = useVuelidate(internalAddresseeRules, internalAddressee);
+      const v$ = useVuelidate(rules, form);
+      const addressee$ = useVuelidate(
+        internalAddresseeRules,
+        internalAddressee
+      );
 
-    const editorSettings = {
-      placeholder: "Escribe acá la respuesta para el ciudadano.",
-    };
+      const editorSettings = {
+        placeholder: "Escribe acá la respuesta para el ciudadano.",
+      };
 
-    const startListening = () => {
-      if (mode.value != "Out") {
-        if (!isListeningEnabled.value) {
-          return;
-        }
-        try {
-          idProccessAI = toast("Analizando documento con IA...", {
-            isLoading: true,
-            hideProgressBar: true,
-            closeButton: false,
-            closeOnClick: false,
-          });
-          unsubscribe = onListenClaimData(
-            documentAI.value.claimID,
-            companyID.value,
-            async (data) => {
-              await getDocStatus(companyID.value, documentAI.value.claimID);
-              claimData.value = data;
-              if (data.status == "DRAFT" && data.summary == null) {
-                loadingAI.value = true;
-                timerAI.value = setTimeout(() => {
+      const startListening = () => {
+        if (mode.value != "Out") {
+          if (!isListeningEnabled.value) {
+            return;
+          }
+          try {
+            idProccessAI = toast("Analizando documento con IA...", {
+              isLoading: true,
+              hideProgressBar: true,
+              closeButton: false,
+              closeOnClick: false,
+            });
+            unsubscribe = onListenClaimData(
+              documentAI.value.claimID,
+              companyID.value,
+              async (data) => {
+                await getDocStatus(companyID.value, documentAI.value.claimID);
+                claimData.value = data;
+                if (data.status == "DRAFT" && data.summary == null) {
+                  loadingAI.value = true;
+                  timerAI.value = setTimeout(() => {
+                    toast.update(idProccessAI, {
+                      render:
+                        "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
+                      type: toast.TYPE.WARNING,
+                      isLoading: false,
+                      autoClose: 7000,
+                    });
+                    loadingAI.value = false;
+                  }, 60000);
+                  timerExtractingInformationAI.value = setTimeout(() => {
+                    toast.update(idProccessAI, {
+                      render: "Extrayendo información relevante...",
+                      type: toast.TYPE.INFO,
+                    });
+                  }, 3000);
+                }
+                if (
+                  data.summary &&
+                  isListeningEnabled.value &&
+                  canUseAI.value
+                ) {
+                  canUseAI.value = false;
+                  await getNumberOfFolios();
                   toast.update(idProccessAI, {
-                    render:
-                      "Complete la información de asunto y resumen manualmente. Documento no válido para este proceso.",
-                    type: toast.TYPE.WARNING,
+                    render: "Resumen realizado con exito!",
+                    type: toast.TYPE.SUCCESS,
                     isLoading: false,
-                    autoClose: 7000,
+                    autoClose: 3000,
                   });
                   loadingAI.value = false;
-                }, 60000);
-                timerExtractingInformationAI.value = setTimeout(() => {
-                  toast.update(idProccessAI, {
-                    render: "Extrayendo información relevante...",
-                    type: toast.TYPE.INFO,
-                  });
-                }, 3000);
-              }
-              if (data.summary && isListeningEnabled.value && canUseAI.value) {
-                canUseAI.value = false;
-                await getNumberOfFolios();
-                toast.update(idProccessAI, {
-                  render: "Resumen realizado con exito!",
-                  type: toast.TYPE.SUCCESS,
-                  isLoading: false,
-                  autoClose: 3000,
-                });
-                loadingAI.value = false;
-                clearTimeout(timerAI.value);
-                timerAI.value = 0;
-                instance.proxy.subject = data.subject ? data.subject : "";
-                instance.proxy.editorData = data.summary ? data.summary : "";
-                form.subject = data.subject ? data.subject : "";
-                form.description = data.summary ? data.summary : "";
-                if (data?.personInformation) {
-                  form.personType = data?.personInformation.personType
-                    ? data?.personInformation.personType
-                    : "";
-                  form.idType = data?.personInformation.identificationType
-                    ? data?.personInformation.identificationType
-                    : "";
-                  form.idNumber = data?.personInformation.idNumber
-                    ? data?.personInformation.idNumber
-                    : "";
-                  form.names = data?.personInformation.name
-                    ? data?.personInformation.name
-                    : "";
-                  form.lastNames = data?.personInformation.lastName
-                    ? data?.personInformation.lastName
-                    : "";
-                  form.email = data?.personInformation.email
-                    ? data?.personInformation.email
-                    : "";
-                  address_info.value[0] = data?.personInformation.address
-                    ? data?.personInformation.address
-                    : "";
-                  address_info.value[1] = data?.personInformation.department
-                    ? data?.personInformation.department
-                    : "";
-                  address_info.value[2] = data?.personInformation.city
-                    ? data?.personInformation.city
-                    : "";
-                  form.phoneNumber = data?.personInformation.phoneNumber
-                    ? data?.personInformation.phoneNumber
-                    : "";
-                  getAddress();
-                  form.companyName = data?.personInformation.companyName
-                    ? data?.personInformation.companyName
-                    : "";
+                  clearTimeout(timerAI.value);
+                  timerAI.value = 0;
+                  instance.proxy.subject = data.subject ? data.subject : "";
+                  instance.proxy.editorData = data.summary ? data.summary : "";
+                  form.subject = data.subject ? data.subject : "";
+                  form.description = data.summary ? data.summary : "";
+                  if (data?.personInformation) {
+                    form.personType = data?.personInformation.personType
+                      ? data?.personInformation.personType
+                      : "";
+                    form.idType = data?.personInformation.identificationType
+                      ? data?.personInformation.identificationType
+                      : "";
+                    form.idNumber = data?.personInformation.idNumber
+                      ? data?.personInformation.idNumber
+                      : "";
+                    form.names = data?.personInformation.name
+                      ? data?.personInformation.name
+                      : "";
+                    form.lastNames = data?.personInformation.lastName
+                      ? data?.personInformation.lastName
+                      : "";
+                    form.email = data?.personInformation.email
+                      ? data?.personInformation.email
+                      : "";
+                    address_info.value[0] = data?.personInformation.address
+                      ? data?.personInformation.address
+                      : "";
+                    address_info.value[1] = data?.personInformation.department
+                      ? data?.personInformation.department
+                      : "";
+                    address_info.value[2] = data?.personInformation.city
+                      ? data?.personInformation.city
+                      : "";
+                    form.phoneNumber = data?.personInformation.phoneNumber
+                      ? data?.personInformation.phoneNumber
+                      : "";
+                    getAddress();
+                    form.companyName = data?.personInformation.companyName
+                      ? data?.personInformation.companyName
+                      : "";
+                  }
                 }
               }
-            }
-          );
-          return unsubscribe;
-        } catch (error) {
-          console.error("error: ", error);
-        }
-      }
-    };
-
-    const stopListening = () => {
-      if (unsubscribe) {
-        clearTimeout(timerExtractingInformationAI.value);
-        toast.update(idProccessAI, {
-          render: "Se ha detenido el proceso de extracción de información",
-          type: toast.TYPE.WARNING,
-          isLoading: false,
-          autoClose: 3000,
-        });
-        loadingAI.value = false;
-        isListeningEnabled.value = false;
-        canUseAI.value = true;
-        unsubscribe = null;
-        form.subject = "";
-        form.description = "";
-      } else {
-        console.warn("No hay suscripción activa para desuscribirse.");
-      }
-    };
-
-    const showToast = (message, type) => {
-      toast(message, {
-        type: type,
-        autoClose: 3000,
-        closeButton: true,
-        closeOnClick: true,
-      });
-    };
-
-    // Select files and drag and drop
-    const selectedFile = () => {
-      const newFiles = document.getElementById("formFile").files;
-      for (let i = 0; i < newFiles.length; i++) {
-        files.value.push(newFiles[i]);
-        filesToUpload.value.push(newFiles[i]);
-      }
-    };
-
-    const uploadDocument = async () => {
-      canUseAI.value = true;
-      for (let i = 0; i < filesToUpload.value.length; i++) {
-        const file = filesToUpload.value[i];
-        try {
-          if (!documentID.value) {
-            await instance.proxy.handleCreateClaimID();
-
-            toast.success("Radicado en borrador creado!", {
-              position: toast.POSITION.TOP_RIGHT,
-              autoClose: 3000,
-            });
+            );
+            return unsubscribe;
+          } catch (error) {
+            console.error("error: ", error);
           }
-          const uniqueFileName = Date.now() + ".pdf";
-          const folder = `Companies/${companyID.value}/${year.value}/Claims/${documentID.value}`;
-          const storagePath = `${folder}/${uniqueFileName}`;
-          const fileRef = storageRef(storage, storagePath);
-          const idLoadFile = toast(`Cargando el archivo ${file.name}...`, {
-            isLoading: true,
-            hideProgressBar: true,
-            closeButton: false,
-            closeOnClick: false,
-          });
-          await uploadBytes(fileRef, file);
-          toast.update(idLoadFile, {
-            render: `Archivo cargado con éxito ${file.name}`,
-            type: "success",
+        }
+      };
+
+      const stopListening = () => {
+        if (unsubscribe) {
+          clearTimeout(timerExtractingInformationAI.value);
+          toast.update(idProccessAI, {
+            render: "Se ha detenido el proceso de extracción de información",
+            type: toast.TYPE.WARNING,
             isLoading: false,
             autoClose: 3000,
           });
-          uploadedFiles.value.push({
-            companyID: companyID.value,
-            name: file.name,
-            uniqueFileName: uniqueFileName,
-            claimID: documentID.value,
-            year: year.value,
-          });
-          if (!readDocument.value) {
-            readDocument.value = true;
-            documentAI.value = {
+          loadingAI.value = false;
+          isListeningEnabled.value = false;
+          canUseAI.value = true;
+          unsubscribe = null;
+          form.subject = "";
+          form.description = "";
+        } else {
+          console.warn("No hay suscripción activa para desuscribirse.");
+        }
+      };
+
+      const showToast = (message, type) => {
+        toast(message, {
+          type: type,
+          autoClose: 3000,
+          closeButton: true,
+          closeOnClick: true,
+        });
+      };
+
+      // Select files and drag and drop
+      const selectedFile = () => {
+        const newFiles = document.getElementById("formFile").files;
+        for (let i = 0; i < newFiles.length; i++) {
+          files.value.push(newFiles[i]);
+          filesToUpload.value.push(newFiles[i]);
+        }
+      };
+
+      const uploadDocument = async () => {
+        console.log("subiendo pdf");
+
+        canUseAI.value = true;
+        for (let i = 0; i < filesToUpload.value.length; i++) {
+          const file = filesToUpload.value[i];
+          try {
+            if (!documentID.value) {
+              await instance.proxy.handleCreateClaimID();
+
+              toast.success("Radicado en borrador creado!", {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 3000,
+              });
+            }
+            const uniqueFileName = Date.now() + ".pdf";
+            const folder = `Companies/${companyID.value}/${year.value}/Claims/${documentID.value}`;
+            const storagePath = `${folder}/${uniqueFileName}`;
+            const fileRef = storageRef(storage, storagePath);
+            const idLoadFile = toast(`Cargando el archivo ${file.name}...`, {
+              isLoading: true,
+              hideProgressBar: true,
+              closeButton: false,
+              closeOnClick: false,
+            });
+
+            const response = await uploadBytes(fileRef, file);
+
+            if (response) {
+              console.log("ya en este punto se subio el archivo");
+            }
+
+            console.log('Archivo: ',file);
+
+            toast.update(idLoadFile, {
+              render: `Archivo cargado con éxito ${file.name}`,
+              type: "success",
+              isLoading: false,
+              autoClose: 3000,
+            });
+            uploadedFiles.value.push({
               companyID: companyID.value,
               name: file.name,
               uniqueFileName: uniqueFileName,
               claimID: documentID.value,
               year: year.value,
-            };
-            startListening();
+            });
+            if (!readDocument.value) {
+              readDocument.value = true;
+              documentAI.value = {
+                companyID: companyID.value,
+                name: file.name,
+                uniqueFileName: uniqueFileName,
+                claimID: documentID.value,
+                year: year.value,
+              };
+              startListening();
+            }
+          } catch (error) {
+            console.error("Error al subir el archivo:", error);
           }
-        } catch (error) {
-          console.error("Error al subir el archivo:", error);
         }
-      }
-      filesToUpload.value = [];
-    };
+        filesToUpload.value = [];
+      };
 
-    const getNumberOfFolios = async () => {
-      try {
-        loadingNumberOfPages.value = true;
-        const numberOfPages = await getNumberOfPages(
-          companyID.value,
-          documentID.value
-        );
-        form.folios = numberOfPages;
-        loadingNumberOfPages.value = false;
-      } catch (error) {
-        console.error("Error al obtener el número de folios:", error);
-      }
-    };
-
-    const classDropZone = computed(() => {
-      const styles =
-        "w-100 d-flex flex-column justify-content-center align-items-center drop-area m-1";
-      if (!dropzone.value) return styles + "border-0 text-secondary";
-      return styles + " border-primary text-primary";
-    });
-
-    const getAddressManual = computed(() => {
-      const direction = `${
-        manual_address_info.value[0] ? manual_address_info.value[0] : ""
-      } ${manual_address_info.value[1] ? manual_address_info.value[1] : ""}${
-        manual_address_info.value[2] ? manual_address_info.value[2] : ""
-      } ${
-        manual_address_info.value[3] ? "#" + manual_address_info.value[3] : ""
-      }${manual_address_info.value[4] ? manual_address_info.value[4] : ""} ${
-        manual_address_info.value[5] ? "- " + manual_address_info.value[5] : ""
-      }${manual_address_info.value[6] ? manual_address_info.value[6] : ""}${
-        manual_address_info.value[7] ? ", " + manual_address_info.value[7] : ""
-      } ${
-        manual_address_info.value[8] ? "- " + manual_address_info.value[8] : ""
-      }`;
-      // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-      form.address = direction;
-      return direction;
-    });
-
-    const getAddress = () => {
-      const direction = `${
-        address_info.value[0] ? address_info.value[0].trim() : ""
-      }${address_info.value[1] ? ", " + address_info.value[1].trim() : ""}${
-        address_info.value[2] ? ", " + address_info.value[2].trim() : ""
-      }`;
-      form.address = direction;
-      form.city = address_info.value[3] ? address_info.value[3].trim() : "";
-      return direction;
-    };
-
-    const deleteRecord = async (name) => {
-      files.value = files.value.filter((file) => name != file.name);
-
-      filesToUpload.value = filesToUpload.value.filter(
-        (file) => name != file.name
-      );
-      await processUploadedFiles(name);
-      await changeDocumentAI(uploadedFiles.value[0]?.name);
-    };
-
-    const changeDocumentAI = async (name) => {
-      uploadedFiles.value.forEach(async (file) => {
-        if (file.name == name) {
-          loadingAI.value = true;
-          const res = await updateClaimSummary(
+      const getNumberOfFolios = async () => {
+        try {
+          loadingNumberOfPages.value = true;
+          const numberOfPages = await getNumberOfPages(
             companyID.value,
-            documentID.value,
-            file?.uniqueFileName
+            documentID.value
           );
-          if (!res) {
-            loadingAI.value = false;
-            form.subject = "";
-            form.description = "";
-            toast.error("Este documento no cuenta con un resumen", {
-              duration: 3000,
-              position: toast.POSITION.TOP_RIGHT,
-              autoClose: 3000,
-            });
-            return;
-          }
-          documentAI.value = file;
-          isListeningEnabled.value = true;
-          canUseAI.value = true;
-          startListening();
+          form.folios = numberOfPages;
+          loadingNumberOfPages.value = false;
+        } catch (error) {
+          console.error("Error al obtener el número de folios:", error);
         }
-        return;
+      };
+
+      const classDropZone = computed(() => {
+        const styles =
+          "w-100 d-flex flex-column justify-content-center align-items-center drop-area m-1";
+        if (!dropzone.value) return styles + "border-0 text-secondary";
+        return styles + " border-primary text-primary";
       });
-    };
 
-    const processUploadedFiles = async (name) => {
-      const updatedFiles = [];
-      for (let i = 0; i < uploadedFiles.value.length; i++) {
-        const file = uploadedFiles.value[i];
+      const getAddressManual = computed(() => {
+        const direction = `${
+          manual_address_info.value[0] ? manual_address_info.value[0] : ""
+        } ${manual_address_info.value[1] ? manual_address_info.value[1] : ""}${
+          manual_address_info.value[2] ? manual_address_info.value[2] : ""
+        } ${
+          manual_address_info.value[3] ? "#" + manual_address_info.value[3] : ""
+        }${manual_address_info.value[4] ? manual_address_info.value[4] : ""} ${
+          manual_address_info.value[5]
+            ? "- " + manual_address_info.value[5]
+            : ""
+        }${manual_address_info.value[6] ? manual_address_info.value[6] : ""}${
+          manual_address_info.value[7]
+            ? ", " + manual_address_info.value[7]
+            : ""
+        } ${
+          manual_address_info.value[8]
+            ? "- " + manual_address_info.value[8]
+            : ""
+        }`;
+        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+        form.address = direction;
+        return direction;
+      });
 
-        if (name === file.name) {
-          if (documentAI.value.name === name) stopListening();
-          const res = await deleteDocumentByName(
-            file.companyID,
-            file.claimID,
-            file.uniqueFileName,
-            file.year
-          );
-          if (res) {
-            toast.success("Archivo eliminado exitosamente!", {
-              position: toast.POSITION.TOP_RIGHT,
-              autoClose: 3000,
-            });
-          } else {
-            toast.error("No se pudo eliminar el archivo!", {
-              position: toast.POSITION.TOP_RIGHT,
-              autoClose: 3000,
-            });
-          }
-        } else {
-          updatedFiles.push(file);
-        }
-      }
-
-      uploadedFiles.value = updatedFiles; // Actualiza uploadedFiles con los archivos no eliminados
-    };
-
-    const onDragOver = () => {
-      dropzone.value = true;
-    };
-
-    const onDragEnter = () => {
-      dropzone.value = true;
-    };
-
-    const onDragLeave = () => {
-      dropzone.value = false;
-    };
-
-    const onFileDrop = (event) => {
-      event.preventDefault();
-      dropzone.value = false;
-      files.value = [...files.value, ...event.dataTransfer.files];
-      filesToUpload.value = [
-        ...filesToUpload.value,
-        ...event.dataTransfer.files,
-      ];
-    };
-
-    // obtener listado trds
-    async function getTrds() {
-      await axios
-        .request(config)
-        .then((response) => {
-          response.data.forEach((element) => {
-            trds.value.push({
-              label: element.name,
-              value: element.name,
-              series: element.series,
-              id: element.id,
-            });
-          });
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    }
-
-    // obtener listado de usuarios activos por areas
-    async function getPeople() {
-      const config = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaId.value}`,
-        headers: {
-          company: "BAQVERDE",
-        },
+      const getAddress = () => {
+        const direction = `${
+          address_info.value[0] ? address_info.value[0].trim() : ""
+        }${address_info.value[1] ? ", " + address_info.value[1].trim() : ""}${
+          address_info.value[2] ? ", " + address_info.value[2].trim() : ""
+        }`;
+        form.address = direction;
+        form.city = address_info.value[3] ? address_info.value[3].trim() : "";
+        return direction;
       };
-      var auxPeople = [];
-      isLoadingUsers.value = true;
-      axios
-        .request(config)
-        .then((response) => {
-          response.data.forEach((element) => {
-            auxPeople.push({
-              label: element.name,
-              value: element.name,
-              area: element.area,
-              role: element.role,
-              uid: element.uid,
-            });
-          });
-          peopleList.value = auxPeople;
-          isLoadingUsers.value = false;
-        })
-        .catch((error) => {
-          isLoadingUsers.value = false;
-          console.error(error);
-        });
-    }
 
-    // obtener listado de usuarios activos por area Remitente
-    async function getPeopleAddressee() {
-      const config = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaIdAddressee.value}`,
-        headers: {
-          company: "BAQVERDE",
-        },
+      const deleteRecord = async (name) => {
+        files.value = files.value.filter((file) => name != file.name);
+
+        filesToUpload.value = filesToUpload.value.filter(
+          (file) => name != file.name
+        );
+        await processUploadedFiles(name);
+        await changeDocumentAI(uploadedFiles.value[0]?.name);
       };
-      var auxPeople = [];
-      axios
-        .request(config)
-        .then((response) => {
-          response.data.forEach((element) => {
-            auxPeople.push({
-              label: element.name,
-              value: element.name,
-              area: element.area,
-              role: element.role,
-              uid: element.uid,
-            });
-          });
-          peopleListAddressee.value = auxPeople;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    }
 
-    // obtener listado de usuarios activos por area Remitente
-    const loadingSenderName = ref(false);
-    async function getPeopleSender() {
-      loadingSenderName.value = true;
-      const config = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaIdSender.value}`,
-        headers: {
-          company: "BAQVERDE",
-        },
-      };
-      var auxPeople = [];
-      axios
-        .request(config)
-        .then((response) => {
-          response.data.forEach((element) => {
-            auxPeople.push({
-              label: element.name,
-              value: element.name,
-              area: element.area,
-              role: element.role,
-              uid: element.uid,
-            });
-          });
-          peopleListSender.value = auxPeople;
-          loadingSenderName.value = false;
-        })
-        .catch((error) => {
-          loadingSenderName.value = false;
-          console.error(error);
-        });
-    }
-
-    // obtener listado de usuarios activos por area Revisión
-    const loadingReviewerName = ref(false);
-    async function getPeopleReview() {
-      loadingReviewerName.value = true;
-      const config = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaIdReview.value}`,
-        headers: {
-          company: "BAQVERDE",
-        },
-      };
-      var auxPeople = [];
-      axios
-        .request(config)
-        .then((response) => {
-          response.data.forEach((element) => {
-            auxPeople.push({
-              label: element.name,
-              value: element.name,
-              area: element.area,
-              role: element.role,
-              uid: element.uid,
-            });
-          });
-          peopleListReview.value = auxPeople;
-          loadingReviewerName.value = false;
-        })
-        .catch((error) => {
-          loadingReviewerName.value = false;
-          console.error(error);
-        });
-    }
-
-    //obtener dias segun tipologia documental
-    const getDocDays = computed(() => {
-      return isDocs.value.filter((el) =>
-        el.label == form.documentType ? el : 0
-      );
-    });
-
-    //obtener uid de persona asignada
-    const getAssignedUid = computed(() => {
-      return peopleList.value.filter((el) =>
-        el.value == form.assignedTo ? el?.uid : ""
-      );
-    });
-
-    //obtener id de area
-    const getAreaId = computed(() => {
-      return trds.value.find((el) => el.value === form.area)?.id;
-    });
-
-    //obtener id de area para formulario de Remitente
-    const getAreaIdAddressee = computed(() => {
-      return trds.value.find((el) => el.value === internalAddressee.area)?.id;
-    });
-
-    //obtener id de area para formulario de Remitente
-    const getAreaIdSender = computed(() => {
-      return trds.value.find((el) => el.value === outForm.sender_area)?.id;
-    });
-
-    //obtener id de area para formulario de Revision
-    const getAreaIdReview = computed(() => {
-      return trds.value.find((el) => el.value === outForm.review_area)?.id;
-    });
-
-    const stateDoc = computed(() => store.state.createDocState.stateDoc);
-
-    // computadas para la dependencia de los campos
-    // manejador del input de serie
-
-    const showDeadLine = computed(() => {
-      if (form.documentType?.toLocaleLowerCase() == "demanda") {
-        return true;
-      }
-      return false;
-    });
-
-    // eslint-disable-next-line vue/return-in-computed-property
-    const auxSerie = computed(() => {
-      const aux = [];
-      if (form.area) {
-        trds.value.forEach((i) => {
-          if (i.label == form.area) {
-            i.series.forEach((j) => {
-              aux.push({
-                label: j.name,
-                value: j.name,
-                subseries: j.subseries,
-              });
-            });
-          }
-          series.value = aux;
-        });
-      }
-    });
-
-    // manejador del input de subserie
-    // eslint-disable-next-line vue/return-in-computed-property
-    const auxSubSerie = computed(() => {
-      if (form.serie) {
-        series.value.forEach((i) => {
-          if (i.label == form.serie) {
-            subseries.value = [];
-            if (i.subseries.length === 0) {
-              subseries.value.push({
-                label: "Esta serie no tiene subseries disponibles",
-                value: "Esta serie no tiene subseries disponibles",
-                documents: [
-                  {
-                    name: "Esta subserie no tiene tipologías disponibles",
-                    days: 0,
-                  },
-                ],
+      const changeDocumentAI = async (name) => {
+        uploadedFiles.value.forEach(async (file) => {
+          if (file.name == name) {
+            loadingAI.value = true;
+            const res = await updateClaimSummary(
+              companyID.value,
+              documentID.value,
+              file?.uniqueFileName
+            );
+            if (!res) {
+              loadingAI.value = false;
+              form.subject = "";
+              form.description = "";
+              toast.error("Este documento no cuenta con un resumen", {
+                duration: 3000,
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 3000,
               });
               return;
             }
-            i.subseries.forEach((j) => {
-              subseries.value.push({
-                label: j.name,
-                value: j.name,
-                documents: j.docs,
-              });
-            });
+            documentAI.value = file;
+            isListeningEnabled.value = true;
+            canUseAI.value = true;
+            startListening();
           }
+          return;
         });
-      }
-    });
-
-    // manejador del inpur de tipologia documental
-    // eslint-disable-next-line vue/return-in-computed-property
-    const auxDocTypes = computed(() => {
-      if (form.subSerie) {
-        subseries.value.forEach((i) => {
-          if (form.subSerie == i.label) {
-            isDocs.value = [];
-            i.documents.forEach((j) => {
-              isDocs.value.push({
-                label: j.name,
-                value: j.name,
-                days: j.days,
-              });
-            });
-          }
-        });
-      }
-    });
-
-    async function clearSelectInput() {
-      if (form.area) {
-        form.serie = "";
-        form.subSerie = "";
-        form.documentType = "";
-        form.assignedTo = "";
-      }
-      await getPeople();
-    }
-
-    async function clearSelectInputAddresee() {
-      await getPeopleAddressee();
-    }
-
-    async function clearSelectInputSender() {
-      await getPeopleSender();
-    }
-
-    async function clearSelectInputReview() {
-      await getPeopleReview();
-    }
-
-    const getDate = () => {
-      // Get the current date and time in seconds
-      const seconds = Math.floor(new Date().getTime() / 1000);
-      const formatDate = transformDate(seconds, "DD [de] MMMM [de] YYYY");
-      return formatDate;
-    };
-
-    //Function to create the pdf
-    const createPDF = async (prop) => {
-      const user = JSON.parse(sessionStorage.getItem("authUserInfo"));
-      const dataCreatePDF = JSON.stringify({
-        name: isExternal.value ? form.names : internalAddressee.addressee,
-        lastName: isExternal.value ? form.lastNames : " - ",
-        email: isExternal.value ? form.email : " - ",
-        body: form.description,
-        entryDate: getDate(),
-        typeOfDocument: isExternal.value ? form.idType : " - ",
-        numberOfDocument: isExternal.value ? form.idNumber : " - ",
-        subject: form.subject,
-        position: "",
-        copyName: "",
-        city: isExternal.value ? form.city : " - ",
-        address: isExternal.value ? form.address : " - ",
-        senderName: outForm.sender_name,
-        senderDesignation: outForm.sender_occupation,
-        senderArea: outForm.sender_area,
-        projectorName: user.name,
-        projectorDesignation: user.idRole,
-        reviewerName: outForm.review_name,
-        reviewerDesignation: outForm.review_occupation,
-      });
-
-      const configCreatePDF = {
-        method: "post",
-        maxBodyLength: Infinity,
-        url: `${process.env.VUE_APP_CF_BASE_URL}/doc/create-response`,
-        headers: {
-          Accept: "/",
-          "Content-Type": "application/json",
-        },
-        responseType: "blob",
-        data: dataCreatePDF,
       };
 
-      try {
-        const response = await axios.request(configCreatePDF);
+      const processUploadedFiles = async (name) => {
+        const updatedFiles = [];
+        for (let i = 0; i < uploadedFiles.value.length; i++) {
+          const file = uploadedFiles.value[i];
 
-        if (prop === "create") {
-          files.value.push(response);
-          filesToUpload.value.push(response.data);
+          if (name === file.name) {
+            if (documentAI.value.name === name) stopListening();
+            const res = await deleteDocumentByName(
+              file.companyID,
+              file.claimID,
+              file.uniqueFileName,
+              file.year
+            );
+            if (res) {
+              toast.success("Archivo eliminado exitosamente!", {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 3000,
+              });
+            } else {
+              toast.error("No se pudo eliminar el archivo!", {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 3000,
+              });
+            }
+          } else {
+            updatedFiles.push(file);
+          }
         }
 
-        return response.data;
-      } catch (error) {
-        showToast("Hubo un error al crear el PDF", "error");
-        console.error(error);
-      }
-    };
+        uploadedFiles.value = updatedFiles; // Actualiza uploadedFiles con los archivos no eliminados
+      };
 
-    // Function to preview document information generated about text editor
-    const seeResponseClaim = async (prop) => {
-      isLoadingPreview.value = true;
-      try {
-        const response = await createPDF(prop);
-        const pdfBlob = response;
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        window.open(pdfUrl);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        isLoadingPreview.value = false;
-      }
-    };
+      const onDragOver = () => {
+        dropzone.value = true;
+      };
 
-    // Function tu create document for Out claim
-    const createOutDocument = async (prop) => {
-      v$.value.$touch();
+      const onDragEnter = () => {
+        dropzone.value = true;
+      };
 
-      if (mode.value == "Out" && !isExternal.value) {
-        console.log("entro a la validacion de modo y tipo de destinatario");
+      const onDragLeave = () => {
+        dropzone.value = false;
+      };
 
-        addressee$.value.$touch();
-        if (addressee$.value.$invalid) {
-          toast.error("Formulario incompleto, revise la informacion diligenciada !", {
-            position: toast.POSITION.TOP_RIGHT,
-            autoClose: 3000,
+      const onFileDrop = (event) => {
+        event.preventDefault();
+        dropzone.value = false;
+        files.value = [...files.value, ...event.dataTransfer.files];
+        filesToUpload.value = [
+          ...filesToUpload.value,
+          ...event.dataTransfer.files,
+        ];
+      };
+
+      // obtener listado trds
+      async function getTrds() {
+        await axios
+          .request(config)
+          .then((response) => {
+            response.data.forEach((element) => {
+              trds.value.push({
+                label: element.name,
+                value: element.name,
+                series: element.series,
+                id: element.id,
+              });
+            });
+          })
+          .catch((error) => {
+            console.error(error);
           });
-          return;
-        }
       }
 
-      if (v$.value.$invalid) {
-        Swal.fire({
-          position: "top-end",
-          icon: "error",
-          title: "Faltan campos del formulario",
-          showConfirmButton: false,
-          timer: 1500,
+      // obtener listado de usuarios activos por areas
+      async function getPeople() {
+        const config = {
+          method: "get",
+          maxBodyLength: Infinity,
+          url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaId.value}`,
+          headers: {
+            company: "BAQVERDE",
+          },
+        };
+        var auxPeople = [];
+        isLoadingUsers.value = true;
+        axios
+          .request(config)
+          .then((response) => {
+            response.data.forEach((element) => {
+              auxPeople.push({
+                label: element.name,
+                value: element.name,
+                area: element.area,
+                role: element.role,
+                uid: element.uid,
+              });
+            });
+            peopleList.value = auxPeople;
+            isLoadingUsers.value = false;
+          })
+          .catch((error) => {
+            isLoadingUsers.value = false;
+            console.error(error);
+          });
+      }
+
+      // obtener listado de usuarios activos por area Remitente
+      async function getPeopleAddressee() {
+        const config = {
+          method: "get",
+          maxBodyLength: Infinity,
+          url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaIdAddressee.value}`,
+          headers: {
+            company: "BAQVERDE",
+          },
+        };
+        var auxPeople = [];
+        axios
+          .request(config)
+          .then((response) => {
+            response.data.forEach((element) => {
+              auxPeople.push({
+                label: element.name,
+                value: element.name,
+                area: element.area,
+                role: element.role,
+                uid: element.uid,
+              });
+            });
+            peopleListAddressee.value = auxPeople;
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
+
+      // obtener listado de usuarios activos por area Remitente
+      const loadingSenderName = ref(false);
+      async function getPeopleSender() {
+        loadingSenderName.value = true;
+        const config = {
+          method: "get",
+          maxBodyLength: Infinity,
+          url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaIdSender.value}`,
+          headers: {
+            company: "BAQVERDE",
+          },
+        };
+        var auxPeople = [];
+        axios
+          .request(config)
+          .then((response) => {
+            response.data.forEach((element) => {
+              auxPeople.push({
+                label: element.name,
+                value: element.name,
+                area: element.area,
+                role: element.role,
+                uid: element.uid,
+              });
+            });
+            peopleListSender.value = auxPeople;
+            loadingSenderName.value = false;
+          })
+          .catch((error) => {
+            loadingSenderName.value = false;
+            console.error(error);
+          });
+      }
+
+      // obtener listado de usuarios activos por area Revisión
+      const loadingReviewerName = ref(false);
+      async function getPeopleReview() {
+        loadingReviewerName.value = true;
+        const config = {
+          method: "get",
+          maxBodyLength: Infinity,
+          url: `${process.env.VUE_APP_CF_BASE_URL}/GET_USERS_BY_AREA_ID?areaId=${getAreaIdReview.value}`,
+          headers: {
+            company: "BAQVERDE",
+          },
+        };
+        var auxPeople = [];
+        axios
+          .request(config)
+          .then((response) => {
+            response.data.forEach((element) => {
+              auxPeople.push({
+                label: element.name,
+                value: element.name,
+                area: element.area,
+                role: element.role,
+                uid: element.uid,
+              });
+            });
+            peopleListReview.value = auxPeople;
+            loadingReviewerName.value = false;
+          })
+          .catch((error) => {
+            loadingReviewerName.value = false;
+            console.error(error);
+          });
+      }
+
+      //obtener dias segun tipologia documental
+      const getDocDays = computed(() => {
+        return isDocs.value.filter((el) =>
+          el.label == form.documentType ? el : 0
+        );
+      });
+
+      //obtener uid de persona asignada
+      const getAssignedUid = computed(() => {
+        return peopleList.value.filter((el) =>
+          el.value == form.assignedTo ? el?.uid : ""
+        );
+      });
+
+      //obtener id de area
+      const getAreaId = computed(() => {
+        return trds.value.find((el) => el.value === form.area)?.id;
+      });
+
+      //obtener id de area para formulario de Remitente
+      const getAreaIdAddressee = computed(() => {
+        return trds.value.find((el) => el.value === internalAddressee.area)?.id;
+      });
+
+      //obtener id de area para formulario de Remitente
+      const getAreaIdSender = computed(() => {
+        return trds.value.find((el) => el.value === outForm.sender_area)?.id;
+      });
+
+      //obtener id de area para formulario de Revision
+      const getAreaIdReview = computed(() => {
+        return trds.value.find((el) => el.value === outForm.review_area)?.id;
+      });
+
+      const stateDoc = computed(() => store.state.createDocState.stateDoc);
+
+      // computadas para la dependencia de los campos
+      // manejador del input de serie
+
+      const showDeadLine = computed(() => {
+        if (form.documentType?.toLocaleLowerCase() == "demanda") {
+          return true;
+        }
+        return false;
+      });
+
+      // eslint-disable-next-line vue/return-in-computed-property
+      const auxSerie = computed(() => {
+        const aux = [];
+        if (form.area) {
+          trds.value.forEach((i) => {
+            if (i.label == form.area) {
+              i.series.forEach((j) => {
+                aux.push({
+                  label: j.name,
+                  value: j.name,
+                  subseries: j.subseries,
+                });
+              });
+            }
+            series.value = aux;
+          });
+        }
+      });
+
+      // manejador del input de subserie
+      // eslint-disable-next-line vue/return-in-computed-property
+      const auxSubSerie = computed(() => {
+        if (form.serie) {
+          series.value.forEach((i) => {
+            if (i.label == form.serie) {
+              subseries.value = [];
+              if (i.subseries.length === 0) {
+                subseries.value.push({
+                  label: "Esta serie no tiene subseries disponibles",
+                  value: "Esta serie no tiene subseries disponibles",
+                  documents: [
+                    {
+                      name: "Esta subserie no tiene tipologías disponibles",
+                      days: 0,
+                    },
+                  ],
+                });
+                return;
+              }
+              i.subseries.forEach((j) => {
+                subseries.value.push({
+                  label: j.name,
+                  value: j.name,
+                  documents: j.docs,
+                });
+              });
+            }
+          });
+        }
+      });
+
+      // manejador del inpur de tipologia documental
+      // eslint-disable-next-line vue/return-in-computed-property
+      const auxDocTypes = computed(() => {
+        if (form.subSerie) {
+          subseries.value.forEach((i) => {
+            if (form.subSerie == i.label) {
+              isDocs.value = [];
+              i.documents.forEach((j) => {
+                isDocs.value.push({
+                  label: j.name,
+                  value: j.name,
+                  days: j.days,
+                });
+              });
+            }
+          });
+        }
+      });
+
+      async function clearSelectInput() {
+        if (form.area) {
+          form.serie = "";
+          form.subSerie = "";
+          form.documentType = "";
+          form.assignedTo = "";
+        }
+        await getPeople();
+      }
+
+      async function clearSelectInputAddresee() {
+        await getPeopleAddressee();
+      }
+
+      async function clearSelectInputSender() {
+        await getPeopleSender();
+      }
+
+      async function clearSelectInputReview() {
+        await getPeopleReview();
+      }
+
+      const getDate = () => {
+        // Get the current date and time in seconds
+        const seconds = Math.floor(new Date().getTime() / 1000);
+        const formatDate = transformDate(seconds, "DD [de] MMMM [de] YYYY");
+        return formatDate;
+      };
+
+      //Function to create the pdf
+      const createPDF = async (prop) => {
+        console.log("Creando PDF");
+
+        const user = JSON.parse(sessionStorage.getItem("authUserInfo"));
+        const dataCreatePDF = JSON.stringify({
+          name: isExternal.value ? form.names : internalAddressee.addressee,
+          lastName: isExternal.value ? form.lastNames : " - ",
+          email: isExternal.value ? form.email : " - ",
+          body: form.description,
+          entryDate: getDate(),
+          typeOfDocument: isExternal.value ? form.idType : " - ",
+          numberOfDocument: isExternal.value ? form.idNumber : " - ",
+          subject: form.subject,
+          position: "",
+          copyName: "",
+          city: isExternal.value ? form.city : " - ",
+          address: isExternal.value ? form.address : " - ",
+          senderName: outForm.sender_name,
+          senderDesignation: outForm.sender_occupation,
+          senderArea: outForm.sender_area,
+          projectorName: user.name,
+          projectorDesignation: user.idRole,
+          reviewerName: outForm.review_name,
+          reviewerDesignation: outForm.review_occupation,
         });
 
-        return;
-      } else {
-        console.log(
-          "entro a la ejecucion del servicio de creacion de documento"
-        );
+        const configCreatePDF = {
+          method: "post",
+          maxBodyLength: Infinity,
+          url: `${process.env.VUE_APP_CF_BASE_URL}/doc/create-response`,
+          headers: {
+            Accept: "/",
+            "Content-Type": "application/json",
+          },
+          responseType: "blob",
+          data: dataCreatePDF,
+        };
 
         try {
-          isLoadingCreateDocument.value = true;
+          const response = await axios.request(configCreatePDF);
+
+          if (prop === "create") {
+            files.value.push(response);
+            filesToUpload.value.push(response.data);
+          }
+
+          return response.data;
+        } catch (error) {
+          showToast("Hubo un error al crear el PDF", "error");
+          console.error(error);
+        }
+      };
+
+      // Function to preview document information generated about text editor
+      const seeResponseClaim = async (prop) => {
+        isLoadingPreview.value = true;
+        try {
           const response = await createPDF(prop);
           const pdfBlob = response;
           const pdfUrl = URL.createObjectURL(pdfBlob);
-          var link = document.createElement("a");
-          link.href = pdfUrl;
-          link.download = form.subject;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-
-          console.log(document);
+          window.open(pdfUrl);
         } catch (error) {
-          console.log(error);
+          console.error(error);
         } finally {
-          isLoadingCreateDocument.value = false;
+          isLoadingPreview.value = false;
         }
+      };
+
+      watch(
+        () => [...files.value],
+        (currentValue) => {
+          uploadDocument();
+          return currentValue;
+        }
+      );
+
+      watch(stateDoc, (newValue) => {
+        if (newValue.status == "ERROR") {
+          loadingAI.value = false;
+          clearTimeout(timerAI.value);
+          timerAI.value = 0;
+        }
+      });
+
+      watch(form, (newValueForm) => {
+        if (newValueForm.area == null) {
+          form.serie = "";
+          form.subSerie = "";
+          form.documentType = "";
+          form.assignedTo = "";
+        } else if (newValueForm.serie == null) {
+          form.subSerie = "";
+          form.documentType = "";
+          form.assignedTo = "";
+        } else if (newValueForm.subSerie == null) {
+          form.documentType = "";
+          form.assignedTo = "";
+        } else if (newValueForm.documentType == null) {
+          form.assignedTo = "";
+        }
+
+        if (newValueForm.personType === "Jurídica") {
+          showcompanyNameForm.value = true;
+        } else showcompanyNameForm.value = false;
+      });
+
+      function concatAddress() {
+        finalAddress.value =
+          manual_address_info.value[0] +
+          manual_address_info.value[1] +
+          manual_address_info.value[2] +
+          " #" +
+          manual_address_info.value[3] +
+          manual_address_info.value[4] +
+          " - " +
+          manual_address_info.value[5] +
+          manual_address_info.value[6] +
+          ", " +
+          manual_address_info.value[7] +
+          ", " +
+          manual_address_info.value[8];
       }
-    };
 
-    watch(
-      () => [...files.value],
-      (currentValue) => {
-        uploadDocument();
-        return currentValue;
-      }
-    );
+      return {
+        dropzoneFile,
+        files,
+        loadingBtnAI,
+        documentID,
+        companyID,
+        getAddress,
+        urlSticker,
+        urlPage,
+        address_info,
+        claimData,
+        form,
+        v$,
+        addressee$,
+        mode,
+        radicated,
+        loadingNumberOfPages,
+        saveLoading,
+        submitLoading,
+        addressOptions,
+        changeDocumentAI,
+        showcompanyNameForm,
+        qrModal,
+        loadingAI,
+        loadingSenderName,
+        loadingReviewerName,
+        isLoadingUsers,
+        newDate,
+        trds,
+        series,
+        subseries,
+        auxSerie,
+        auxSubSerie,
+        auxDocTypes,
+        isDocs,
+        radicate,
+        peopleList,
+        peopleListAddressee,
+        peopleListSender,
+        peopleListReview,
+        getAssignedUid,
+        getDocDays,
+        getAreaId,
+        getAreaIdAddressee,
+        getAreaIdReview,
+        getAreaIdSender,
+        manual_address,
+        classDropZone,
+        showDeadLine,
+        moment,
+        manual_address_info,
+        finalAddress,
+        clearSelectInput,
+        clearSelectInputAddresee,
+        clearSelectInputSender,
+        clearSelectInputReview,
+        getTrds,
+        deleteRecord,
+        onDragOver,
+        onDragEnter,
+        onDragLeave,
+        selectedFile,
+        onFileDrop,
+        getPeople,
+        getPeopleSender,
+        getPeopleAddressee,
+        getPeopleReview,
+        concatAddress,
+        getAddressManual,
+        canUseAI,
+        editorSettings,
+        outForm,
+        Editor,
+        isExternal,
+        isLoadingPreview,
+        seeResponseClaim,
+        isLoadingCreateDocument,
+        internalAddressee,
+        createPDF,
+        additionalDocs,
+        uploadDocument,
+        haveAdditionalDocuments,
+      };
+    },
 
-    watch(stateDoc, (newValue) => {
-      if (newValue.status == "ERROR") {
-        loadingAI.value = false;
-        clearTimeout(timerAI.value);
-        timerAI.value = 0;
-      }
-    });
+    data() {
+      return {
+        value: ["C#", "HTML", "CSS"],
+        content: "<h1>Some initial content</h1>",
+        isDisabledAI: false,
+        isDisabledCreate: false,
+        loadingBtnCreate: false,
+        identificationType: "",
+        gender: "",
+        countryOfResidence: "",
+        cityOfResidence: "",
+        typeOfApplicant: "",
+        priority: "",
+        status: "",
+        deadline: "",
+        rangeDateconfig: {
+          wrap: true,
+          altFormat: "d/m/Y",
+          altInput: true,
+          dateFormat: "d/m/Y",
+        },
+        showRadicationButton: false,
+      };
+    },
 
-    watch(form, (newValueForm) => {
-      if (newValueForm.area == null) {
-        form.serie = "";
-        form.subSerie = "";
-        form.documentType = "";
-        form.assignedTo = "";
-      } else if (newValueForm.serie == null) {
-        form.subSerie = "";
-        form.documentType = "";
-        form.assignedTo = "";
-      } else if (newValueForm.subSerie == null) {
-        form.documentType = "";
-        form.assignedTo = "";
-      } else if (newValueForm.documentType == null) {
-        form.assignedTo = "";
-      }
-
-      if (newValueForm.personType === "Jurídica") {
-        showcompanyNameForm.value = true;
-      } else showcompanyNameForm.value = false;
-    });
-
-    function concatAddress() {
-      finalAddress.value =
-        manual_address_info.value[0] +
-        manual_address_info.value[1] +
-        manual_address_info.value[2] +
-        " #" +
-        manual_address_info.value[3] +
-        manual_address_info.value[4] +
-        " - " +
-        manual_address_info.value[5] +
-        manual_address_info.value[6] +
-        ", " +
-        manual_address_info.value[7] +
-        ", " +
-        manual_address_info.value[8];
-    }
-
-    return {
-      dropzoneFile,
-      files,
-      loadingBtnAI,
-      documentID,
-      companyID,
-      getAddress,
-      urlSticker,
-      urlPage,
-      address_info,
-      claimData,
-      form,
-      v$,
-      addressee$,
-      mode,
-      radicated,
-      loadingNumberOfPages,
-      saveLoading,
-      submitLoading,
-      addressOptions,
-      changeDocumentAI,
-      showcompanyNameForm,
-      qrModal,
-      loadingAI,
-      loadingSenderName,
-      loadingReviewerName,
-      isLoadingUsers,
-      newDate,
-      trds,
-      series,
-      subseries,
-      auxSerie,
-      auxSubSerie,
-      auxDocTypes,
-      isDocs,
-      radicate,
-      peopleList,
-      peopleListAddressee,
-      peopleListSender,
-      peopleListReview,
-      getAssignedUid,
-      getDocDays,
-      getAreaId,
-      getAreaIdAddressee,
-      getAreaIdReview,
-      getAreaIdSender,
-      manual_address,
-      classDropZone,
-      showDeadLine,
-      moment,
-      manual_address_info,
-      finalAddress,
-      clearSelectInput,
-      clearSelectInputAddresee,
-      clearSelectInputSender,
-      clearSelectInputReview,
-      getTrds,
-      deleteRecord,
-      onDragOver,
-      onDragEnter,
-      onDragLeave,
-      selectedFile,
-      onFileDrop,
-      getPeople,
-      getPeopleSender,
-      getPeopleAddressee,
-      getPeopleReview,
-      concatAddress,
-      getAddressManual,
-      canUseAI,
-      editorSettings,
-      outForm,
-      Editor,
-      isExternal,
-      isLoadingPreview,
-      seeResponseClaim,
-      createOutDocument,
-      isLoadingCreateDocument,
-      internalAddressee,
-    };
-  },
-
-  data() {
-    return {
-      value: ["C#", "HTML", "CSS"],
-      content: "<h1>Some initial content</h1>",
-      isDisabledAI: false,
-      isDisabledCreate: false,
-      loadingBtnCreate: false,
-      identificationType: "",
-      gender: "",
-      countryOfResidence: "",
-      cityOfResidence: "",
-      typeOfApplicant: "",
-      priority: "",
-      status: "",
-      deadline: "",
-      rangeDateconfig: {
-        wrap: true,
-        altFormat: "d/m/Y",
-        altInput: true,
-        dateFormat: "d/m/Y",
+    methods: {
+      async handleCreateClaimID() {
+        try {
+          const user = this.$store.state.auth.currentUser;
+          const userID = user.uid;
+          const id = await createClaimID(userID);
+          this.documentID = id;
+        } catch (error) {
+          console.error(error);
+        }
       },
-      showRadicationButton: false,
-    };
-  },
 
-  methods: {
-    async handleCreateClaimID() {
-      try {
-        const user = this.$store.state.auth.currentUser;
-        const userID = user.uid;
-        const id = await createClaimID(userID);
-        this.documentID = id;
-      } catch (error) {
-        console.error(error);
-      }
-    },
-
-    async handleSaveChanges() {
-      this.canUseAI = false;
-
-      try {
-        const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`;
-        const config = {
-          headers: {
-            company: this.companyID,
-            "Content-Type": "application/json", // Puedes ajustar el tipo de contenido según sea necesario
-          },
-        };
-
-        const body = {
-          subject: this.form.subject,
-          summary: this.form.description,
-          area: this.form.area,
-          areaId: this.getAreaId,
-          serie: this.form.serie,
-          subSerie: this.form.subSerie,
-          days: this.getDocDays[0]?.days ?? null,
-          documentaryTypologyEntry: this.form.documentType,
-          entryDate: this.form.date,
-          endDate: !this.form.untilDate ? null : this.form.untilDate,
-          assignedToUid: this.getAssignedUid[0]?.uid,
-          city: this.form.city,
-          folios: parseInt(this.form.folios),
-          assignedTo: this.form.assignedTo || this.internalAddressee.addressee,
-          observations: this.form.observations,
-          externalRadicate: this.form.externalFiling,
-          inputMethod: this.form.inputMethod,
-          petitionerInformation: {
-            personType: this.form.personType,
-            identificationType: this.form.idType,
-            identificationNumber: this.form.idNumber,
-            firstNames: this.form.names,
-            lastNames: this.form.lastNames,
-            address: this.form.address,
-            phoneNumber: this.form.contactPhone,
-            email: this.form.email,
-            companyName: this.form.companyName,
-          },
-        };
-
-        const response = await axios.post(url, body, config);
-        if (response.data.message) {
-          this.saveLoading = false;
-          this.showRadicationButton = true;
-        }
-      } catch (error) {
-        this.saveLoading = false;
-        this.showRadicationButton = false;
-        console.error(error);
-      }
-    },
-
-    async handleSubmitDocument() {
-      try {
-        this.submitLoading = true;
-        this.handleSaveChanges();
-        const config = {
-          headers: {
-            company: this.companyID,
-            "Content-Type": "application/json", // Puedes ajustar el tipo de contenido según sea necesario
-          },
-        };
-
-        const body = {
-          typeRadicate: this.mode,
-        };
-
-                const response = await axios.post(
-                    `${process.env.VUE_APP_CF_BASE_URL}/claim/radicate-entry?claimId=${this.documentID}&typeRadicate=${this.mode}`,
-                    body,
-                    config
-                );
-
-        if (response) {
-          this.generateSticker();
-          const textTrackingStart = `Ha iniciado el proceso al siguiente documento ${this.radicate?.idRadicate}, en el transcurso de los días se ira actualizando el estado del documento.`;
-          await setTracking(
-            this.documentID,
-            this.companyID,
-            "Sistema",
-            textTrackingStart,
-            "Iniciado",
-            true
-          );
-          await setTracking(
-            this.documentID,
-            this.companyID,
-            "Sistema",
-            textTrackingStart,
-            "Iniciado",
-            false
-          );
-          await setTracking(
-            this.documentID,
-            this.companyID,
-            this.userInfo.name,
-            [
-              {
-                name: "Asignado",
-                value: this.form.assignedTo,
-              },
-              { name: "Area", value: this.form.area },
-              {
-                name: "Comentarios",
-                value: `Se asigna el radicado a ${this.form.assignedTo}`,
-              },
-            ],
-            "Asignado",
-            true
-          );
-          await setTracking(
-            this.documentID,
-            this.companyID,
-            "Sistema",
-            "Tramite asignado al funcionario.",
-            "Asignado",
-            false
-          );
-          this.submitLoading = false;
-          this.radicate = response.data;
-          this.qrModal = true;
-          this.radicated = true;
-          toast.success("Radicado emitido exitosamente!", {
-            position: toast.POSITION.TOP_RIGHT,
-            autoClose: 3000,
-          });
-        }
-      } catch (error) {
-        this.submitLoading = false;
-        console.error(error);
-      }
-    },
-
-    async handleSaveInfo() {
-      console.log("entro al metodo de guardado");
-
-      try {
+      // Function tu create document for Out claim
+      async createOutDocument(prop) {
         this.v$.$touch();
 
         if (this.mode == "Out" && !this.isExternal) {
           console.log("entro a la validacion de modo y tipo de destinatario");
-
           this.addressee$.$touch();
           if (this.addressee$.$invalid) {
+            toast.error(
+              "Formulario incompleto, revise la informacion diligenciada !",
+              {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 3000,
+              }
+            );
             return;
           }
         }
 
         if (this.v$.$invalid) {
-          console.log("formulario invalido");
+          Swal.fire({
+            position: "top-end",
+            icon: "error",
+            title: "Faltan campos del formulario",
+            showConfirmButton: false,
+            timer: 1500,
+          });
 
           return;
         } else {
-          console.log("entro a la ejecucion del servicio de guardado");
+          console.log(
+            "entro a la ejecucion del servicio de creacion de documento"
+          );
 
-          this.saveLoading = true;
-          await this.handleSaveChanges();
+          try {
+            this.saveLoading = true;
+            await this.createPDF(prop);
+          } catch (error) {
+            console.log(error);
+          } finally {
+            this.saveLoading = false;
+          }
         }
-      } catch (error) {
-        this.saveLoading = false;
-        console.error(error);
-      }
+      },
+
+      async handleSubmitDocument() {
+        try {
+          this.submitLoading = true;
+          this.handleSaveChanges();
+          const config = {
+            headers: {
+              company: this.companyID,
+              "Content-Type": "application/json", // Puedes ajustar el tipo de contenido según sea necesario
+            },
+          };
+
+          const body = {
+            typeRadicate: this.mode,
+          };
+
+          const response = await axios.post(
+            `${process.env.VUE_APP_CF_BASE_URL}/claim/radicate-entry?claimId=${this.documentID}&typeRadicate=${this.mode}`,
+            body,
+            config
+          );
+
+          console.log(process.env.VUE_APP_CF_BASE_URL);
+
+          if (response) {
+            this.generateSticker();
+            const textTrackingStart = `Ha iniciado el proceso al siguiente documento ${this.radicate?.idRadicate}, en el transcurso de los días se ira actualizando el estado del documento.`;
+            await setTracking(
+              this.documentID,
+              this.companyID,
+              "Sistema",
+              textTrackingStart,
+              "Iniciado",
+              true
+            );
+            await setTracking(
+              this.documentID,
+              this.companyID,
+              "Sistema",
+              textTrackingStart,
+              "Iniciado",
+              false
+            );
+            await setTracking(
+              this.documentID,
+              this.companyID,
+              this.userInfo.name,
+              [
+                {
+                  name: "Asignado",
+                  value: this.form.assignedTo,
+                },
+                { name: "Area", value: this.form.area },
+                {
+                  name: "Comentarios",
+                  value: `Se asigna el radicado a ${this.form.assignedTo}`,
+                },
+              ],
+              "Asignado",
+              true
+            );
+            await setTracking(
+              this.documentID,
+              this.companyID,
+              "Sistema",
+              "Tramite asignado al funcionario.",
+              "Asignado",
+              false
+            );
+            this.submitLoading = false;
+            this.radicate = response.data;
+            this.qrModal = true;
+            this.radicated = true;
+            toast.success("Radicado emitido exitosamente!", {
+              position: toast.POSITION.TOP_RIGHT,
+              autoClose: 3000,
+            });
+          }
+        } catch (error) {
+          this.submitLoading = false;
+          console.error(error);
+        }
+      },
+
+      async handleSaveInfo() {
+        console.log(
+          "entro al metodo de guardado de la inforamcion de radicacion"
+        );
+        try {
+          this.v$.$touch();
+          if (this.mode == "Out" && !this.isExternal) {
+            this.addressee$.$touch();
+            if (this.addressee$.$invalid) {
+              return;
+            }
+          }
+
+          if (this.v$.$invalid) {
+            console.log("formulario invalido");
+            return;
+          } else {
+            console.log("entro a la ejecucion del servicio de guardado");
+            this.saveLoading = true;
+            await this.handleSaveChanges();
+          }
+        } catch (error) {
+          this.saveLoading = false;
+          console.error(error);
+        }
+      },
+
+      async handleSaveChanges() {
+        this.canUseAI = false;
+        try {
+          const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`
+          const config = {
+            headers: {
+              company: 'BAQVERDE',
+              "Content-Type": "application/json", // Puedes ajustar el tipo de contenido según sea necesario
+            },
+          };
+
+          const body = {
+            subject: this.form.subject,
+            summary: this.form.description,
+            area: this.form.area,
+            areaId: this.getAreaId,
+            serie: this.form.serie,
+            subSerie: this.form.subSerie,
+            days: this.getDocDays[0]?.days ?? null,
+            documentaryTypologyEntry: this.form.documentType,
+            entryDate: this.form.date,
+            endDate: !this.form.untilDate ? null : this.form.untilDate,
+            assignedToUid: this.getAssignedUid[0]?.uid,
+            city: this.form.city,
+            folios: parseInt(this.form.folios),
+            assignedTo:
+              this.form.assignedTo || this.internalAddressee.addressee,
+            observations: this.form.observations,
+            externalRadicate: this.form.externalFiling,
+            inputMethod: this.form.inputMethod,
+            petitionerInformation: {
+              personType: this.form.personType,
+              identificationType: this.form.idType,
+              identificationNumber: this.form.idNumber,
+              firstNames: this.form.names,
+              lastNames: this.form.lastNames,
+              address: this.form.address,
+              phoneNumber: this.form.contactPhone,
+              email: this.form.email,
+              companyName: this.form.companyName,
+            },
+          };
+
+          const response = await axios.post(url, body, config);
+          if (response.data.message) {
+            this.saveLoading = false;
+            this.showRadicationButton = true;
+          }
+        } catch (error) {
+          this.saveLoading = false;
+          this.showRadicationButton = false;
+          console.error(error);
+        }
+      },
+
+      async generateSticker() {
+        let data = JSON.stringify({
+          company: this.companyID,
+          uid: this.documentID,
+        });
+
+        let config = {
+          method: "post",
+          maxBodyLength: Infinity,
+          url: `${process.env.VUE_APP_CF_BASE_URL}/doc/create-qr`,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          responseType: "arraybuffer",
+          data: data,
+        };
+
+        axios
+          .request(config)
+          .then((response) => {
+            const res = response.data;
+            const blob = new Blob([res], { type: "application/pdf" });
+            const url = window.URL.createObjectURL(blob);
+            this.urlSticker = url;
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      },
+
+      async sendAllInformationToClaim() {
+        try {
+
+          if (this.mode === 'Out') {
+            // paso 1, crear documento
+            await this.createOutDocument("create");
+            console.log("creo el documento");
+
+            // Paso 2, subir documento
+            await this.uploadDocument();
+            console.log("subio el documento");
+          }
+
+          // paso 3, guardar informacion
+          await this.handleSaveInfo();
+          console.log("se guardo el draft");
+        } catch (error) {
+          console.log(error);
+        }
+      },
+
+      closeModal() {
+        this.qrModal = false;
+      },
+
+      newClaim() {
+        location.reload();
+      },
+
+      showSticker() {
+        window.open(this.urlSticker, "_blank");
+      },
     },
 
-    async generateSticker() {
-      let data = JSON.stringify({
-        company: this.companyID,
-        uid: this.documentID,
-      });
+    async mounted() {
+      setTimeout(() => {
+        this.isDisabledAI = false;
+      }, 1000);
+      this.getTrds();
 
-      let config = {
-        method: "post",
-        maxBodyLength: Infinity,
-        url: `${process.env.VUE_APP_CF_BASE_URL}/doc/create-qr`,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        responseType: "arraybuffer",
-        data: data,
+      const loader = new Loader({
+        apiKey: "AIzaSyAELgR27D_WqfANHM3LBXeammM-lCvqhBU",
+        version: "weekly",
+      });
+      const Places = await loader.importLibrary("places");
+
+      //YOU ARE HERE !!!!!!!!!!!!!!
+
+      // the center, defaultbounds are not necessary but are best practices to limit/focus search results
+      const center = { lat: 34.082298, lng: -82.284777 };
+      // Create a bounding box with sides ~10km away from the center point
+      const defaultBounds = {
+        north: center.lat + 0.1,
+        south: center.lat - 0.1,
+        east: center.lng + 0.1,
+        west: center.lng - 0.1,
       };
 
-      axios
-        .request(config)
-        .then((response) => {
-          const res = response.data;
-          const blob = new Blob([res], { type: "application/pdf" });
-          const url = window.URL.createObjectURL(blob);
-          this.urlSticker = url;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+      //this const will be the first arg for the new instance of the Places API
+
+      const input = document.getElementById("place"); //binds to our input element
+
+      //this object will be our second arg for the new instance of the Places API
+      const options = {
+        bounds: defaultBounds, //optional
+        types: ["establishment"], //optioanl
+        componentRestrictions: { country: "co" }, //limiter for the places api search
+        fields: ["address_components", "geometry", "icon", "name"], //allows the api to accept these inputs and return similar ones
+        strictBounds: false, //optional
+      };
+
+      // per the Google docs create the new instance of the import above. I named it Places.
+      const autocomplete = new Places.Autocomplete(input, options);
+
+      //add the place_changed listener to display results when inputs change
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace(); //this callback is inherent you will see it if you logged autocomplete
+        this.form.address =
+          place.name +
+          ", " +
+          place.address_components[1].long_name +
+          " #" +
+          place.address_components[0].long_name;
+        this.form.city = place.address_components[4].long_name;
+      });
     },
 
-    closeModal() {
-      this.qrModal = false;
+    computed: {
+      user() {
+        return this.$store.state.auth.currentUser;
+      },
+      userInfo() {
+        return JSON.parse(this.$store.state.auth.currentUserInfo);
+      },
     },
 
-    newClaim() {
-      location.reload();
+    components: {
+      Layout,
+      PageHeader,
+      Multiselect,
+      flatPickr,
+      ValidateLabel,
+      ValidateOutLabels,
+      Modal,
+      FileTextIcon,
+      // AlertOctagonIcon,
+      Trash2Icon,
+      CpuIcon,
     },
-
-    showSticker() {
-      window.open(this.urlSticker, "_blank");
-    },
-  },
-
-  async mounted() {
-    setTimeout(() => {
-      this.isDisabledAI = false;
-    }, 1000);
-    this.getTrds();
-
-    const loader = new Loader({
-      apiKey: "AIzaSyAELgR27D_WqfANHM3LBXeammM-lCvqhBU",
-      version: "weekly",
-    });
-    const Places = await loader.importLibrary("places");
-
-    //YOU ARE HERE !!!!!!!!!!!!!!
-
-    // the center, defaultbounds are not necessary but are best practices to limit/focus search results
-    const center = { lat: 34.082298, lng: -82.284777 };
-    // Create a bounding box with sides ~10km away from the center point
-    const defaultBounds = {
-      north: center.lat + 0.1,
-      south: center.lat - 0.1,
-      east: center.lng + 0.1,
-      west: center.lng - 0.1,
-    };
-
-    //this const will be the first arg for the new instance of the Places API
-
-    const input = document.getElementById("place"); //binds to our input element
-
-    //this object will be our second arg for the new instance of the Places API
-    const options = {
-      bounds: defaultBounds, //optional
-      types: ["establishment"], //optioanl
-      componentRestrictions: { country: "co" }, //limiter for the places api search
-      fields: ["address_components", "geometry", "icon", "name"], //allows the api to accept these inputs and return similar ones
-      strictBounds: false, //optional
-    };
-
-    // per the Google docs create the new instance of the import above. I named it Places.
-    const autocomplete = new Places.Autocomplete(input, options);
-
-    //add the place_changed listener to display results when inputs change
-    autocomplete.addListener("place_changed", () => {
-      const place = autocomplete.getPlace(); //this callback is inherent you will see it if you logged autocomplete
-      this.form.address =
-        place.name +
-        ", " +
-        place.address_components[1].long_name +
-        " #" +
-        place.address_components[0].long_name;
-      this.form.city = place.address_components[4].long_name;
-    });
-  },
-
-  computed: {
-    user() {
-      return this.$store.state.auth.currentUser;
-    },
-    userInfo() {
-      return JSON.parse(this.$store.state.auth.currentUserInfo);
-    },
-  },
-
-  components: {
-    Layout,
-    PageHeader,
-    Multiselect,
-    flatPickr,
-    ValidateLabel,
-    ValidateOutLabels,
-    Modal,
-    FileTextIcon,
-    // AlertOctagonIcon,
-    Trash2Icon,
-    CpuIcon,
-  },
-};
+  };
 </script>
 
 <template>
@@ -1606,33 +1649,12 @@ export default {
       </div>
 
       <div class="text-end mb-4 col-6 col-sm-6">
-        <a-tooltip>
-          <template #title>Guardar respuesta</template>
-          <BButton
-            v-if="!isAnswered && mode === 'Out'"
-            type="button"
-            variant="info"
-            size="sm"
-            style="margin-right: 10px"
-            class="w-auto h-100 ms-2 d-inline-flex align-items-center justify-content-center"
-            disabled
-          >
-            <span
-              v-if="isLoadingSave"
-              class="spinner-border spinner-border-sm"
-              role="status"
-              aria-hidden="true"
-            ></span>
-            <i class="ri-save-2-fill fs-5" v-else></i>
-            <!-- <EyeIcon size="22" /> -->
-          </BButton>
-        </a-tooltip>
         <BButton
           v-if="!showRadicationButton"
           type="submit"
           variant="success"
           class="w-sm"
-          @click="handleSaveInfo()"
+          @click="sendAllInformationToClaim"
           :disabled="saveLoading"
         >
           <div class="button-content">
@@ -2496,42 +2518,6 @@ export default {
                 "
               >
                 <a-tooltip>
-                  <template #title>
-                    Crear documento a partir de la información del área de
-                    texto.
-                  </template>
-                  <BButton
-                    v-if="!isLoadingCreateDocument"
-                    type="button"
-                    variant="success"
-                    size="md"
-                    class="w-auto h-100 mx-2 d-inline-flex align-items-center justify-content-center"
-                    @click="createOutDocument('create')"
-                  >
-                    Crear documento
-                  </BButton>
-                  <BButton
-                    v-else
-                    type="button"
-                    variant="success"
-                    size="md"
-                    class="w-auto h-100 mx-2 d-inline-flex align-items-center justify-content-center"
-                    disabled
-                  >
-                    Creando
-                    <div
-                      class="d-flex justify-content-center"
-                      style="margin-left: 10px; width: 15px; height: 15px"
-                    >
-                      <div
-                        class="spinner-border"
-                        role="status"
-                        style="width: 15px; height: 15px"
-                      ></div>
-                    </div>
-                  </BButton>
-                </a-tooltip>
-                <a-tooltip>
                   <template #title
                     >Previsualizar información de radicado</template
                   >
@@ -2569,35 +2555,18 @@ export default {
               </div>
             </BCardBody>
           </BCard>
+
           <BCard no-body>
             <BCardHeader>
               <h5 class="card-title mb-0 text-muted fw-light fst-italic">
-                AGREGA ARCHIVO PARA RADICAR
+                DOCUMENTOS DE RADICADO
               </h5>
             </BCardHeader>
-            <BCardBody v-if="!answered">
-              <div>
-                <div :class="classDropZone">
-                  <p>
-                    <FileTextIcon size="28" />
-                  </p>
-                  <span> Arrastra el archivo para subirlo</span>
-                  <input
-                    type="file"
-                    name="formFile"
-                    id="formFile"
-                    multiple
-                    class="input-file"
-                    @change="selectedFile"
-                    :disabled="radicated"
-                  />
-                  <label for="formFile" class="link-primary label-formFile"
-                    >o Clic acá para selecciona un archivo</label
-                  >
-                </div>
-                <div class="vstack gap-2 mt-3" v-if="files.length > 0">
+            <BCardBody>
+              <div class="col-sm-12 col-md-12 col-sm-12">
+                <div class="vstack gap-2" v-if="files.length > 0">
                   <div
-                    class="border rounded"
+                    class="border rounded mt-2"
                     v-for="(file, index) of files"
                     :key="index"
                   >
@@ -2660,15 +2629,38 @@ export default {
                     </div>
                   </div>
                 </div>
+
+                <div class="form-check form-switch mt-3">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="flexSwitchCheckDefault"
+                    v-model="haveAdditionalDocuments"
+                  />
+                  <label class="form-check-label" for="flexSwitchCheckDefault"
+                    >Archivos complementarios</label
+                  >
+                </div>
+                <div v-if="haveAdditionalDocuments" :class="classDropZone">
+                  <p>
+                    <FileTextIcon size="28" />
+                  </p>
+                  <span> Arrastra el archivo para subirlo</span>
+                  <input
+                    type="file"
+                    name="formFile"
+                    id="formFile"
+                    multiple
+                    class="input-file"
+                    @change="selectedFile"
+                    :disabled="radicated"
+                  />
+                  <label for="formFile" class="link-primary label-formFile">
+                    o Clic acá para selecciona un archivo
+                  </label>
+                </div>
               </div>
             </BCardBody>
-            <BoCardBody v-else>
-              <h3
-                class="w-100 d-flex justify-content-center align-items-center text-lg py-2"
-              >
-                Radicado Generado
-              </h3>
-            </BoCardBody>
           </BCard>
         </BCol>
 
@@ -3337,6 +3329,81 @@ export default {
               </div>
             </div>
 
+            <!-- información de revision -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingTwo">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseTwo"
+                  aria-expanded="false"
+                  aria-controls="collapseTwo"
+                >
+                  INFORMACIÓN DE REVISIÓN
+                </button>
+              </h2>
+              <div
+                id="collapseTwo"
+                class="accordion-collapse collapse"
+                aria-labelledby="headingTwo"
+                data-bs-parent="#accordionExample"
+              >
+                <div class="accordion-body">
+                  <BCol lg="12">
+                    <label for="name" class="form-label fw-bold">Área </label>
+                    <Multiselect
+                      v-model="outForm.review_area"
+                      :required="true"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      :options="trds"
+                      @select="clearSelectInputReview"
+                      :disabled="radicated"
+                    />
+                  </BCol>
+
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold"
+                      >Nombre de quien revisa
+
+                      <BSpinner
+                        v-if="loadingReviewerName"
+                        class="float-end"
+                        small
+                        v-b-tooltip.hover.top
+                        title="Extrayendo asunto con IA"
+                        type="grow"
+                      />
+                    </label>
+                    <Multiselect
+                      :required="true"
+                      v-model="outForm.review_name"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      :options="peopleListReview"
+                      placeholder="Seleccione"
+                    />
+                  </BCol>
+
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold">Cargo</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      :required="true"
+                      placeholder="Ingrese el cargo de quien revisa"
+                      v-model="outForm.review_occupation"
+                    />
+                  </BCol>
+                </div>
+              </div>
+            </div>
+
             <!-- información de remitente -->
             <div class="accordion-item">
               <h2 class="accordion-header" id="headingThree">
@@ -3413,85 +3480,6 @@ export default {
                 </div>
               </div>
             </div>
-
-            <!-- información de revision -->
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingTwo">
-                <button
-                  class="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseTwo"
-                  aria-expanded="false"
-                  aria-controls="collapseTwo"
-                >
-                  INFORMACIÓN DE REVISIÓN
-                </button>
-              </h2>
-              <div
-                id="collapseTwo"
-                class="accordion-collapse collapse"
-                aria-labelledby="headingTwo"
-                data-bs-parent="#accordionExample"
-              >
-                <div class="accordion-body">
-                  <BCol lg="12">
-                    <label for="name" class="form-label fw-bold"
-                      >Área <span class="text-danger fw-bold">*</span>
-                    </label>
-                    <Multiselect
-                      v-model="outForm.review_area"
-                      :required="true"
-                      :close-on-select="true"
-                      :searchable="true"
-                      :create-option="true"
-                      placeholder="Seleccione"
-                      :options="trds"
-                      @select="clearSelectInputReview"
-                      :disabled="radicated"
-                    />
-                  </BCol>
-
-                  <BCol lg="12" class="mt-3">
-                    <label for="name" class="form-label fw-bold"
-                      >Nombre de quien revisa
-                      <span class="text-danger fw-bold">*</span>
-                      <BSpinner
-                        v-if="loadingReviewerName"
-                        class="float-end"
-                        small
-                        v-b-tooltip.hover.top
-                        title="Extrayendo asunto con IA"
-                        type="grow"
-                      />
-                    </label>
-                    <Multiselect
-                      :required="true"
-                      v-model="outForm.review_name"
-                      :close-on-select="true"
-                      :searchable="true"
-                      :create-option="true"
-                      :options="peopleListReview"
-                      placeholder="Seleccione"
-                    />
-                  </BCol>
-
-                  <BCol lg="12" class="mt-3">
-                    <label for="name" class="form-label fw-bold"
-                      >Cargo <span class="text-danger fw-bold">*</span></label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="name"
-                      :required="true"
-                      placeholder="Ingrese el cargo de quien revisa"
-                      v-model="outForm.review_occupation"
-                    />
-                  </BCol>
-                </div>
-              </div>
-            </div>
           </div>
         </BCol>
       </BRow>
@@ -3500,93 +3488,96 @@ export default {
 </template>
 
 <style lang="scss" scoped>
-.preview-manual-address {
-  font-size: 0.8rem;
-  background: light-dark(rgb(232, 240, 254), rgba(70, 90, 126, 0.4)) !important;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-}
-
-.manual-address-inputs-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 25px;
-}
-
-.label-checkbox {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.section {
-  border: 1px solid;
-}
-
-.is-danger {
-  color: red;
-}
-
-.button-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.drop-area {
-  height: 20vh;
-  border: 2.5px dotted;
-  border-radius: 10px;
-}
-
-.input-file {
-  width: 0.1px;
-  height: 0.1px;
-  opacity: 0;
-  overflow: hidden;
-  position: absolute;
-  z-index: -1;
-}
-
-.label-formFile:hover {
-  cursor: pointer;
-}
-
-@media (width: 414px) {
-  .manual-address-inputs-box {
-    flex-direction: column;
+  .preview-manual-address {
+    font-size: 0.8rem;
+    background: light-dark(
+      rgb(232, 240, 254),
+      rgba(70, 90, 126, 0.4)
+    ) !important;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
   }
-}
 
-.multiselect.is-disabled,
-.form-control:disabled {
-  background-color: #e9ebec !important;
-  cursor: not-allowed !important;
-}
+  .manual-address-inputs-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 25px;
+  }
+
+  .label-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .section {
+    border: 1px solid;
+  }
+
+  .is-danger {
+    color: red;
+  }
+
+  .button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .drop-area {
+    height: 20vh;
+    border: 2.5px dotted;
+    border-radius: 10px;
+  }
+
+  .input-file {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+  }
+
+  .label-formFile:hover {
+    cursor: pointer;
+  }
+
+  @media (width: 414px) {
+    .manual-address-inputs-box {
+      flex-direction: column;
+    }
+  }
+
+  .multiselect.is-disabled,
+  .form-control:disabled {
+    background-color: #e9ebec !important;
+    cursor: not-allowed !important;
+  }
 </style>
 
 <style>
-.ck-editor__editable {
-  /* min-height: 100% !important; */
-  margin-bottom: 1em;
-}
+  .ck-editor__editable {
+    /* min-height: 100% !important; */
+    margin-bottom: 1em;
+  }
 
-.ck-editor,
-.ck-reset,
-.ck-content,
-.ck-editor__main {
-  height: 350px !important;
-}
+  .ck-editor,
+  .ck-reset,
+  .ck-content,
+  .ck-editor__main {
+    height: 350px !important;
+  }
 
-.ck-editor__editable {
-  height: 90% !important;
-}
+  .ck-editor__editable {
+    height: 90% !important;
+  }
 
-.ck-powered-by {
-  display: none !important;
-}
+  .ck-powered-by {
+    display: none !important;
+  }
 </style>
