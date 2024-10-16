@@ -1,5 +1,4 @@
 <script>
-  import flatPickr from "vue-flatpickr-component";
   import axios from "axios";
   import { defineComponent, onMounted, ref } from "vue";
   import moment from "moment";
@@ -14,8 +13,6 @@
       const user = ref(JSON.parse(sessionStorage.getItem("authUserInfo")));
       const claims = ref([]);
       const originalClaims = ref([]);
-      const date = ref(null);
-      const activeTab = ref("inTerm");
 
       async function getRecords() {
         try {
@@ -51,47 +48,21 @@
         router.replace(`/gestion-documental/radicado/${claim?.claimId}`);
       }
 
-      onMounted(() => {
-        getRecords();
-      });
-
-      const onChangeDate = () => {
-        if (date.value !== null) {
-          claims.value = originalClaims.value;
-          claims.value = claims.value.filter(
-            (claim) => claim.expirationDate == date.value
-          );
-        }
-      };
-
       const clearFilter = () => {
-        date.value = null;
         claims.value = originalClaims.value;
       };
 
-      function setActiveTab(tabName) {
-        activeTab.value = tabName;
-      }
-
+      onMounted(() => {
+        getRecords();
+      });
       return {
-        date,
-        config: {
-          inline: true,
-          dateFormat: "d/m/Y",
-        },
         claims,
         getRecords,
         moment,
         goToClaims,
-        onChangeDate,
         clearFilter,
         setState,
-        activeTab,
-        setActiveTab,
       };
-    },
-    components: {
-      flatPickr,
     },
   });
 </script>
@@ -99,51 +70,67 @@
 <template>
   <BCard no-body class="mt-2 card-config">
     <BCardHeader class="border-0">
-      <BCardTitle class="mb-0">Calendario de registros</BCardTitle>
+      <BCardTitle class="mb-0 col">Próximas a vencer </BCardTitle>
     </BCardHeader>
 
     <BCardBody class="pt-0">
-      <div class="upcoming-scheduled">
-        <flat-pickr
-          v-model="date"
-          :config="config"
-          @on-change="onChangeDate"
-        ></flat-pickr>
+      <div class="in-term-list" v-if="claims.length > 0">
+        <div
+          v-for="(item, idx) in claims"
+          :key="idx"
+          class="mini-stats-wid d-flex align-items-center mt-3 item-list"
+          @click="goToClaims(item)"
+        >
+          <div class="flex-shrink-0 avatar-sm">
+            <span
+              class="mini-stat-icon avatar-title rounded-circle text-primary bg-primary-subtle fs-4"
+            >
+              {{ idx + 1 }}
+            </span>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <h6 class="mb-1">{{ item?.subject ?? " - " }}</h6>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 10px;
+              "
+            >
+              <p class="text-muted mb-0">
+                {{ item?.documentaryTypologyEntry ?? " - " }}
+              </p>
+            </div>
+          </div>
+          <div class="flex-shrink-0">
+            <p class="text-muted mb-0">
+              {{ item?.expirationDate }}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div class="d-flex justify-content-between align-items-center">
-        <h6 class="text-uppercase fw-semibold mt-4 mb-3 text-muted">
-          Estados de registro:
-        </h6>
-        <b-button variant="danger" size="sm" @click="clearFilter"
-          >Limpiar filtro</b-button
+      <span class="text-muted w-100 text-center d-block pt-3" v-else
+        >No se encontraron registros...</span
+      >
+
+      <div class="mt-3 text-center">
+        <BLink
+          href="/gestion-documental/lista-radicados"
+          class="text-muted text-decoration-underline"
+          >Ver todos los pendientes</BLink
         >
       </div>
+    </BCardBody>
+  </BCard>
+  <BCard no-body class="mt-2 card-config">
+    <BCardHeader class="border-0">
+      <BCardTitle class="mb-0 col">Vencidas</BCardTitle>
+    </BCardHeader>
 
-      <ul class="nav nav-tabs">
-        <li class="nav-item" @click="setActiveTab('inTerm')">
-          <a
-            class="nav-link"
-            :class="activeTab == 'inTerm' ? 'active' : ''"
-            href="#"
-            >En termino</a
-          >
-        </li>
-
-        <li class="nav-item" @click="setActiveTab('outDated')">
-          <a
-            class="nav-link"
-            :class="activeTab == 'outDated' ? 'active' : ''"
-            href="#"
-            >Vencídas</a
-          >
-        </li>
-      </ul>
-
-      <div
-        class="in-term-list"
-        v-if="claims.length > 0 && activeTab == 'inTerm'"
-      >
+    <BCardBody class="pt-0">
+      <div class="in-term-list" v-if="claims.length > 0">
         <div
           v-for="(item, idx) in claims"
           :key="idx"
