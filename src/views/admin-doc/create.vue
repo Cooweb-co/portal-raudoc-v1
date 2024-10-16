@@ -65,7 +65,7 @@
       const filesCreated = ref([]);
       const filesToUpload = ref([]);
       const uploadedFiles = ref([]);
-      const haveAdditionalDocuments = ref(false)
+      const haveAdditionalDocuments = ref(false);
       const readDocument = ref(false);
       const dropzoneFile = ref("");
       const loadingBtnAI = ref(false);
@@ -1168,7 +1168,7 @@
         additionalDocs,
         uploadDocument,
         filesCreated,
-        haveAdditionalDocuments
+        haveAdditionalDocuments,
       };
     },
 
@@ -2637,8 +2637,15 @@
                 </div>
 
                 <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" v-model="haveAdditionalDocuments">
-                  <label class="form-check-label" for="flexSwitchCheckDefault">Archivos complementarios</label>
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="flexSwitchCheckDefault"
+                    v-model="haveAdditionalDocuments"
+                  />
+                  <label class="form-check-label" for="flexSwitchCheckDefault"
+                    >Archivos complementarios</label
+                  >
                 </div>
                 <div v-if="haveAdditionalDocuments" :class="classDropZone">
                   <p>
@@ -3387,6 +3394,81 @@
               </div>
             </div>
 
+            <!-- información de revision -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingTwo">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseTwo"
+                  aria-expanded="false"
+                  aria-controls="collapseTwo"
+                >
+                  INFORMACIÓN DE REVISIÓN
+                </button>
+              </h2>
+              <div
+                id="collapseTwo"
+                class="accordion-collapse collapse"
+                aria-labelledby="headingTwo"
+                data-bs-parent="#accordionExample"
+              >
+                <div class="accordion-body">
+                  <BCol lg="12">
+                    <label for="name" class="form-label fw-bold">Área </label>
+                    <Multiselect
+                      v-model="outForm.review_area"
+                      :required="true"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      placeholder="Seleccione"
+                      :options="trds"
+                      @select="clearSelectInputReview"
+                      :disabled="radicated"
+                    />
+                  </BCol>
+
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold"
+                      >Nombre de quien revisa
+
+                      <BSpinner
+                        v-if="loadingReviewerName"
+                        class="float-end"
+                        small
+                        v-b-tooltip.hover.top
+                        title="Extrayendo asunto con IA"
+                        type="grow"
+                      />
+                    </label>
+                    <Multiselect
+                      :required="true"
+                      v-model="outForm.review_name"
+                      :close-on-select="true"
+                      :searchable="true"
+                      :create-option="true"
+                      :options="peopleListReview"
+                      placeholder="Seleccione"
+                    />
+                  </BCol>
+
+                  <BCol lg="12" class="mt-3">
+                    <label for="name" class="form-label fw-bold">Cargo</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      :required="true"
+                      placeholder="Ingrese el cargo de quien revisa"
+                      v-model="outForm.review_occupation"
+                    />
+                  </BCol>
+                </div>
+              </div>
+            </div>
+
             <!-- información de remitente -->
             <div class="accordion-item">
               <h2 class="accordion-header" id="headingThree">
@@ -3458,85 +3540,6 @@
                       :required="true"
                       placeholder="Ingrese el cargo del remitente"
                       v-model="outForm.sender_occupation"
-                    />
-                  </BCol>
-                </div>
-              </div>
-            </div>
-
-            <!-- información de revision -->
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingTwo">
-                <button
-                  class="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseTwo"
-                  aria-expanded="false"
-                  aria-controls="collapseTwo"
-                >
-                  INFORMACIÓN DE REVISIÓN
-                </button>
-              </h2>
-              <div
-                id="collapseTwo"
-                class="accordion-collapse collapse"
-                aria-labelledby="headingTwo"
-                data-bs-parent="#accordionExample"
-              >
-                <div class="accordion-body">
-                  <BCol lg="12">
-                    <label for="name" class="form-label fw-bold"
-                      >Área <span class="text-danger fw-bold">*</span>
-                    </label>
-                    <Multiselect
-                      v-model="outForm.review_area"
-                      :required="true"
-                      :close-on-select="true"
-                      :searchable="true"
-                      :create-option="true"
-                      placeholder="Seleccione"
-                      :options="trds"
-                      @select="clearSelectInputReview"
-                      :disabled="radicated"
-                    />
-                  </BCol>
-
-                  <BCol lg="12" class="mt-3">
-                    <label for="name" class="form-label fw-bold"
-                      >Nombre de quien revisa
-                      <span class="text-danger fw-bold">*</span>
-                      <BSpinner
-                        v-if="loadingReviewerName"
-                        class="float-end"
-                        small
-                        v-b-tooltip.hover.top
-                        title="Extrayendo asunto con IA"
-                        type="grow"
-                      />
-                    </label>
-                    <Multiselect
-                      :required="true"
-                      v-model="outForm.review_name"
-                      :close-on-select="true"
-                      :searchable="true"
-                      :create-option="true"
-                      :options="peopleListReview"
-                      placeholder="Seleccione"
-                    />
-                  </BCol>
-
-                  <BCol lg="12" class="mt-3">
-                    <label for="name" class="form-label fw-bold"
-                      >Cargo <span class="text-danger fw-bold">*</span></label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="name"
-                      :required="true"
-                      placeholder="Ingrese el cargo de quien revisa"
-                      v-model="outForm.review_occupation"
                     />
                   </BCol>
                 </div>
