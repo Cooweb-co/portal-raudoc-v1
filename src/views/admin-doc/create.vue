@@ -62,7 +62,6 @@
       const instance = getCurrentInstance();
       const storage = getFirebaseBackend().storage;
       const files = ref([]);
-      const filesCreated = ref([]);
       const filesToUpload = ref([]);
       const uploadedFiles = ref([]);
       const haveAdditionalDocuments = ref(false);
@@ -484,6 +483,8 @@
             if (response) {
               console.log("ya en este punto se subio el archivo");
             }
+
+            console.log('Archivo: ',file);
 
             toast.update(idLoadFile, {
               render: `Archivo cargado con éxito ${file.name}`,
@@ -1005,7 +1006,6 @@
 
           if (prop === "create") {
             files.value.push(response);
-            filesCreated.value.push(response);
             filesToUpload.value.push(response.data);
           }
 
@@ -1031,13 +1031,13 @@
         }
       };
 
-      // watch(
-      //   () => [...files.value],
-      //   (currentValue) => {
-      //     uploadDocument();
-      //     return currentValue;
-      //   }
-      // );
+      watch(
+        () => [...files.value],
+        (currentValue) => {
+          uploadDocument();
+          return currentValue;
+        }
+      );
 
       watch(stateDoc, (newValue) => {
         if (newValue.status == "ERROR") {
@@ -1167,7 +1167,6 @@
         createPDF,
         additionalDocs,
         uploadDocument,
-        filesCreated,
         haveAdditionalDocuments,
       };
     },
@@ -1245,16 +1244,7 @@
 
           try {
             this.saveLoading = true;
-            const response = await this.createPDF(prop);
-            const pdfBlob = response;
-            const pdfUrl = URL.createObjectURL(pdfBlob);
-            var link = document.createElement("a");
-            link.href = pdfUrl;
-            link.download = this.form.subject;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            console.log(document);
+            await this.createPDF(prop);
           } catch (error) {
             console.log(error);
           } finally {
@@ -1283,6 +1273,8 @@
             body,
             config
           );
+
+          console.log(process.env.VUE_APP_CF_BASE_URL);
 
           if (response) {
             this.generateSticker();
@@ -1374,10 +1366,10 @@
       async handleSaveChanges() {
         this.canUseAI = false;
         try {
-          const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`;
+          const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`
           const config = {
             headers: {
-              company: this.companyID,
+              company: 'BAQVERDE',
               "Content-Type": "application/json", // Puedes ajustar el tipo de contenido según sea necesario
             },
           };
@@ -1458,13 +1450,16 @@
 
       async sendAllInformationToClaim() {
         try {
-          // paso 1, crear documento
-          await this.createOutDocument("create");
-          console.log("creo el documento");
 
-          // Paso 2, subir documento
-          await this.uploadDocument();
-          console.log("subio el documento");
+          if (this.mode === 'Out') {
+            // paso 1, crear documento
+            await this.createOutDocument("create");
+            console.log("creo el documento");
+
+            // Paso 2, subir documento
+            await this.uploadDocument();
+            console.log("subio el documento");
+          }
 
           // paso 3, guardar informacion
           await this.handleSaveInfo();
@@ -2569,11 +2564,10 @@
             </BCardHeader>
             <BCardBody>
               <div class="col-sm-12 col-md-12 col-sm-12">
-                <div class="vstack gap-2" v-if="filesCreated.length > 0">
-                  <label for="" class="mb-1"> Documento de radicado </label>
+                <div class="vstack gap-2" v-if="files.length > 0">
                   <div
-                    class="border rounded"
-                    v-for="(file, index) of filesCreated"
+                    class="border rounded mt-2"
+                    v-for="(file, index) of files"
                     :key="index"
                   >
                     <div class="d-flex align-items-center p-2" v-if="file">
@@ -2636,7 +2630,7 @@
                   </div>
                 </div>
 
-                <div class="form-check form-switch">
+                <div class="form-check form-switch mt-3">
                   <input
                     class="form-check-input"
                     type="checkbox"
@@ -2664,65 +2658,6 @@
                   <label for="formFile" class="link-primary label-formFile">
                     o Clic acá para selecciona un archivo
                   </label>
-                </div>
-
-                <div
-                  class="border rounded mt-2"
-                  v-for="(file, index) of files"
-                  :key="index"
-                >
-                  <div class="d-flex align-items-center p-2" v-if="file">
-                    <div class="flex-grow-1">
-                      <div class="pt-1">
-                        <h5 class="fs-14 mb-1" data-dz-name="">
-                          {{
-                            file.name || JSON.parse(file?.config?.data)?.subject
-                          }}
-                        </h5>
-                        <p
-                          v-if="file.size"
-                          class="fs-13 text-muted mb-0"
-                          data-dz-size=""
-                        >
-                          <strong>{{ file.size / 1024 }}</strong>
-                          KB
-                        </p>
-                        <p v-else class="fs-13 text-muted mb-0" data-dz-size="">
-                          <strong> 159.3818359375 </strong>
-                          KB
-                        </p>
-                        <strong
-                          class="error text-danger"
-                          data-dz-errormessage=""
-                        ></strong>
-                      </div>
-                    </div>
-                    <div class="flex-shrink-0 ms-3 gap-1">
-                      <a-tooltip>
-                        <template #title>Aplicar resumen</template>
-                        <BButton
-                          variant="info"
-                          size="sm"
-                          class="me-1"
-                          data-dz-remove=""
-                          @click="changeDocumentAI(file.name)"
-                        >
-                          <CpuIcon />
-                        </BButton>
-                      </a-tooltip>
-                      <a-tooltip>
-                        <template #title>Borrar documento</template>
-                        <BButton
-                          variant="danger"
-                          size="sm"
-                          data-dz-remove=""
-                          @click="deleteRecord(file.name)"
-                        >
-                          <Trash2Icon />
-                        </BButton>
-                      </a-tooltip>
-                    </div>
-                  </div>
                 </div>
               </div>
             </BCardBody>
