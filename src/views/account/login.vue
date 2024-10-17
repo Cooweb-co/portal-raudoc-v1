@@ -1,6 +1,6 @@
 <script>
 import { required, email, helpers } from "@vuelidate/validators";
-
+import { toast } from "vue3-toastify";
 import {
     authMethods,
     authFackMethods,
@@ -77,6 +77,16 @@ export default {
                                 this.tryingToLogIn = false;
                                 this.isAuthError = false;
                                 // Redirect to the originally requested page, or to the home page
+                                if(!token) {
+                                    this.logOut()
+                                    this.processing = false;
+                                    this.tryingToLogIn = false;
+                                    return toast("Este usuario no está habilitado para iniciar sesión!", {
+                                        type: "error",
+                                        position: "top-right",
+                                    });
+                                }
+
                                 this.$router.push({
                                     path: "/",
                                 });

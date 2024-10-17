@@ -187,7 +187,6 @@ class FirebaseAuthBackend {
                 .auth()
                 .signOut()
                 .then(() => {
-                    alert("logout");
                     resolve(true);
                 })
                 .catch((error) => {

@@ -7,7 +7,8 @@
   import Swal from "sweetalert2";
   import ValidateLabel from "../../utils/ValidateLabel.vue";
   import { requiredIf } from "@vuelidate/validators";
-  import { useRouter } from "vue-router";
+  // import { useRouter } from "vue-router";
+  import axios from "axios";
 
   import {
     ContinentList,
@@ -17,8 +18,8 @@
 
   export default {
     setup() {
-      const router = useRouter();
-
+      // const router = useRouter();
+      const baseURL = ref(process.env.VUE_APP_CF_BASE_URL)
       const externalClaim = ref({
         documentNumber: "",
         name: "",
@@ -92,25 +93,57 @@
         for (let i = 0; i < newFile.length; i++) {
           file.value.push(newFile[i]);
         }
+
+        console.log(file.value[0]);
       };
 
       const sendClaim = async () => {
         try {
-          v$.value.$touch();
+          // v$.value.$touch();
 
-          if (v$.value.$invalid) return;
+          // if (v$.value.$invalid) return;
 
           // const response = await axios.post(``, externalClaim)
+
+          const formData = new FormData();
+
+          formData.append("document", file.value[0])
+          formData.append("documentNumber", externalClaim.value.documentNumber);
+          formData.append("name", externalClaim.value.name);
+          formData.append("lastName", externalClaim.value.lastName);
+          formData.append("secondSurname", externalClaim.value.secondSurname);
+          formData.append("phone", externalClaim.value.phone);
+          formData.append("address", externalClaim.value.address);
+          formData.append("email", externalClaim.value.email);
+          formData.append("continent", externalClaim.value.continent);
+          formData.append("country", externalClaim.value.country);
+          formData.append("department", externalClaim.value.department);
+          formData.append("municipality", externalClaim.value.municipality);
+          formData.append("claimSubject", externalClaim.value.claimSubject);
+          formData.append(
+            "annexDescription",
+            externalClaim.value.annexDescription
+          );
+          formData.append("claimType", externalClaim.value.claimType || "");
+          formData.append(
+            "termsAndConditions",
+            externalClaim.value.termsAndConditions
+          );
+          formData.append(
+            "sendNotifications",
+            externalClaim.value.sendNotifications
+          );
+
+          const response = axios.post(`${baseURL.value}/externalClaim`, formData )
+          console.log(response);
 
           Swal.fire({
             position: "top-end",
             icon: "success",
-            title: "Faltan campos obligatorios del formulario",
+            title: "Su radicado ha sido emitido.",
             showConfirmButton: false,
             timer: 1500,
           });
-
-          router.replace("/");
         } catch (error) {
           console.log(error);
         }
@@ -403,8 +436,9 @@
           <label class="form-check-label" for="flexCheckDefault">
             Aceptar
             <span class="text-primary text-decoration-underline">
-              términos y condiciones
+              términos y condiciones 
             </span>
+            <span class="text-danger fw-bold">*</span>
           </label>
         </div>
 

@@ -29,6 +29,14 @@ export default [
     },
   },
   {
+    path: "/edicion-usuario/:userID",
+    name: "editUser",
+    component: () => import("../views/pages/edit-user.vue"),
+    meta: {
+      title: "Edición de usuario"
+    },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: "notFound",
     component: () => import("../views/auth/errors/404-cover.vue"),
