@@ -69,6 +69,7 @@
       const dropzoneFile = ref("");
       const loadingBtnAI = ref(false);
       const isLoadingUsers = ref(false);
+      const petitionerLoading = ref(false)
       const canUseAI = ref(true);
       const documentID = ref(null);
       const documentAI = ref(null);
@@ -484,7 +485,7 @@
               console.log("ya en este punto se subio el archivo");
             }
 
-            console.log('Archivo: ',file);
+            console.log("Archivo: ", file);
 
             toast.update(idLoadFile, {
               render: `Archivo cargado con éxito ${file.name}`,
@@ -1031,6 +1032,54 @@
         }
       };
 
+      // Metodo para buscar peticionario a partir de una cedula
+      const getPetitioner = async () => {
+
+        const config = {
+          headers: {
+            company: 'BAQVERDE',
+            "Content-Type": "application/json", // Puedes ajustar el tipo de contenido según sea necesario
+          },
+        };
+
+        try {
+
+
+          petitionerLoading.value = true
+
+          const body = {
+            identificationNumber: form.idNumber,
+          }
+
+          const response = await axios.post(`${process.env.VUE_APP_CF_BASE_URL}/claim/get-petitioner-information`, body, config)
+          console.log(response.data);
+
+          if (response.data) {
+
+            const splittedAddress = response.data.address.split(',')
+
+            console.log(splittedAddress);
+
+            form.personType = response.data.personType || form.personType
+            form.email = response.data.email || form.email
+            form.names = response.data.firstNames || form.names
+            form.contactPhone = response.data.contactPhone || form.contactPhone
+            form.idType = response.data.identificationType || form.idType
+            form.companyName = response.data.companyName || form.companyName
+            form.lastNames = response.data.lastNames || form.lastNames
+            form.idNumber = response.data.identificationNumber || form.idNumber
+            address_info.value[0] = splittedAddress[0]
+            address_info.value[1] = splittedAddress[1]
+            address_info.value[2] = splittedAddress[2]
+          }
+          
+        } catch (error) {
+          console.log(error);
+        } finally {
+          petitionerLoading.value = false
+        }
+      }
+
       watch(
         () => [...files.value],
         (currentValue) => {
@@ -1168,6 +1217,8 @@
         additionalDocs,
         uploadDocument,
         haveAdditionalDocuments,
+        getPetitioner,
+        petitionerLoading
       };
     },
 
@@ -1274,9 +1325,33 @@
             config
           );
 
-          console.log(process.env.VUE_APP_CF_BASE_URL);
-
           if (response) {
+
+            var addPetitioner = {
+              personType: this.form.personType,
+              identificationType: this.form.idType,
+              identificationNumber: this.form.idNumber,
+              contactPhone: this.form.contactPhone,
+              firstNames: this.form.names,
+              lastNames: this.form.lastNames,
+              email: this.form.email,
+              address: this.form.address,
+            }
+
+            if (this.form.idType == 'NIT') {
+              addPetitioner = {
+                ...addPetitioner,
+                companyName: this.form.companyName
+              }
+            }
+            
+
+            await axios.post(
+              `${process.env.VUE_APP_CF_BASE_URL}/claim/get-petitioner-information`, 
+              addPetitioner, 
+              config
+            );
+
             this.generateSticker();
             const textTrackingStart = `Ha iniciado el proceso al siguiente documento ${this.radicate?.idRadicate}, en el transcurso de los días se ira actualizando el estado del documento.`;
             await setTracking(
@@ -1366,10 +1441,10 @@
       async handleSaveChanges() {
         this.canUseAI = false;
         try {
-          const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`
+          const url = `${process.env.VUE_APP_CF_BASE_URL}/CLAIM_SAVE_INFORMATION_V1?claimId=${this.documentID}`;
           const config = {
             headers: {
-              company: 'BAQVERDE',
+              company: "BAQVERDE",
               "Content-Type": "application/json", // Puedes ajustar el tipo de contenido según sea necesario
             },
           };
@@ -1450,8 +1525,7 @@
 
       async sendAllInformationToClaim() {
         try {
-
-          if (this.mode === 'Out') {
+          if (this.mode === "Out") {
             // paso 1, crear documento
             await this.createOutDocument("create");
             console.log("creo el documento");
@@ -2166,14 +2240,34 @@
                   >Nº de documento
                   <span class="text-danger fw-bold">*</span></label
                 >
-                <input
+                <div class="input-group mb-3">
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="form.idNumber"
+                    id="username"
+                    :disabled="radicated || loadingAI || petitionerLoading"
+                    placeholder="Ingrese numero de documento"
+                    aria-describedby="button-addon2"
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    id="button-addon2"
+                    @click="getPetitioner"
+                  >
+                    <div v-if="petitionerLoading" class="spinner-grow text-primary" role="status" />
+                    <i v-else class="ri-search-line fs-5" ></i>
+                  </button>
+                </div>
+                <!-- <input
                   type="text"
                   class="form-control"
                   v-model="form.idNumber"
                   id="username"
                   :disabled="radicated || loadingAI"
                   placeholder="Ingrese numero de documento"
-                />
+                /> -->
 
                 <ValidateLabel v-bind="{ v$ }" attribute="idNumber" />
               </BCol>
