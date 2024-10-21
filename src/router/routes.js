@@ -79,6 +79,15 @@ export default [
     },
     component: () => import("../views/dashboard/projects/index"),
   },
+  {
+    path: "/reportes",
+    name: "reports",
+    meta: {
+      title: "Reportes",
+      authRequired: true,
+    },
+    component: () => import("../views/reports/index"),
+  },
 
   // RouDoc - Gestion Documental
 
