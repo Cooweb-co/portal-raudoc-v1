@@ -2,6 +2,7 @@
 import { layoutComputed } from "@/state/helpers";
 import {
     HomeIcon,
+    ClipboardIcon,
     // GridIcon,
     UsersIcon,
     // CommandIcon,
@@ -28,6 +29,7 @@ export default {
         HomeIcon,
         // GridIcon,
         UsersIcon,
+        ClipboardIcon,
         // CommandIcon,
         // PackageIcon,
         // LayersIcon,
@@ -388,6 +390,17 @@ export default {
                         >
                             <HomeIcon width="24" height="24" />
                             <span data-key="t-dashboard">Dashboard</span>
+                        </router-link>
+                    </li>
+
+                    <li class="nav-item">
+                        <router-link
+                            class="nav-link menu-link"
+                            to="/reportes/"
+                            @click.prevent="closeMenu()"
+                        >
+                            <ClipboardIcon width="24" height="24" />
+                            <span data-key="t-dashboard">Reportes</span>
                         </router-link>
                     </li>
 
