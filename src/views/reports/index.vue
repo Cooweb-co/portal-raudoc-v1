@@ -6,11 +6,12 @@ import Layout from "../../layouts/main.vue";
 import PageHeader from "../../components/page-header.vue";
 import flatPickr from "vue-flatpickr-component";
 import JsonExcel from "vue-json-excel3";
+import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { setStatusColor } from "../../utils/colors";
 
 const rows = ref([]);
 const date = ref();
-const reportType = ref();
+const reportType = ref("");
 const isLoading = ref(false);
 const { getReport, columns } = useReport(reportType);
 
@@ -18,7 +19,8 @@ const downloadData = computed(
   () =>
     rows.value.map((item) =>
       columns.value.reduce((newItem, { title, key }) => {
-        newItem[title] = item[key];
+        if (key == "status") newItem[title] = setStatusLabel(item[key]);
+        else newItem[title] = item[key];
         return newItem;
       }, {})
     ) || []
@@ -44,9 +46,16 @@ async function consultData() {
 
 function setStatusLabel(status) {
   if (status == "IN_TERM") return "Por Vencer";
-  if (status == "ANSWERED") return "Contestado";
+  if (status == "ANSWERED") return "Respondido";
   if (status == "DRAFT") return "Borrador";
   if (status == "NO_RESPONSE") return "Sin Respuesta";
+}
+
+function defaultDate() {
+  const endDate = new Date();
+  const startDate = new Date(endDate);
+  startDate.setMonth(startDate.getMonth() - 1);
+  return [startDate.toISOString(), endDate.toISOString()];
 }
 
 watch(reportType, () => {
@@ -67,6 +76,8 @@ watch(reportType, () => {
               :config="{
                 dateFormat: 'Y-m-d',
                 mode: 'range',
+                conjunction: ' :: ',
+                defaultDate: defaultDate(),
               }"
               class="form-control border-light flatpickr-input"
             >
@@ -79,7 +90,8 @@ watch(reportType, () => {
               data-choices
               data-choices-search-false
             >
-              <option value="entry" selected>Entradas</option>
+              <option value="" disabled>Seleccione un reporte</option>
+              <option value="entry">Entradas</option>
               <option value="departure">Salidas</option>
               <option value="pending">Pendientes</option>
             </select>
@@ -105,7 +117,7 @@ watch(reportType, () => {
             :name="'Reporte_Radicados_' + new Date().toLocaleDateString()"
             class="float-end mb-3"
           >
-            <BButton variant="primary">
+            <BButton :disabled="!rows.length" variant="primary">
               Descargar Reporte en Excel
               <i class="bi bi-file-earmark-excel"></i>
             </BButton>
@@ -114,7 +126,34 @@ watch(reportType, () => {
       </BCol>
     </BRow>
     <BRow>
-      <a-empty v-if="!rows.length" />
+      <a-result
+        v-if="!rows.length"
+        title="No hay datos para mostrar"
+        sub-title="Por favor revisa los parametros de consulta."
+      >
+        <div class="desc">
+          <p style="font-size: 16px">
+            <strong
+              >Para consultar un reporte sigue los siguientes pasos:</strong
+            >
+          </p>
+          <p class="d-flex align-items-center">
+            <ExclamationCircleOutlined
+              :style="{ color: 'blue', marginRight: '5px' }"
+            />
+            Selecciona un rango valido de fecha.<strong
+              >(Recuerda que deben ser dos fechas, una de inicio y una de
+              final)</strong
+            >
+          </p>
+          <p>
+            <ExclamationCircleOutlined
+              :style="{ color: 'blue', marginRight: '5px' }"
+            />
+            Selecciona un tipo de reporte, y click en consultar!
+          </p>
+        </div>
+      </a-result>
       <a-table
         v-else
         :dataSource="rows"
@@ -125,7 +164,7 @@ watch(reportType, () => {
         sticky
       >
         <template #bodyCell="{ text, column }">
-          <div style="text-transform: capitalize">
+          <div style="text-transform: uppercase">
             <span
               v-if="column.key === 'status'"
               class="badge"
