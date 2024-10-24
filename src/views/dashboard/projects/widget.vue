@@ -18,7 +18,7 @@ const projectsWidgets = ref();
 onMounted(async () => {
     try {
         loading.value = true;
-        const url = `${process.env.VUE_APP_CF_BASE_URL}/GET_COUNT_CLAIMS_BY_USER`;
+        const url = `${process.env.VUE_APP_CF_BASE_URL}/userClaimsCount`;
         const config = {
             params: {
                 uid: user.value.uid,
@@ -49,7 +49,7 @@ onMounted(async () => {
                     count: 0,
                 },
                 {
-                    value: "Procesados",
+                    value: "No Responder",
                     count: 0,
                 },
             ];
@@ -71,7 +71,7 @@ onMounted(async () => {
                 count: 0,
             },
             {
-                value: "Procesados",
+                value: "No Responder",
                 count: 0,
             },
         ];
@@ -80,7 +80,6 @@ onMounted(async () => {
 </script>
 
 <template>
-    <pre>{{ props }}</pre>
     <BRow v-if="loading">
         <BCol no-body class="card-animate">
             <a-skeleton :paragraph="{ rows: 2 }" active avatar />
@@ -102,7 +101,8 @@ onMounted(async () => {
             :key="index"
             id="element"
             sm="3"
-        >
+        >   
+
             <BCard no-body class="card-animate">
                 <BCardBody>
                     <div class="d-flex align-items-center px-1">
@@ -112,7 +112,7 @@ onMounted(async () => {
                                 :class="{
                                     'bg-primary-subtle text-primary':
                                         item.value.toUpperCase() ===
-                                            'primary' || 'PROCESADOS',
+                                            'primary' || 'NO RESPONDER',
                                     'bg-warning-subtle text-warning':
                                         item.value.toUpperCase() ===
                                         'POR RESPONDER',
@@ -157,7 +157,8 @@ onMounted(async () => {
 
                                 <template
                                     v-if="
-                                        item.value.toUpperCase() == 'PROCESADOS'
+                                        item.value.toUpperCase() == 
+                                        'NO RESPONDER'
                                     "
                                 >
                                     <CheckSquareIcon
